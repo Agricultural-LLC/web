@@ -1,0 +1,67 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+.output/
+.vercel/
+.netlify/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment variables
+.env
+.env.local
+.env.production.local
+.env.development.local
+.env.test.local
+.env*.local
+
+# Astro
+.astro/
+
+# Firebase
+.firebase/
+*.cache
+firebase-debug.log
+firestore-debug.log
+pubsub-debug.log
+ui-debug.log
+firebase-export-*
+
+# Testing
+coverage/
+.nyc_output
+
+# TypeScript
+*.tsbuildinfo
+
+# Misc
+*.pem
+.cache
+.parcel-cache
+.turbo
+
+# MCP configuration (keep local)
+.mcp.json
