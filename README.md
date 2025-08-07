@@ -7,8 +7,9 @@
 
 ## 技術スタック
 
-- **フレームワーク**: Astro (静的サイトジェネレーター)
-- **ホスティング**: Firebase Hosting
+- **フレームワーク**: Astro (Astrogonテンプレートベース)
+- **スタイリング**: Tailwind CSS
+- **ホスティング**: Firebase Hosting / Cloudflare Workers
 - **CDN/セキュリティ**: Cloudflare
 - **コンテンツ管理**: Markdown + Astro Content Collections
 
@@ -16,20 +17,25 @@
 
 ```text
 web/
-├── docs/           # プロジェクトドキュメント
-│   ├── PDF/       # PDF版ドキュメント
-│   └── markdown/  # Markdown版ドキュメント
-├── logo.png       # 会社ロゴ
-├── CLAUDE.md      # Claude Code用ガイドライン
-└── README.md      # このファイル
+├── public/           # 静的ファイル
+├── src/
+│   ├── assets/      # 画像・SVGファイル
+│   ├── components/  # Astroコンポーネント
+│   ├── content/     # コンテンツコレクション
+│   │   ├── home/    # トップページ
+│   │   ├── about/   # 会社概要
+│   │   ├── blog/    # ブログ記事
+│   │   ├── docs/    # ドキュメント
+│   │   └── project/ # プロジェクト資料
+│   ├── pages/       # ページルーティング
+│   └── styles/      # スタイルシート
+├── CLAUDE.md        # Claude Code用ガイドライン
+└── README.md        # このファイル
 ```
 
 ## 開発開始
 
 ```bash
-# Astroプロジェクトの初期化
-npm create astro@latest .
-
 # 依存関係のインストール
 npm install
 
@@ -38,15 +44,18 @@ npm run dev
 
 # 本番ビルド
 npm run build
+
+# フォーマット
+npm run format
 ```
 
 ## 主要機能
 
-- トップページ（ビジョン・会社概要）
-- つながるページ（活動紹介）
-- ブログ（農業DX情報発信）
-- 事例紹介
-- お問い合わせ
+- **トップページ** - ビジョン・会社概要・活動ハイライト
+- **つながるページ** - 農家・JA・行政との活動紹介
+- **ブログ** - 農業DX情報発信（初心者向け、実践ノウハウ、成功事例、農業の未来）
+- **事例紹介** - 地域別成功事例とギャラリー
+- **お問い合わせ** - CAPTCHAつき問い合わせフォーム
 
 ## パフォーマンス目標
 
@@ -56,4 +65,8 @@ npm run build
 
 ## ドキュメント
 
-詳細な要件定義、技術仕様、スケジュールは`docs/`ディレクトリ内のドキュメントを参照してください。
+プロジェクトの詳細な要件定義、技術仕様、スケジュールは`src/content/project/`ディレクトリ内のドキュメントを参照してください。
+
+## テンプレートについて
+
+このプロジェクトは[Astrogon](https://github.com/astrogon/astrogon)テンプレートをベースに構築されています。
