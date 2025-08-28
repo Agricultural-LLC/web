@@ -1,9 +1,35 @@
 ---
-image: "@assets/astrogon-star.svg"
-imageAlt: Astrogon logo
-title: Astrogon
-content: A rapidly-customizable template for a blog, documentation, and more.
+image: "@assets/logo.png"
+imageAlt: 農業合同会社ロゴ
+title: つながりから、未来農業が生まれる。
+content: 農業合同会社は、人・技術・農業をつなぐプラットフォームです。農業DXの最前線から、持続可能な農業の未来を創造します。
 button:
-  label: See the Code
-  link: https://github.com/astrogon/astrogon
+  label: 詳しく見る
+  link: /about
 ---
+
+## 会社概要
+
+**農業合同会社**は、農業の未来を技術とつながりで革新する企業です。
+
+### 代表者
+- **業務執行社員**: 新藤 洋介
+- **代表社員**: 藤井 洋平（農業DXスペシャリスト）
+
+### 私たちの使命
+
+農家、JA、行政をつなぎ、最新技術と実践的なノウハウで北海道・美唄地域を中心に農業の課題解決に取り組んでいます。
+
+### 主な活動
+- 農業DXコンサルティング
+- スマート農業技術の導入支援
+- ドローン活用による農作業効率化
+- 地域農業コミュニティの形成
+
+### 藤井代表の専門性
+- 17年のリーダー・マネジメント経験
+- 14年の新規事業開発実績
+- 農業DX・ドローン・スマートシティ分野のエキスパート
+- 自治体・企業向けソリューション企画・開発・運用
+
+私たちは、農業の現場で培った知見と最新技術を融合させ、持続可能な農業の未来を実現します。

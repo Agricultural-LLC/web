@@ -10,9 +10,9 @@ let h3 = h4 * font_scale;
 let h2 = h3 * font_scale;
 let h1 = h2 * font_scale;
 
-let fontPrimary = "serif";
+let fontPrimary = "Noto Serif JP";
 let fontPrimaryType = "serif";
-let fontSecondary = "open sans";
+let fontSecondary = "Noto Sans JP";
 let fontSecondaryType = "sans-serif";
 
 fontPrimary = fontPrimary
@@ -86,8 +86,8 @@ module.exports = {
         h6: h6 + "rem",
       },
       fontFamily: {
-        primary: [fontPrimary, fontPrimaryType],
-        secondary: [fontSecondary, fontSecondaryType],
+        primary: [fontPrimary, "'Hiragino Kaku Gothic ProN'", "'Hiragino Sans'", "Meiryo", fontPrimaryType],
+        secondary: [fontSecondary, "'Hiragino Kaku Gothic ProN'", "'Hiragino Sans'", "Meiryo", fontSecondaryType],
       },
       spacing: {
         "1/2": "50%",

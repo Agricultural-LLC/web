@@ -1,4 +1,4 @@
 ---
-title: Blog Posts
-description: The blog of Jane and John Doe
+title: 発信する
+description: 農業DXの最前線から、実践的なノウハウと未来への展望をお届けします
 ---

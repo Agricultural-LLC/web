@@ -12,7 +12,7 @@ import remarkMath from "remark-math";
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://example.com", // TODO: 実際のドメインに更新
+  site: "https://nogyo-llc.jp", // 農業合同会社のドメイン（仮）
   base: "/",
   trailingSlash: "ignore",
   prefetch: {

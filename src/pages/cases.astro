@@ -1,0 +1,176 @@
+---
+import BaseLayout from "@components/base/BaseLayout.astro";
+import PageHeader from "@components/common/PageHeader.astro";
+import Button from "@components/common/Button.astro";
+import CaseCard from "@components/common/CaseCard.astro";
+
+const cases = [
+  {
+    category: "水稲・畑作",
+    categoryColor: "green",
+    title: "若手農家が実現した収益2倍の軌跡",
+    region: "美唄市",
+    technology: "IoT、ドローン",
+    description: "35歳の若手農家がIoTセンサーとドローンを活用し、わずか2年で収益を2倍に。労働時間を45%削減しながら、収量は15%向上を実現。",
+    metric: "200%",
+    metricLabel: "収益向上率",
+    link: "/blog/bibai-success-story"
+  },
+  {
+    category: "施設園芸",
+    categoryColor: "blue",
+    title: "ハウス栽培の完全自動化への挑戦",
+    region: "岩見沢市",
+    technology: "自動灌水、環境制御",
+    description: "トマトハウスに環境制御システムを導入。温度・湿度・CO2濃度を最適化し、品質向上と省力化を両立。年間を通じて安定した収量を確保。",
+    metric: "30%",
+    metricLabel: "品質A級率向上",
+    link: "#"
+  },
+  {
+    category: "酪農",
+    categoryColor: "orange",
+    title: "搾乳ロボットで実現した働き方改革",
+    region: "美唄市",
+    technology: "搾乳ロボット、個体管理",
+    description: "搾乳ロボット導入により、朝晩の搾乳作業から解放。個体管理システムで牛の健康状態を24時間モニタリング。乳量・乳質ともに向上。",
+    metric: "60%",
+    metricLabel: "労働時間削減",
+    link: "#"
+  },
+  {
+    category: "果樹",
+    categoryColor: "purple",
+    title: "データ分析で実現した高糖度リンゴ",
+    region: "余市町",
+    technology: "糖度センサー、データ分析",
+    description: "IoTセンサーで土壌と果実の状態を常時監視。AIによる最適な収穫時期の予測により、糖度15度以上のプレミアムリンゴの生産に成功。",
+    metric: "150%",
+    metricLabel: "単価向上",
+    link: "#"
+  },
+  {
+    category: "地域連携",
+    categoryColor: "indigo",
+    title: "5軒の農家で実現したドローン共同利用",
+    region: "美唄市",
+    technology: "ドローン、共同利用システム",
+    description: "地域の5軒の農家が共同でドローンを購入・運用。導入コストを1/5に削減しながら、全農家で農薬散布時間を70%短縮。技術共有により地域全体のレベルアップ。",
+    metric: "80%",
+    metricLabel: "コスト削減",
+    link: "#"
+  },
+  {
+    category: "6次産業化",
+    categoryColor: "pink",
+    title: "データ活用で実現した加工品開発",
+    region: "千歳市",
+    technology: "需要予測AI、EC連携",
+    description: "生産データと市場データを分析し、需要の高い加工品を開発。ECサイトと連携した直販により、収益性が3倍に向上。地域ブランドの確立に成功。",
+    metric: "300%",
+    metricLabel: "収益性向上",
+    link: "#"
+  }
+];
+---
+
+<BaseLayout title="事例を見る - 農業合同会社">
+  <PageHeader title="事例を見る" description="地域農業の成功ストーリー" />
+  
+  <section class="section-sm">
+    <div class="container">
+      
+      <!-- イントロダクション -->
+      <div class="row justify-center mb-12">
+        <div class="md:col-10 lg:col-8 text-center">
+          <p class="text-lg">
+            北海道・美唄地域を中心に、スマート農業技術を導入して成功を収めた農家の皆様の事例をご紹介します。
+            これらの事例が、皆様の農業経営のヒントになれば幸いです。
+          </p>
+        </div>
+      </div>
+
+      <!-- 事例カード -->
+      <div class="row g-4">
+        {cases.map((caseItem) => (
+          <div class="md:col-6 lg:col-4">
+            <CaseCard
+              category={caseItem.category}
+              categoryColor={caseItem.categoryColor}
+              title={caseItem.title}
+              region={caseItem.region}
+              technology={caseItem.technology}
+              description={caseItem.description}
+              metric={caseItem.metric}
+              metricLabel={caseItem.metricLabel}
+            >
+              <Button link={caseItem.link} label="詳細を見る" />
+            </CaseCard>
+          </div>
+        ))}
+      </div>
+
+      <!-- 成功のポイント -->
+      <div class="row justify-center mt-16">
+        <div class="md:col-10 lg:col-8">
+          <div class="glass rounded-lg p-8">
+            <h2 class="h3 mb-6 text-center">成功事例に見る共通のポイント</h2>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+              <div>
+                <h3 class="h5 mb-3 flex items-center">
+                  <span class="text-primary mr-2">✓</span>
+                  段階的な導入
+                </h3>
+                <p class="text-sm">
+                  全てを一度に変えるのではなく、小さく始めて成果を確認しながら拡大
+                </p>
+              </div>
+              
+              <div>
+                <h3 class="h5 mb-3 flex items-center">
+                  <span class="text-primary mr-2">✓</span>
+                  データの活用
+                </h3>
+                <p class="text-sm">
+                  収集したデータを分析し、継続的な改善を実施
+                </p>
+              </div>
+              
+              <div>
+                <h3 class="h5 mb-3 flex items-center">
+                  <span class="text-primary mr-2">✓</span>
+                  補助金の活用
+                </h3>
+                <p class="text-sm">
+                  各種補助制度を最大限活用し、初期投資の負担を軽減
+                </p>
+              </div>
+              
+              <div>
+                <h3 class="h5 mb-3 flex items-center">
+                  <span class="text-primary mr-2">✓</span>
+                  専門家のサポート
+                </h3>
+                <p class="text-sm">
+                  農業合同会社のような専門家の支援を受けながら導入
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div class="text-center mt-16">
+        <h2 class="h3 mb-4">次の成功事例は、あなたの農場から</h2>
+        <p class="mb-8">
+          まずは無料相談から始めてみませんか？<br>
+          皆様の状況に合わせた最適なソリューションをご提案します。
+        </p>
+        <Button link="/contact" label="無料相談を申し込む" />
+      </div>
+      
+    </div>
+  </section>
+</BaseLayout>

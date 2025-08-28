@@ -6,6 +6,8 @@ body {
   @apply font-secondary font-normal leading-relaxed text-txt-s dark:text-darkmode-txt-s;
   @apply bg-bg-p dark:bg-darkmode-bg-p;
   @apply flex flex-col min-h-screen lg:mx-8;
+  line-height: 1.8; /* 日本語用に行間を調整 */
+  letter-spacing: 0.05em; /* 日本語の読みやすさ向上 */
 }
 
 h1,
@@ -15,6 +17,7 @@ h4,
 h5,
 h6 {
   @apply font-primary font-bold leading-tight text-txt-p dark:text-darkmode-txt-p intersect:animate-fade opacity-0;
+  letter-spacing: 0.03em; /* 日本語見出し用の文字間隔 */
   // @apply font-primary font-bold leading-tight bg-gradient-to-r from-orange-500 via-indigo-500 to-green-500 text-transparent bg-clip-text;
 }
 h1,

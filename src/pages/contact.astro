@@ -1,0 +1,217 @@
+---
+import BaseLayout from "@components/base/BaseLayout.astro";
+import PageHeader from "@components/common/PageHeader.astro";
+---
+
+<BaseLayout title="相談する - 農業合同会社">
+  <PageHeader title="相談する" description="お気軽にご相談ください" />
+  
+  <section class="section-sm">
+    <div class="container">
+      <div class="row justify-center">
+        <div class="glass rounded-lg p-8 md:col-10 lg:col-8 intersect:animate-fadeUp opacity-0">
+          
+          <div class="mb-8">
+            <h2 class="h3 mb-4">農業の課題、私たちが一緒に解決します</h2>
+            <p class="mb-4">
+              スマート農業の導入、農業DXに関するご相談、補助金申請のサポートなど、
+              どんなことでもお気軽にお問い合わせください。
+            </p>
+            <p>
+              代表の藤井をはじめ、経験豊富なスタッフが皆様のご相談に対応いたします。
+            </p>
+          </div>
+
+          <div class="bg-white/5 rounded-lg p-6 mb-8">
+            <h3 class="h4 mb-4">ご相談例</h3>
+            <ul class="space-y-2">
+              <li>• スマート農業技術の導入を検討している</li>
+              <li>• ドローンを活用した農薬散布に興味がある</li>
+              <li>• IoTセンサーでデータ管理を始めたい</li>
+              <li>• 補助金・助成金の申請方法を知りたい</li>
+              <li>• 農業DXの進め方がわからない</li>
+              <li>• 地域の農業課題を解決したい</li>
+            </ul>
+          </div>
+
+          <!-- SSGform を使用したお問い合わせフォーム -->
+          <form
+            action="https://ssgform.com/s/VJ1xibsGrkND"
+            method="post"
+            enctype="multipart/form-data"
+            class="space-y-6"
+          >
+            <div>
+              <label for="name" class="block mb-2 font-medium">
+                お名前 <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="name"
+                name="お名前"
+                required
+                class="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800"
+                placeholder="農業 太郎"
+              />
+            </div>
+
+            <div>
+              <label for="organization" class="block mb-2 font-medium">
+                組織・農場名
+              </label>
+              <input
+                type="text"
+                id="organization"
+                name="組織・農場名"
+                class="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800"
+                placeholder="〇〇農場"
+              />
+            </div>
+
+            <div>
+              <label for="email" class="block mb-2 font-medium">
+                メールアドレス <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="email"
+                id="email"
+                name="メールアドレス"
+                required
+                class="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800"
+                placeholder="example@nogyo-llc.jp"
+              />
+            </div>
+
+            <div>
+              <label for="phone" class="block mb-2 font-medium">
+                電話番号
+              </label>
+              <input
+                type="tel"
+                id="phone"
+                name="電話番号"
+                class="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800"
+                placeholder="090-1234-5678"
+              />
+            </div>
+
+            <div>
+              <label for="area" class="block mb-2 font-medium">
+                地域
+              </label>
+              <input
+                type="text"
+                id="area"
+                name="地域"
+                class="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800"
+                placeholder="北海道美唄市"
+              />
+            </div>
+
+            <div>
+              <label for="inquiry-type" class="block mb-2 font-medium">
+                お問い合わせ種別 <span class="text-red-500">*</span>
+              </label>
+              <select
+                id="inquiry-type"
+                name="お問い合わせ種別"
+                required
+                class="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800"
+              >
+                <option value="">選択してください</option>
+                <option value="smart-agriculture">スマート農業導入相談</option>
+                <option value="drone">ドローン活用相談</option>
+                <option value="iot">IoT・データ活用相談</option>
+                <option value="subsidy">補助金・助成金相談</option>
+                <option value="dx">農業DX全般</option>
+                <option value="other">その他</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="message" class="block mb-2 font-medium">
+                ご相談内容 <span class="text-red-500">*</span>
+              </label>
+              <textarea
+                id="message"
+                name="お問い合わせ内容"
+                required
+                rows="6"
+                class="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800"
+                placeholder="ご相談内容を詳しくお聞かせください"
+              ></textarea>
+            </div>
+
+            <div>
+              <label for="reference-file" class="block mb-2 font-medium">
+                参考資料
+              </label>
+              <input
+                type="file"
+                id="reference-file"
+                name="参考資料"
+                class="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary file:text-white hover:file:bg-opacity-90"
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif"
+              />
+              <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                PDF、Word、Excel、画像ファイル（最大10MB）
+              </p>
+            </div>
+
+            <div class="text-sm text-gray-600 dark:text-gray-400">
+              <p>* は必須項目です</p>
+              <p class="mt-2">
+                送信いただいた内容は、農業合同会社のプライバシーポリシーに基づいて適切に管理いたします。
+              </p>
+            </div>
+
+            <div class="text-center">
+              <button
+                type="submit"
+                class="inline-block rounded-lg bg-primary px-8 py-4 font-medium text-white transition hover:bg-opacity-90"
+              >
+                送信する
+              </button>
+            </div>
+          </form>
+
+          <div class="mt-12 border-t pt-8">
+            <h3 class="h4 mb-4">その他のお問い合わせ方法</h3>
+            
+            <div class="space-y-4">
+              <div>
+                <h4 class="font-medium mb-2">お電話でのお問い合わせ</h4>
+                <p class="text-lg">
+                  <a href="tel:0126-XX-XXXX" class="hover:text-primary">
+                    0126-XX-XXXX
+                  </a>
+                </p>
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                  受付時間: 平日 9:00〜17:00
+                </p>
+              </div>
+              
+              <div>
+                <h4 class="font-medium mb-2">メールでのお問い合わせ</h4>
+                <p>
+                  <a href="mailto:info@nogyo-llc.jp" class="hover:text-primary">
+                    info@nogyo-llc.jp
+                  </a>
+                </p>
+              </div>
+              
+              <div>
+                <h4 class="font-medium mb-2">所在地</h4>
+                <p>
+                  〒072-0000<br>
+                  北海道美唄市〇〇町1-2-3
+                </p>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

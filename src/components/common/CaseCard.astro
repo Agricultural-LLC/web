@@ -1,0 +1,58 @@
+---
+export interface Props {
+  category: string;
+  categoryColor?: string;
+  title: string;
+  region: string;
+  technology: string;
+  description: string;
+  metric: string;
+  metricLabel: string;
+}
+
+const { 
+  category, 
+  categoryColor = "green",
+  title,
+  region,
+  technology,
+  description,
+  metric,
+  metricLabel
+} = Astro.props;
+
+const colorClasses = {
+  green: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+  blue: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+  orange: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
+  purple: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+  indigo: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200",
+  pink: "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200",
+}[categoryColor] || "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
+---
+
+<div class="glass rounded-lg p-6 h-full flex flex-col intersect:animate-fadeUp opacity-0">
+  <div class="mb-4">
+    <span class={`inline-block px-3 py-1 text-sm rounded-full ${colorClasses}`}>
+      {category}
+    </span>
+  </div>
+  
+  <h3 class="h4 mb-3">{title}</h3>
+  
+  <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
+    <p>地域: {region}</p>
+    <p>導入技術: {technology}</p>
+  </div>
+  
+  <p class="mb-4 flex-grow">
+    {description}
+  </p>
+  
+  <div class="mb-4">
+    <div class="text-2xl font-bold text-primary mb-1">{metric}</div>
+    <div class="text-sm text-gray-600 dark:text-gray-400">{metricLabel}</div>
+  </div>
+  
+  <slot />
+</div>
