@@ -14,7 +14,7 @@ import remarkToc from "remark-toc";
 export default defineConfig({
   site: "https://Agricultural-LLC.github.io/web", // GitHub Pages用のURL
   base: "/web/", // リポジトリ名を設定
-  trailingSlash: "ignore",
+  trailingSlash: "always", // GitHub Pages用にスラッシュを常に追加
   prefetch: {
     prefetchAll: true
   },
