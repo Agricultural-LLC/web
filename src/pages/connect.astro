@@ -1,9 +1,130 @@
 ---
-import { getIndex } from "@lib/contentParser";
-import EntryLayout from "@components/about/EntryLayout.astro";
-import type { AboutEntry } from "@/types";
+import BaseLayout from "@components/base/BaseLayout.astro";
+import PageHeader from "@components/common/PageHeader.astro";
+import Button from "@components/common/Button.astro";
+import { Image } from "astro:assets";
+import farmlandImage from "@assets/agriculture/farmland-01.jpeg";
+import riceFieldImage from "@assets/agriculture/rice-field-01.jpeg";
+import fieldWorkImage from "@assets/agriculture/field-work-01.jpeg";
 
-const entry = (await getIndex("about")) as AboutEntry;
+const baseURL = import.meta.env.BASE_URL;
 ---
 
-<EntryLayout entry={entry} />
+<BaseLayout title="つながる">
+  <PageHeader title="つながる" />
+  
+  <section class="section">
+    <div class="container">
+      <div class="row">
+        <div class="lg:col-8 mx-auto">
+          
+          <!-- メインビジュアル -->
+          <div class="mb-12 rounded-lg overflow-hidden">
+            <Image
+              src={farmlandImage}
+              alt="農業の風景"
+              width={800}
+              height={400}
+              class="w-full h-auto"
+            />
+          </div>
+
+          <!-- 活動紹介 -->
+          <div class="prose prose-lg max-w-none mb-12">
+            <h2>農家・JA・行政をつなぐプラットフォーム</h2>
+            <p>
+              私たち農業合同会社は、北海道美唄市を拠点に、農家の皆様、JA、行政機関をつなぐ
+              架け橋として活動しています。最新の農業技術と地域の知恵を融合させ、
+              持続可能な農業の未来を共に創造していきます。
+            </p>
+          </div>
+
+          <!-- 3つの活動 -->
+          <div class="grid md:grid-cols-3 gap-6 mb-12">
+            <!-- 農家との連携 -->
+            <div class="glass rounded-lg p-6">
+              <div class="mb-4 rounded-lg overflow-hidden">
+                <Image
+                  src={riceFieldImage}
+                  alt="農家との連携"
+                  width={300}
+                  height={200}
+                  class="w-full h-auto"
+                />
+              </div>
+              <h3 class="h4 mb-3">農家との連携</h3>
+              <p class="text-sm">
+                若手農家から熟練農家まで、幅広い世代の農家さんと協力し、
+                DX技術の導入支援や情報共有を行っています。
+              </p>
+            </div>
+
+            <!-- JAとの協働 -->
+            <div class="glass rounded-lg p-6">
+              <div class="mb-4 rounded-lg overflow-hidden">
+                <Image
+                  src={fieldWorkImage}
+                  alt="JAとの協働"
+                  width={300}
+                  height={200}
+                  class="w-full h-auto"
+                />
+              </div>
+              <h3 class="h4 mb-3">JAとの協働</h3>
+              <p class="text-sm">
+                地域のJAと密接に連携し、農業技術の普及や
+                販路拡大のサポートを行っています。
+              </p>
+            </div>
+
+            <!-- 行政機関との連携 -->
+            <div class="glass rounded-lg p-6">
+              <div class="mb-4 rounded-lg overflow-hidden">
+                <Image
+                  src={farmlandImage}
+                  alt="行政機関との連携"
+                  width={300}
+                  height={200}
+                  class="w-full h-auto"
+                />
+              </div>
+              <h3 class="h4 mb-3">行政機関との連携</h3>
+              <p class="text-sm">
+                美唄市をはじめとする行政機関と協力し、
+                地域農業の振興と発展に貢献しています。
+              </p>
+            </div>
+          </div>
+
+          <!-- 具体的な取り組み -->
+          <div class="prose prose-lg max-w-none mb-12">
+            <h2>具体的な取り組み</h2>
+            <ul>
+              <li>スマート農業技術の導入支援とコンサルティング</li>
+              <li>ドローンを活用した農薬散布・生育調査の実施</li>
+              <li>IoTセンサーによる圃場モニタリングシステムの構築</li>
+              <li>農業DXに関する勉強会・セミナーの開催</li>
+              <li>地域農業コミュニティの形成と情報交換の場づくり</li>
+              <li>若手農家の育成と技術継承のサポート</li>
+            </ul>
+          </div>
+
+          <!-- お問い合わせセクション -->
+          <div class="glass rounded-lg p-8 text-center">
+            <h2 class="h3 mb-4">お問い合わせ</h2>
+            <p class="mb-6">
+              農家・JA・行政機関の皆様からのご相談をお待ちしています。<br>
+              まずはお気軽にご連絡ください。
+            </p>
+            <Button 
+              link={`${baseURL}contact/`} 
+              label="お問い合わせはこちら" 
+              hoverInvert
+            />
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
