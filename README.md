@@ -51,11 +51,27 @@ npm run format
 
 ## デプロイ方法
 
-### 1. GitHub Pages（推奨）
+> ⚠️ **重要な注意事項**  
+> 現在、このプロジェクトはGitHub Pages（`https://agricultural-llc.github.io/web/`）用に設定されています。  
+> **Firebase HostingやVercelへの移行時は、`astro.config.mjs`のbaseパスを`"/"`に変更してください。**
+
+### 1. GitHub Pages（現在使用中）
 
 1. GitHubリポジトリのSettings > Pagesで「GitHub Actions」を選択
-2. `astro.config.mjs`の`site`と`base`を実際のリポジトリ名に変更
-3. mainブランチにプッシュすると自動デプロイ
+2. mainブランチにプッシュすると自動デプロイ
+3. URL: `https://agricultural-llc.github.io/web/`
+
+**移行前のチェックリスト:**
+```javascript
+// astro.config.mjs
+// GitHub Pages用（現在の設定）
+site: "https://agricultural-llc.github.io/web",
+base: "/web/",
+
+// Firebase Hosting/Vercel移行時は以下に変更
+site: "https://your-domain.com",  
+base: "/",
+```
 
 ### 2. Vercel（推奨）
 

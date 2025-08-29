@@ -20,10 +20,30 @@ This repository contains documentation for the Agricultural Corporation Website 
 
 ### Core Technologies
 - **Frontend Framework**: Astro (static site generator with Content Collections for blog)
-- **Hosting**: Firebase Hosting (low-cost with global CDN)
+- **Hosting**: Currently GitHub Pages → Future: Firebase Hosting (low-cost with global CDN)
 - **CDN/Security**: Cloudflare (free tier with DDoS protection)
 - **Content Management**: Markdown-based with Astro Content Collections
 - **Version Control**: GitHub
+
+### ⚠️ CRITICAL DEPLOYMENT CONFIGURATION
+
+**Current Status**: Deployed to GitHub Pages at `https://agricultural-llc.github.io/web/`
+
+**IMPORTANT**: The site is currently configured with `/web/` base path for GitHub Pages deployment. When migrating to Firebase Hosting, Vercel, or Netlify, you MUST:
+
+1. Update `astro.config.mjs`:
+```javascript
+// CURRENT (GitHub Pages)
+site: "https://agricultural-llc.github.io/web",
+base: "/web/",
+
+// AFTER MIGRATION (Firebase/Vercel/Netlify)
+site: "https://nogyo-llc.jp", // or your custom domain
+base: "/",
+```
+
+2. Rebuild the project after configuration change
+3. Update all internal links if hardcoded with `/web/` prefix
 
 ### Development Commands
 
