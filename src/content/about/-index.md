@@ -1,8 +1,70 @@
 ---
-title: Hey, I'm Jane Doe!
-description: this is meta description
-image: "@assets/profile/jane-doe.jpg"
+title: つながる
+description: 農家・JA・行政との連携で、農業の未来を共に創造
+image: "@assets/logo.png"
 draft: false
 ---
 
-Lorem ipsum dolor sit amet consectetur adipisicing elit. Corporis illum nesciunt commodi vel nisi ut alias excepturi ipsum, totam, labore tempora, odit ex iste tempore sed. Fugit voluptatibus perspiciatis assumenda nulla ad nihil, omnis vel, doloremque sit quam autem optio maiores, illum eius facilis et quo consectetur provident dolor similique! Enim voluptatem dicta expedita veritatis repellat dolorum impedit, provident quasi at.
+## 人・技術・農業をつなぐ
+
+農業合同会社は、農家の皆様、JA、行政機関と密接に連携し、地域農業の発展に貢献しています。私たちは単なる技術提供者ではなく、皆様と共に歩むパートナーとして、持続可能な農業の実現を目指しています。
+
+---
+
+## 農家の皆様との連携
+
+### 🌱 スマート農業技術の導入支援
+
+最新のIoT機器やドローンを活用した効率的な農業経営をサポートします。導入から運用まで、農家の皆様に寄り添った支援を行います。
+
+### 📚 実践的なノウハウ共有
+
+現場で培った知識と経験を共有し、農業経営の改善に貢献します。定期的な勉強会や個別相談を通じて、皆様の課題解決をお手伝いします。
+
+---
+
+## JAとの協働
+
+### 🏘️ 地域農業の活性化
+
+JAと連携し、地域全体の農業振興に取り組んでいます。生産者と消費者をつなぐ新たな取り組みを共同で推進しています。
+
+### 📡 情報共有プラットフォーム構築
+
+最新の農業技術や市場動向など、有益な情報を迅速に共有できる仕組みづくりを進めています。
+
+---
+
+## 行政との取り組み
+
+### 📋 政策提言・実証事業
+
+農業DXの推進に向けた政策提言や、実証事業への参画を通じて、地域農業の発展に貢献しています。
+
+### 💰 補助金・助成金活用支援
+
+各種補助制度の活用をサポートし、農家の皆様の負担軽減と新技術導入を促進します。
+
+---
+
+## 成功事例
+
+### 🚁 美唄市での取り組み
+
+美唄市の農家様と協力し、ドローンを活用した農薬散布により、作業時間を従来の1/3に短縮。労働負担の軽減と収益性の向上を実現しました。
+
+### 📊 データ活用による収量向上
+
+IoTセンサーによる土壌データの分析を通じて、最適な施肥タイミングを特定。収量を平均15%向上させることに成功しました。
+
+### 🤝 コミュニティ形成
+
+地域の若手農家を中心とした勉強会を定期開催。技術交流と情報共有により、地域全体の農業技術レベルの向上に貢献しています。
+
+---
+
+<div style="text-align: center; margin-top: 3rem;">
+  <strong>お問い合わせ</strong><br>
+  農家・JA・行政機関の皆様からのご相談をお待ちしています。<br>
+  まずはお気軽にご連絡ください。
+</div>

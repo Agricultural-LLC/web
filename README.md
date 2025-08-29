@@ -9,8 +9,8 @@
 
 - **フレームワーク**: Astro (Astrogonテンプレートベース)
 - **スタイリング**: Tailwind CSS
-- **ホスティング**: Firebase Hosting / Cloudflare Workers
-- **CDN/セキュリティ**: Cloudflare
+- **ホスティング**: GitHub Pages / Vercel / Netlify（無料）
+- **CDN/セキュリティ**: Cloudflare（将来的に）
 - **コンテンツ管理**: Markdown + Astro Content Collections
 
 ## プロジェクト構造
@@ -47,6 +47,27 @@ npm run build
 
 # フォーマット
 npm run format
+```
+
+## デプロイ方法
+
+### 1. GitHub Pages（推奨）
+
+1. GitHubリポジトリのSettings > Pagesで「GitHub Actions」を選択
+2. `astro.config.mjs`の`site`と`base`を実際のリポジトリ名に変更
+3. mainブランチにプッシュすると自動デプロイ
+
+### 2. Vercel（推奨）
+
+1. [Vercel](https://vercel.com)にGitHubアカウントでログイン
+2. リポジトリをインポート
+3. 自動デプロイ開始
+
+### 3. Netlify
+
+1. [Netlify](https://netlify.com)にGitHubアカウントでログイン
+2. リポジトリをインポート
+3. 自動デプロイ開始
 ```
 
 ## 主要機能
