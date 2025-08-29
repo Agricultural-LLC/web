@@ -1,5 +1,6 @@
 ---
 import Social from "@components/common/Social.astro";
+const baseURL = import.meta.env.BASE_URL;
 ---
 
 <footer class="glass container lg:my-4 lg:rounded-lg intersect:animate-fadeUp opacity-0">
@@ -7,7 +8,7 @@ import Social from "@components/common/Social.astro";
     <div class="text-center lg:col-6 lg:mb-0 lg:text-left">
       <ul>
         <li class="m-2 inline-block">
-          <a href="/terms">&copy; 農業合同会社 2025</a>
+          <span>&copy; 農業合同会社 2025</span>
         </li>
       </ul>
     </div>

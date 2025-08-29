@@ -3,29 +3,30 @@ import ThemeSwitcher from "@components/base/ThemeSwitcher.astro";
 import { IoSearch } from "react-icons/io5";
 
 const { pathname } = Astro.url;
+const baseURL = import.meta.env.BASE_URL;
 
 const stickyHeader = true;
 
 const menu = [
   {
     name: "ホーム",
-    url: "/",
+    url: baseURL,
   },
   {
     name: "つながる",
-    url: "/connect",
+    url: `${baseURL}connect/`,
   },
   {
     name: "発信する",
-    url: "/blog",
+    url: `${baseURL}blog/`,
   },
   {
     name: "事例を見る",
-    url: "/cases",
+    url: `${baseURL}cases/`,
   },
   {
     name: "相談する",
-    url: "/contact",
+    url: `${baseURL}contact/`,
   },
 ];
 ---
@@ -63,7 +64,7 @@ const menu = [
             <a
               href={item.url}
               class={`block p-2 font-secondary font-semibold text-txt-p transition dark:text-darkmode-txt-p lg:px-2 lg:py-3 ${
-                (pathname === `${item.url}/` || pathname === item.url) &&
+                (pathname === item.url || pathname === item.url.slice(0, -1)) &&
                 "active"
               }`}
             >
@@ -76,7 +77,7 @@ const menu = [
     <div class="order-1 ml-auto flex items-center md:order-2 lg:ml-0">
       <a
         class="mr-4 inline-block border-border text-xl text-txt-p dark:border-darkmode-border dark:text-darkmode-txt-p"
-        href="/search"
+        href={`${baseURL}search/`}
         aria-label="search"
       >
         <IoSearch />
