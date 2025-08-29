@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "@components/base/BaseLayout.astro";
 import Button from "@components/common/Button.astro";
+const baseURL = import.meta.env.BASE_URL;
 ---
 
 <BaseLayout title="ページが見つかりません">
@@ -18,7 +19,7 @@ import Button from "@components/common/Button.astro";
             お探しのページは移動または削除された可能性があります。
             お手数ですが、ホームページからお探しください。
           </p>
-          <Button link="/" label="ホームに戻る" hoverInvert/>
+          <Button link={baseURL} label="ホームに戻る" hoverInvert/>
         </div>
       </div>
     </div>
