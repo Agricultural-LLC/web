@@ -11,6 +11,7 @@ interface Props {
 }
 
 const { taxonomy, taxa, allTaxa }: Props = Astro.props;
+const baseURL = import.meta.env.BASE_URL;
 ---
 
 <BaseLayout title={upperHumanize(taxonomy)}>
@@ -25,7 +26,7 @@ const { taxonomy, taxa, allTaxa }: Props = Astro.props;
               <li class="m-3 inline-block">
                 <Button
                   label=`${upperHumanize(taxon)} (${count})`
-                  link={`/blog/${taxonomy}/${taxon}`}
+                  link={`${baseURL}blog/${taxonomy}/${taxon}/`}
                   hoverInvert
                 />
               </li>

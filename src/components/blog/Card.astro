@@ -24,6 +24,7 @@ const {
   tags,
   complexity,
 } = entry.data;
+const baseURL = import.meta.env.BASE_URL;
 
 const descriptionLength = 200;
 
@@ -37,7 +38,7 @@ const entryDescription =
 <div class="h-full m-2 pl-0 bg-gradient-to-br gradient rounded-lg">
   <div class="glass h-full rounded-lg p-4 intersect:animate-fadeUp opacity-0">
     <h4 class="mb-2">
-      <a href={`/blog/${entry.id}`}>
+      <a href={`${baseURL}blog/${entry.id}/`}>
         {title}
       </a>
     </h4>
@@ -46,7 +47,7 @@ const entryDescription =
         categories && (
           <li class="mr-0 inline-block">
             {categories.map((category: string, index: number) => (
-              <a href={`/blog/categories/${slugify(category)}`}>
+              <a href={`${baseURL}blog/categories/${slugify(category)}/`}>
                 <FaRegFolder className={"ml-2 -mt-1 inline-block"} />
                 {upperHumanize(category)}
               </a>
@@ -58,7 +59,7 @@ const entryDescription =
         <li class="mr-0 inline-block">
           {
             tags.map((tag: string, index: number) => (
-              <a href={`/blog/tags/${slugify(tag)}`}>
+              <a href={`${baseURL}blog/tags/${slugify(tag)}/`}>
                 <FaHashtag className={"ml-2 -mt-1 inline-block"} />
                 {lowerHumanize(tag)}
               </a>

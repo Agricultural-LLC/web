@@ -68,7 +68,6 @@ npm run format
 1. [Netlify](https://netlify.com)にGitHubアカウントでログイン
 2. リポジトリをインポート
 3. 自動デプロイ開始
-```
 
 ## 主要機能
 
