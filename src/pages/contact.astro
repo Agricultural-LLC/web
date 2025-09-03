@@ -84,12 +84,13 @@ import PageHeader from "@components/common/PageHeader.astro";
 
             <div>
               <label for="phone" class="block mb-2 font-medium">
-                電話番号
+                電話番号 <span class="text-red-500">*</span>
               </label>
               <input
                 type="tel"
                 id="phone"
                 name="電話番号"
+                required
                 class="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800"
                 placeholder="090-1234-5678"
               />

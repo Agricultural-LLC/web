@@ -4,8 +4,8 @@ import type { GenericEntry } from "@/types";
 export const sortByDate = (entries: GenericEntry[]): GenericEntry[] => {
   const sortedEntries = entries.sort(
     (a, b) => {
-      const dateA = a.data.date ? new Date(a.data.date).valueOf() : 0;
-      const dateB = b.data.date ? new Date(b.data.date).valueOf() : 0;
+      const dateA = 'date' in a.data && a.data.date ? new Date(a.data.date).valueOf() : 0;
+      const dateB = 'date' in b.data && b.data.date ? new Date(b.data.date).valueOf() : 0;
       return dateB - dateA;
     }
   );
@@ -23,8 +23,8 @@ export const sortByTitle = (entries: GenericEntry[]): GenericEntry[] => {
 // Sort by complexity
 export const sortByComplexity = (entries: GenericEntry[]): GenericEntry[] => {
   const sortedEntries = entries.sort((a, b) => {
-    const complexityA = a.data.complexity || 1;
-    const complexityB = b.data.complexity || 1;
+    const complexityA = 'complexity' in a.data ? a.data.complexity : 1;
+    const complexityB = 'complexity' in b.data ? b.data.complexity : 1;
     return complexityB - complexityA;
   });
   return sortedEntries;
