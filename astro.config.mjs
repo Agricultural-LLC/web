@@ -18,13 +18,18 @@ export default defineConfig({
   prefetch: {
     prefetchAll: true
   },
+  vite: {
+    optimizeDeps: {
+      include: ['fuse.js']
+    }
+  },
   // adapter: cloudflare(), // 本番デプロイ時に有効化
   integrations: [react(), sitemap(), tailwind({
     config: {
       applyBaseStyles: false
     }
   }), AutoImport({
-    imports: ["@components/common/Button.astro", "@shortcodes/Accordion", "@shortcodes/Notice", "@shortcodes/Youtube", "@shortcodes/Tabs", "@shortcodes/Tab"]
+    imports: ["@components/common/Button.astro"]
   }), mdx()],
   markdown: {
     remarkPlugins: [remarkToc, [remarkCollapse, {

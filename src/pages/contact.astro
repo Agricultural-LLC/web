@@ -84,12 +84,13 @@ import PageHeader from "@components/common/PageHeader.astro";
 
             <div>
               <label for="phone" class="block mb-2 font-medium">
-                電話番号
+                電話番号 <span class="text-red-500">*</span>
               </label>
               <input
                 type="tel"
                 id="phone"
                 name="電話番号"
+                required
                 class="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800"
                 placeholder="090-1234-5678"
               />
@@ -150,7 +151,7 @@ import PageHeader from "@components/common/PageHeader.astro";
                 type="file"
                 id="reference-file"
                 name="参考資料"
-                class="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary file:text-white hover:file:bg-opacity-90"
+                class="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-600 file:text-white hover:file:bg-blue-700"
                 accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif"
               />
               <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
@@ -168,48 +169,12 @@ import PageHeader from "@components/common/PageHeader.astro";
             <div class="text-center">
               <button
                 type="submit"
-                class="inline-block rounded-lg bg-primary px-8 py-4 font-medium text-white transition hover:bg-opacity-90"
+                class="inline-block rounded-lg bg-blue-600 px-8 py-4 font-medium text-white transition hover:bg-blue-700"
               >
                 送信する
               </button>
             </div>
           </form>
-
-          <div class="mt-12 border-t pt-8">
-            <h3 class="h4 mb-4">その他のお問い合わせ方法</h3>
-            
-            <div class="space-y-4">
-              <div>
-                <h4 class="font-medium mb-2">お電話でのお問い合わせ</h4>
-                <p class="text-lg">
-                  <a href="tel:0126-XX-XXXX" class="hover:text-primary">
-                    0126-XX-XXXX
-                  </a>
-                </p>
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                  受付時間: 平日 9:00〜17:00
-                </p>
-              </div>
-              
-              <div>
-                <h4 class="font-medium mb-2">メールでのお問い合わせ</h4>
-                <p>
-                  <a href="mailto:info@nogyo-llc.jp" class="hover:text-primary">
-                    info@nogyo-llc.jp
-                  </a>
-                </p>
-              </div>
-              
-              <div>
-                <h4 class="font-medium mb-2">所在地</h4>
-                <p>
-                  〒072-0000<br>
-                  北海道美唄市〇〇町1-2-3
-                </p>
-              </div>
-            </div>
-          </div>
-          
         </div>
       </div>
     </div>

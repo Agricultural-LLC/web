@@ -1,5 +1,4 @@
 ---
-import Breadcrumbs from "@components/common/Breadcrumbs.astro";
 import { upperHumanize } from "@lib/textConverter";
 
 interface Props {
@@ -10,13 +9,14 @@ interface Props {
 const { title = "", description }: Props = Astro.props;
 ---
 
-<section class="flex justify-center">
-  <div class="container text-center m-2">
-    <div class="rounded-lg p-0 bg-gradient-to-t gradient">
-      <div class="rounded-lg glass px-8 py-6 intersect:animate-fadeDown opacity-0 intersect-no-queue">
-        <h1 set:text={upperHumanize(title)} />
-        {description && <p class="mt-2 text-lg opacity-80">{description}</p>}
-        <Breadcrumbs className="mt-4" />
+<section class="section-sm">
+  <div class="container">
+    <div class="row justify-center">
+      <div class="md:col-10 lg:col-8">
+        <div class="glass rounded-lg p-8 text-center intersect:animate-fadeDown opacity-0 intersect-no-queue">
+          <h1 set:text={upperHumanize(title)} />
+          {description && <p class="mt-4 text-lg opacity-80">{description}</p>}
+        </div>
       </div>
     </div>
   </div>

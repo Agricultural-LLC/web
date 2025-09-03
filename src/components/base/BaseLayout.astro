@@ -2,7 +2,6 @@
 import { plainify } from "@lib/textConverter";
 import Footer from "@components/base/Footer.astro";
 import Header from "@components/base/Header.astro";
-import ObserverScript from "@components/base/ObserverScript.astro";
 import "@/styles/main.scss";
 import { ClientRouter } from "astro:transitions";
 import Background from "@/components/base/Background.astro";
@@ -127,11 +126,13 @@ const baseUrl = "https://nogyo-llc.jp";
       crossorigin="anonymous"
     />
     <script
+      is:inline
       defer
       src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.js"
       integrity="sha384-Rma6DA2IPUwhNxmrB/7S3Tno0YY7sFu9WSYMCuulLhIqYSGZ2gKCJWIqhBWqMQfh"
       crossorigin="anonymous"></script>
     <script
+      is:inline
       defer
       src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/contrib/auto-render.min.js"
       integrity="sha384-hCXGrW6PitJEwbkoStFjeJxv+fSOOQKOPbJxSfM6G5sWZjAyWhXiTIIAmQqnlLlh"

@@ -89,3 +89,39 @@ const stars = Array.from({ length: numStars }).map(() => ({
     opacity: 1;
   }
 </style>
+
+<!-- Natural Background with Subtle Overlay -->
+<style>
+  /* Subtle background pattern that doesn't interfere with content */
+  html::before {
+    content: "";
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+      radial-gradient(circle at 20% 80%, rgba(34, 197, 94, 0.03) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.03) 0%, transparent 50%),
+      radial-gradient(circle at 40% 40%, rgba(34, 197, 94, 0.02) 0%, transparent 50%);
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  /* Dark mode adjustments */
+  html.dark::before {
+    background: 
+      radial-gradient(circle at 20% 80%, rgba(34, 197, 94, 0.05) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+      radial-gradient(circle at 40% 40%, rgba(34, 197, 94, 0.03) 0%, transparent 50%);
+  }
+
+  /* Ensure body has natural background */
+  body {
+    background: transparent;
+  }
+
+  /* Main content area background */
+  #main-content {
+    background: transparent;
+  }
+</style>

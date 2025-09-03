@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This repository contains documentation for the Agricultural Corporation Website Renewal Project (農業合同会社 Webサイトリニューアルプロジェクト). The project aims to rebuild the company's website from Google Sites to a modern static site architecture to solve SEO visibility issues and enhance information dissemination about agricultural DX (Digital Transformation).
+This repository contains the production code for the Agricultural Corporation Website (農業合同会社 Webサイト). The project successfully migrated from Google Sites to a modern static site architecture, achieving strong SEO capabilities and enhanced information dissemination about agricultural DX (Digital Transformation).
 
 ## Project Context
 
@@ -13,63 +13,174 @@ This repository contains documentation for the Agricultural Corporation Website 
   - 新藤 洋介 (Business Executive)
   - 藤井 洋平 (Representative Director, Agricultural DX specialist)
   - 寺田 康佑 (Technical Advisor)
-- **Goal**: Create a "platform connecting people, technology, and agriculture" with strong SEO capabilities
-- **Budget Constraint**: Near-zero monthly operational costs (domain fees only ~¥1,500/year)
+- **Mission**: A "platform connecting people, technology, and agriculture"
+- **Budget**: Near-zero monthly operational costs (GitHub Pages hosting is free)
 
-## Technology Stack
+## Current Technology Stack
 
 ### Core Technologies
-- **Frontend Framework**: Astro (static site generator with Content Collections for blog)
-- **Hosting**: Firebase Hosting (low-cost with global CDN)
-- **CDN/Security**: Cloudflare (free tier with DDoS protection)
+- **Frontend Framework**: Astro v5.12.8 (static site generator with Content Collections)
+- **Styling**: Tailwind CSS
+- **UI Components**: React (for interactive components)
+- **Hosting**: GitHub Pages (free, reliable, with GitHub Actions CI/CD)
+- **Search**: Fuse.js (client-side fuzzy search)
+- **Forms**: SSGform (serverless form handling)
 - **Content Management**: Markdown-based with Astro Content Collections
 - **Version Control**: GitHub
 
 ### Development Commands
 
-Since this is currently a documentation repository without code implementation, common commands will be added as the project progresses. Expected commands for an Astro project:
-
 ```bash
 # Install dependencies
 npm install
 
-# Start development server
+# Start development server (http://localhost:4321/web/)
 npm run dev
 
 # Build for production
 npm run build
 
-# Deploy to Firebase
-firebase deploy
+# Preview production build
+npm run preview
+
+# Format code
+npm run format
+
+# Type checking
+npx tsc --noEmit
+
+# Clean cache (if needed)
+rm -rf node_modules/.vite .astro
 ```
 
 ## Site Architecture
 
-The website consists of 5 main pages:
-1. **Homepage** - Vision message, company overview, activity highlights
-2. **Connect Page** (つながる) - Showcases activities with farmers, JA, and government
-3. **Blog Page** (発信する) - Content categories: Beginners, Practical Know-how, Success Stories, Future of Agriculture
-4. **Case Studies Page** (事例を見る) - Regional success stories with galleries
-5. **Contact Page** (相談する) - Contact form with CAPTCHA
-
-## Key Requirements
-
-- **Performance**: Page load under 0.5 seconds, PageSpeed Insights score 95+
-- **SEO**: Achieve top regional search rankings within 3-6 months
-- **Blog Features**: WYSIWYG editor, auto-save, draft functionality, Note.com-equivalent UX
-- **Security**: Cloudflare DDoS protection, SSL/TLS, Firebase security rules
+The website consists of the following pages:
+1. **Homepage** (`/`) - Vision message, company overview, activity highlights
+2. **About Page** (`/about/`) - Company information and leadership profiles
+3. **Connect Page** (`/connect/`) - Activities with farmers, JA, and government
+4. **Blog** (`/blog/`) - Agricultural DX information and insights
+5. **Case Studies** (`/cases/`) - Regional success stories
+6. **Contact Page** (`/contact/`) - Contact form with validation
+7. **Search** (`/search/`) - Full-text search across all content
 
 ## Development Guidelines
 
-- Focus on static site generation for optimal performance and minimal hosting costs
-- Prioritize SEO optimization in all implementations
-- Ensure mobile-responsive design
-- Implement structured data markup for better search visibility
-- Keep operational complexity minimal for easy maintenance
+### Code Style
+- Use TypeScript for type safety
+- Follow existing component patterns
+- Maintain consistent Tailwind CSS usage
+- Keep components modular and reusable
+- NO comments unless specifically requested
 
-## Future Expansions
+### Performance
+- Page load under 0.5 seconds
+- PageSpeed Insights score 95+
+- Optimize images using Astro's Image component
+- Minimize JavaScript bundle size
 
-- Forum functionality
-- AI-powered blog automation
-- Multi-language support (initially Japanese only)
-- Social media integration (Note article import)
+### SEO Optimization
+- Use semantic HTML
+- Implement structured data markup
+- Ensure proper meta tags
+- Maintain clean URL structure
+- Optimize for regional search rankings
+
+### Content Management
+- Blog posts go in `src/content/blog/`
+- Use frontmatter for metadata
+- Follow existing Markdown patterns
+- Images should be optimized before upload
+
+## File Structure
+
+```
+src/
+├── assets/        # Images and static assets
+│   ├── agriculture/  # Agricultural images
+│   └── backgrounds/  # Background patterns
+├── components/    # Astro/React components
+│   ├── base/      # Layout components
+│   ├── blog/      # Blog-specific components
+│   ├── common/    # Shared components
+│   ├── home/      # Homepage components
+│   └── search/    # Search functionality
+├── content/       # Markdown content
+│   ├── about/     # About page content
+│   ├── blog/      # Blog posts
+│   └── home/      # Homepage content
+├── lib/           # Utility functions
+├── pages/         # Page routes
+├── styles/        # Global styles
+└── types/         # TypeScript definitions
+```
+
+## Recent Updates & Maintenance
+
+### Completed Optimizations
+- ✅ Unified logo usage across all pages
+- ✅ Standardized CTA sections
+- ✅ Fixed search component hydration issues
+- ✅ Resolved TypeScript configuration
+- ✅ Removed unused components and assets
+- ✅ Improved form accessibility
+
+### Common Issues & Solutions
+
+**Vite Optimization Errors:**
+```bash
+rm -rf node_modules/.vite .astro
+npm install
+npm run dev
+```
+
+**Search Component Issues:**
+- Ensure Fuse.js is included in Vite optimizeDeps
+- Use .tsx extension in imports explicitly
+
+**TypeScript Errors:**
+- Run `npx tsc --noEmit` to check for type errors
+- Ensure tsconfig.json extends Astro's strict config
+
+## Deployment
+
+### GitHub Pages (Production)
+- Automatic deployment on push to `main` branch
+- GitHub Actions workflow handles build and deploy
+- Site available at: https://agricultural-llc.github.io/web/
+
+### Branch Strategy
+- `main` - Production (auto-deploys)
+- `dev` - Development/staging
+- `feature/*` - Feature development
+
+## Testing Checklist
+
+Before deploying:
+- [ ] Run `npm run build` successfully
+- [ ] Test all pages locally
+- [ ] Verify search functionality
+- [ ] Test contact form
+- [ ] Check mobile responsiveness
+- [ ] Validate TypeScript (no errors)
+- [ ] PageSpeed Insights score > 95
+
+## Important Notes
+
+- **Always** test builds locally before pushing to main
+- **Never** commit sensitive information or API keys
+- **Maintain** SEO best practices in all updates
+- **Optimize** images before adding to the repository
+- **Follow** the existing code patterns and conventions
+
+## Support & Contact
+
+For technical questions about this codebase:
+- Review this document first
+- Check existing code patterns
+- Test locally before deploying
+- Use semantic commit messages
+
+---
+
+🤖 This codebase is maintained with Claude Code assistance.

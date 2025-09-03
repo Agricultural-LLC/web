@@ -1,5 +1,5 @@
-import { defineCollection, z } from "astro:content";
 import { glob } from "astro/loaders";
+import { defineCollection, z } from "astro:content";
 
 // May also need to update /src/types/index.d.ts when updating this file
 // When updating the set of searchable collections, update collectionList in /src/pages/search.astro
@@ -52,17 +52,9 @@ const home = defineCollection({
     }),
 });
 
-const project = defineCollection({
-  loader: glob({ pattern: "*.{md,mdx}", base: "./src/content/project" }),
-  schema: searchable.extend({
-    date: z.date().optional(),
-  }),
-});
-
 // Export collections
 export const collections = {
   about,
   blog,
   home,
-  project,
 };

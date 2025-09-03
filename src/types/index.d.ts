@@ -1,5 +1,5 @@
-import type { CollectionEntry, CollectionKey } from "astro:content";
 import type { MarkdownHeading } from "astro";
+import type { CollectionEntry, CollectionKey } from "astro:content";
 
 export type GenericEntry = CollectionEntry<CollectionKey>;
 
@@ -24,24 +24,36 @@ export type SearchableEntry =
 export type SocialLinks = {
   discord?: string;
   email?: string;
-  facebook?: string;
   github?: string;
-  instagram?: string;
-  linkedIn?: string;
-  pinterest?: string;
-  tiktok?: string;
-  website?: string;
-  youtube?: string;
-}
-
-export type EntryReference = {
-  id: string;
-  collection: string;
+  linkedin?: string;
+  twitter?: string;
 };
 
-// Define heading hierarchy so that we can generate ToC
+export type Author = {
+  name: string;
+  image?: string;
+  imageAlt?: string;
+  social?: SocialLinks;
+};
+
+export type Project = {
+  title: string;
+  description?: string;
+  image?: string;
+  imageAlt?: string;
+  link?: string;
+};
+
+export type Button = {
+  label: string;
+  link?: string;
+  newtab?: boolean;
+  hoverInvert?: boolean;
+  color?: string;
+};
+
 export interface HeadingHierarchy extends MarkdownHeading {
-  subheadings: HeadingHierarchy[];
+  children?: HeadingHierarchy[];
 }
 
 export type MenuItem = {
@@ -62,4 +74,6 @@ export type MenuItemWithDraft = {
 export type SideNavMenuProps = {
   items: MenuItemWithDraft[];
   level: number;
+  currentPage: string;
+  className?: string;
 };

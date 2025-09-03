@@ -2,30 +2,30 @@
 import { formatDate } from "@lib/formatDate";
 import readingTime from "@lib/readingTime";
 import {
-  lowerHumanize,
-  upperHumanize,
-  markdownify,
-  slugify,
+lowerHumanize,
+markdownify,
+slugify,
+upperHumanize,
 } from "@lib/textConverter";
 
+import type { GenericEntry } from "@/types";
 import { Image } from "astro:assets";
 import {
-  FaRegCalendarAlt,
-  FaRegFolder,
-  FaRegUserCircle,
-  FaHashtag,
-  FaRegClock,
+FaHashtag,
+FaRegCalendarAlt,
+FaRegClock,
+FaRegFolder,
+FaRegUserCircle,
 } from "react-icons/fa";
-import type { GenericEntry, EntryReference } from "@/types";
 
 interface EntryData {
   title: string;
   image?: string;
   imageAlt?: string;
-  author?: EntryReference;
-  date?: string;
-  pubDate?: string;
-  modDate?: string;
+  author?: string;
+  date?: Date;
+  pubDate?: Date;
+  modDate?: Date;
   categories?: string[];
   tags?: string[];
   complexity?: number;
@@ -49,6 +49,7 @@ const {
   entry,
   showInfo = true,
   showImage = false,
+  showTitle = false,
   showAuthor = false,
   showDate = false,
   showPubDate = false,
@@ -95,13 +96,13 @@ tags?.sort((a: string, b: string) => a.localeCompare(b));
   {
     showInfo && (
       <div class="glass mb-8 p-4 rounded-lg intersect:animate-fade opacity-0 intersect-no-queue">
-        <h1 set:html={markdownify(title)} class="mb-4" />
+        {showTitle && <h1 set:html={markdownify(title)} class="mb-4" />}
         <ul>
           {author && showAuthor && (
             <li class="mr-1 inline-block">
-              <a href={`/authors/${slugify(author.id)}`}>
+              <a href={`/authors/${slugify(author)}`}>
                 <FaRegUserCircle className={"-mt-1 inline-block"} />
-                {upperHumanize(author.id)}
+                {upperHumanize(author)}
               </a>
             </li>
           )}
@@ -125,10 +126,10 @@ tags?.sort((a: string, b: string) => a.localeCompare(b));
               {formatDate(modDate)}
             </li>
           )}
-          {complexity && complexity > 0 && showReadingTime && (
+          {complexity && complexity > 0 && showReadingTime && entry.body && (
             <li class="mr-1 inline-block">
               <FaRegClock className={"ml-2 -mt-1 inline-block"} />
-              {readingTime(entry.body!, complexity)}
+              <span>{readingTime(entry.body, complexity)} min read</span>
             </li>
           )}
           {categories && showCategories && (

@@ -1,6 +1,9 @@
 ---
 import BaseLayout from "@components/base/BaseLayout.astro";
+import Button from "@components/common/Button.astro";
 import PageHeader from "@components/common/PageHeader.astro";
+
+const baseURL = import.meta.env.BASE_URL;
 ---
 
 <BaseLayout title="会社概要 - 農業合同会社">
@@ -18,7 +21,7 @@ import PageHeader from "@components/common/PageHeader.astro";
               「人・技術・農業をつなぎ、未来農業を創る」
             </p>
             <p>
-              農業合同会社は、最新技術と農業現場の知見を融合させ、持続可能な農業の未来を実現します。
+              農業合同会社は、最新技術と農業現場の知見を融合させ、持続可能な農業の未来を実現します。<br>
               私たちは単なる技術提供者ではなく、農家の皆様と共に歩むパートナーとして、
               日本農業の発展に貢献していきます。
             </p>
@@ -75,14 +78,25 @@ import PageHeader from "@components/common/PageHeader.astro";
               <div>
                 <h3 class="h4 mb-4">藤井 洋平（代表社員）</h3>
                 <div class="bg-white/5 rounded-lg p-6">
-                  <p class="mb-4">
-                    半導体業界で17年間のリーダー・マネジメント経験、14年間の新規事業開発経験を持つ。
-                    農業DX・ドローン・スマートシティ分野のエキスパートとして、
-                    自治体・企業向けソリューションの企画・開発・運用を手がける。
-                  </p>
+                  <div class="flex flex-col md:flex-row gap-6 mb-4">
+                    <div class="flex-shrink-0">
+                      <img 
+                        src={`${baseURL}profile1.jpeg`}
+                        alt="藤井 洋平（代表社員）" 
+                        class="w-32 h-32 md:w-40 md:h-40 object-cover rounded-lg shadow-lg"
+                      />
+                    </div>
+                    <div class="flex-1">
+                      <p>
+                        半導体業界で17年間のリーダー・マネジメント経験、年間の新規事業開発経験を持つ。<br>
+                        農業DX・ドローン・スマートシティ分野のエキスパートとして、
+                        自治体・企業向けソリューションの企画・開発・運用を手がける。
+                      </p>
+                    </div>
+                  </div>
                   <div class="mt-4">
                     <h4 class="font-medium mb-2">専門分野</h4>
-                    <ul class="space-y-1 text-sm">
+                    <ul class="space-y-1 text-base">
                       <li>• 農業DXコンサルティング</li>
                       <li>• ドローン活用技術</li>
                       <li>• スマートシティソリューション</li>
@@ -96,14 +110,25 @@ import PageHeader from "@components/common/PageHeader.astro";
               <div>
                 <h3 class="h4 mb-4">新藤 洋介（業務執行社員）</h3>
                 <div class="bg-white/5 rounded-lg p-6">
-                  <p class="mb-4">
-                    スタートアップの市場開拓スペシャリスト。
-                    マーケティングとコミュニティ構築の豊富な経験を活かし、
-                    農業分野における新たな価値創造とエコシステム形成を推進。
-                  </p>
+                  <div class="flex flex-col md:flex-row gap-6 mb-4">
+                    <div class="flex-shrink-0">
+                      <img 
+                        src={`${baseURL}profile2.jpeg`}
+                        alt="新藤 洋介（業務執行社員）" 
+                        class="w-32 h-32 md:w-40 md:h-40 object-cover rounded-lg shadow-lg"
+                      />
+                    </div>
+                    <div class="flex-1">
+                      <p>
+                        スタートアップの市場開拓スペシャリスト。<br>
+                        マーケティングとコミュニティ構築の豊富な経験を活かし、<br>
+                        農業分野における新たな価値創造とエコシステム形成を推進。
+                      </p>
+                    </div>
+                  </div>
                   <div class="mt-4">
                     <h4 class="font-medium mb-2">専門分野</h4>
-                    <ul class="space-y-1 text-sm">
+                    <ul class="space-y-1 text-base">
                       <li>• スタートアップ市場開拓</li>
                       <li>• マーケティング戦略</li>
                       <li>• コミュニティ構築</li>
@@ -123,7 +148,7 @@ import PageHeader from "@components/common/PageHeader.astro";
               <div>
                 <h3 class="h5 mb-3 text-primary">1. テクノロジーで農業を革新</h3>
                 <p>
-                  IoT、AI、ドローンなどの最新技術を農業現場に導入し、
+                  IoT、AI、ドローンなどの最新技術を農業現場に導入し、<br>
                   生産性向上と労働負担軽減を実現します。
                 </p>
               </div>
@@ -185,15 +210,17 @@ import PageHeader from "@components/common/PageHeader.astro";
             </div>
           </div>
 
-          <!-- CTA -->
-          <div class="text-center">
+          <!-- お問い合わせセクション -->
+          <div class="glass rounded-lg p-8 text-center">
             <h2 class="h3 mb-4">農業の未来を一緒に創りませんか？</h2>
-            <p class="mb-8">
+            <p class="mb-6">
               まずは無料相談から。お気軽にお問い合わせください。
             </p>
-            <a href={`${import.meta.env.BASE_URL}contact/`} class="inline-block rounded-lg bg-primary px-8 py-4 font-medium text-white transition hover:bg-opacity-90">
-              お問い合わせはこちら
-            </a>
+            <Button 
+              link={`${baseURL}contact/`} 
+              label="お問い合わせはこちら" 
+              hoverInvert
+            />
           </div>
           
         </div>
