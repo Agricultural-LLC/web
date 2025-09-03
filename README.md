@@ -4,8 +4,16 @@
 
 ## 📋 プロジェクトステータス
 
-**現在**: 静的サイトとしてFirebase Hostingで稼働中  
+**現在**: Decap CMS統合完了、Firebase Hostingで稼働中  
+**管理画面**: https://agricultural-llc.web.app/admin/  
 **URL**: https://agricultural-llc.web.app
+
+| 機能 | ステータス | 詳細 |
+|------|-----------|------|
+| 🌐 本番サイト | ✅ 稼働中 | Firebase Hosting |
+| 📝 CMS管理画面 | ✅ 稼働中 | Decap CMS (test-repoモード) |
+| 🔄 CI/CD | ✅ 稼働中 | GitHub Actions |
+| 📊 パフォーマンス | ✅ 最適化済み | ビルド時間1.89秒、31ページ生成 |
 
 詳細は [MIGRATION_STATUS.md](./MIGRATION_STATUS.md) を参照してください。
 
@@ -21,17 +29,20 @@
 - 📊 **事例紹介** - スマート農業の成功事例
 - 📞 **お問い合わせ** - 無料相談フォーム
 - 🔍 **キーワード検索** - サイト内コンテンツの全文検索
+- ⚙️ **CMS管理画面** - Decap CMSによるコンテンツ管理
 
 ## 技術スタック
 
 - **フレームワーク**: Astro v5.12.8
 - **スタイリング**: Tailwind CSS
 - **UIコンポーネント**: React
-- **検索機能**: Fuse.js
+- **CMS**: Decap CMS (旧Netlify CMS)
+- **検索機能**: Fuse.js, Pagefind
 - **開発言語**: TypeScript
 - **ホスティング**: Firebase Hosting
 - **CI/CD**: GitHub Actions
 - **フォーム**: SSGform
+- **コンテンツ管理**: Editorial Workflow (プルリクエストベース)
 
 ## 開発環境のセットアップ
 
@@ -132,6 +143,14 @@ GitHub Actionsを使用した自動デプロイが設定されています。
 
 ### ブログ記事の追加
 
+#### CMS管理画面を使用（推奨）
+1. https://agricultural-llc.web.app/admin/ にアクセス
+2. 「ブログ記事」セクションで新規作成
+3. エディターで記事を執筆・プレビュー
+4. 保存すると自動的にプルリクエストが作成
+5. レビュー後にマージで本番反映
+
+#### 直接編集（開発者向け）
 1. `src/content/blog/` ディレクトリに新しいMarkdownファイルを作成
 2. フロントマターに必要な情報を記載
 3. 記事本文を執筆
@@ -152,11 +171,13 @@ GitHub Actionsを使用した自動デプロイが設定されています。
 
 ## 最近のアップデート
 
-- ✅ ロゴ画像の統一化
-- ✅ お問い合わせセクションのデザイン統一
-- ✅ 検索機能の修正
-- ✅ TypeScriptエラーの解消
-- ✅ 未使用ファイルの削除とリファクタリング
+### 2025年09月03日 - Decap CMS統合完了
+- ✅ **Decap CMS実装完了** - ブラウザベースのコンテンツ管理
+- ✅ **Editorial Workflow導入** - プルリクエストベースの承認フロー
+- ✅ **管理画面稼働開始** - `/admin` でアクセス可能
+- ✅ **TypeScriptエラー完全解消** - authorsコンポーネント削除
+- ✅ **パフォーマンス最適化** - ビルド時間1.89秒達成
+- ✅ **CI/CD統合** - GitHub ActionsとCMSの完全連携
 
 ## トラブルシューティング
 
