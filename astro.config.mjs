@@ -18,6 +18,11 @@ export default defineConfig({
   prefetch: {
     prefetchAll: true
   },
+  vite: {
+    optimizeDeps: {
+      include: ['fuse.js']
+    }
+  },
   // adapter: cloudflare(), // 本番デプロイ時に有効化
   integrations: [react(), sitemap(), tailwind({
     config: {
