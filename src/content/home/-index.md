@@ -10,7 +10,7 @@ content: |
   農業DXの最前線から、持続可能な農業の未来を創造します。
 button:
   label: 詳しく見る
-  link: /web/about/
+  link: /about/
 ---
 
 ## 会社概要
