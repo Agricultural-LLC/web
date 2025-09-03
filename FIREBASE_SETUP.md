@@ -1,39 +1,46 @@
-# Firebase Hosting & CMS Setup Guide
+# Firebase Hosting移行完了 & CMSシステム設定ガイド
 
-このガイドでは、農業合同会社WebサイトをGitHub PagesからFirebase Hostingに移行し、CMSシステムをセットアップする手順を説明します。
+このガイドでは、農業合同会社WebサイトのFirebase Hosting移行状況と、今後のCMSシステム実装について説明します。
 
-## 🚀 概要
+## 🚀 現在のステータス
 
-- **GitHub Pages** → **Firebase Hosting** への移行
-- ブラウザベースCMS機能の追加
-- GitHub API連携による記事管理
-- TipTapエディタによるリッチテキスト編集
-- 自動デプロイ機能
+### ✅ 実装済み機能
+- **Firebase Hosting**（静的サイト）✅ 完了
+- **GitHub Actions**自動デプロイ ✅ 完了  
+- **31ページ**の静的コンテンツ ✅ 完了
 
-## 📋 必要な環境変数
+### ❌ 未実装機能（CMSシステム）
+- **ブラウザベースのエディタ** ❌ 静的ビルド制約により削除
+- **管理画面**（/admin/*） ❌ 削除済み
+- **APIエンドポイント** ❌ 削除済み
+- **リアルタイム記事更新** ❌ 未実装
 
-以下の環境変数をGitHub Secretsに設定してください：
+**⚠️ 重要**: CMSシステムは静的ビルドの制約により、現在実装されていません。
+Firebase Functionsを使用した実装を検討中です。
 
-### Firebase設定
+## 📋 環境変数の状況
+
+### ✅ 現在使用中（Firebase Hosting用）
 ```
 FIREBASE_PROJECT_ID=agricultural-llc
-FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
-FIREBASE_CLIENT_EMAIL=firebase-adminsdk-fbsvc@agricultural-llc.iam.gserviceaccount.com
-FIREBASE_SERVICE_ACCOUNT_AGRICULTURAL_LLC=[Firebase Service Account JSON全体]
+FIREBASE_SERVICE_ACCOUNT_AGRICULTURAL_LLC=[Firebase Service Account JSON]
 ```
 
-### GitHub API設定
-```
-GITHUB_PAT=github_pat_xxxxxxxxxxxx  # Personal Access Token (repo権限)
-GITHUB_OWNER=Agricultural-LLC
-GITHUB_REPO=web
+### ⏸️ 設定済み（CMS実装時に使用予定）
+以下の環境変数はGitHub Secretsに設定済みですが、現在は未使用です：
+
+```bash
+# GitHub API連携用（CMSシステム実装時に使用）
+GH_PAT=github_pat_xxxxxxxxxxxx
+GH_OWNER=Agricultural-LLC  
+GH_REPO=web
+
+# API認証用（CMSシステム実装時に使用）
+API_KEY=[32文字のランダム文字列]
+JWT_SECRET=[32文字のランダム文字列]
 ```
 
-### セキュリティ設定
-```
-API_KEY=your_secure_api_key_here      # 32文字以上のランダム文字列
-JWT_SECRET=your_jwt_secret_here       # 32文字以上のランダム文字列
-```
+**注意**: 現在の静的サイトではこれらの環境変数は使用されていません。
 
 ## 🔧 セットアップ手順
 
@@ -90,27 +97,40 @@ PUBLIC_SITE_URL=http://localhost:4321
 PUBLIC_API_URL=http://localhost:4321/api
 ```
 
-## 🖥️ 使用方法
+## 🖥️ 現在の使用方法
 
-### 管理画面アクセス
+### ❌ 管理画面（利用不可）
 
-1. **本番環境**: https://agricultural-llc.web.app/admin
-2. **ローカル**: http://localhost:4321/admin
+~~管理画面は現在削除されています~~:
+- ~~https://agricultural-llc.web.app/admin~~ （404エラー）
+- 静的ビルド制約により機能停止
 
-### 初期ログイン情報
+### ✅ 現在の記事管理フロー（Git直接編集）
 
-- **ユーザー名**: `admin`
-- **パスワード**: `admin123`
+1. **ローカルで編集**
+   ```bash
+   # ブログ記事を編集
+   code src/content/blog/記事名.md
+   ```
 
-⚠️ **重要**: 本番環境では必ずパスワードを変更してください。
+2. **コミット&プッシュ**
+   ```bash
+   git add .
+   git commit -m "content: 記事を更新"
+   git push origin main
+   ```
 
-### 記事管理フロー
+3. **自動デプロイ**
+   - GitHub Actionsが自動実行
+   - 約2-3分でFirebase Hostingに反映
 
-1. `/admin/login` - ログイン
-2. `/admin` - ダッシュボード（記事一覧）
-3. `/admin/posts/new` - 新規記事作成
-4. `/admin/posts/edit/[slug]` - 記事編集
-5. 保存 → GitHub Repository更新 → 自動デプロイ
+### ⏳ 今後実装予定（CMSシステム）
+
+Firebase Functions実装後に以下が利用可能になります：
+- ブラウザベース記事編集
+- 管理画面ダッシュボード
+- リアルタイムプレビュー
+- 画像アップロード機能
 
 ## 🔄 デプロイフロー
 
@@ -121,19 +141,21 @@ PUBLIC_API_URL=http://localhost:4321/api
 
 ## 📱 機能一覧
 
-### CMS機能
-- ✅ 記事作成・編集・削除
-- ✅ リッチテキストエディタ（TipTap）
-- ✅ 画像アップロード
-- ✅ 下書き機能
-- ✅ メタデータ管理（タグ、カテゴリ等）
+### ✅ 現在利用可能な機能
+- ✅ **Firebase Hosting** - 静的サイトホスティング
+- ✅ **自動デプロイ** - GitHub Actions CI/CD
+- ✅ **静的サイト生成** - 31ページの高速表示
+- ✅ **SEO最適化** - メタタグ、構造化データ
+- ✅ **レスポンシブデザイン** - モバイル対応
 
-### システム機能
-- ✅ 認証システム
-- ✅ API endpoints
-- ✅ GitHub連携
-- ✅ Firebase Hosting
-- ✅ 自動デプロイ
+### ❌ 現在利用不可（今後実装予定）
+- ❌ **管理画面** - ブラウザベース編集画面
+- ❌ **リッチテキストエディタ** - TipTapエディタ
+- ❌ **画像アップロード** - ドラッグ&ドロップ
+- ❌ **下書き機能** - プレビュー機能
+- ❌ **認証システム** - ログイン・権限管理
+- ❌ **APIエンドポイント** - CRUD操作
+- ❌ **GitHub連携** - 自動コミット機能
 
 ## 🛡️ セキュリティ
 

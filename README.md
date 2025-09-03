@@ -2,6 +2,13 @@
 
 人・技術・農業をつなぐプラットフォーム
 
+## 📋 プロジェクトステータス
+
+**現在**: 静的サイトとしてFirebase Hostingで稼働中  
+**URL**: https://agricultural-llc.web.app
+
+詳細は [MIGRATION_STATUS.md](./MIGRATION_STATUS.md) を参照してください。
+
 ## 概要
 
 農業合同会社の公式Webサイトです。農業DXの最前線から、持続可能な農業の未来を創造します。
@@ -22,7 +29,8 @@
 - **UIコンポーネント**: React
 - **検索機能**: Fuse.js
 - **開発言語**: TypeScript
-- **ホスティング**: GitHub Pages
+- **ホスティング**: Firebase Hosting
+- **CI/CD**: GitHub Actions
 - **フォーム**: SSGform
 
 ## 開発環境のセットアップ
@@ -103,10 +111,12 @@ src/
 
 ## デプロイ
 
-### GitHub Pages（現在使用中）
+### Firebase Hosting（現在使用中）
 
 GitHub Actionsを使用した自動デプロイが設定されています。
-`main`ブランチへのプッシュで自動的にGitHub Pagesにデプロイされます。
+`main`ブランチへのプッシュで自動的にFirebase Hostingにデプロイされます。
+
+**本番URL**: https://agricultural-llc.web.app
 
 ### 開発ブランチ戦略
 
@@ -173,7 +183,7 @@ npx tsc --noEmit
 - **代表社員**: 藤井 洋平
 - **業務執行社員**: 新藤 洋介
 - **所在地**: 〒060-0807 北海道札幌市北区北7条西4丁目1番地1
-- **ウェブサイト**: https://agricultural-llc.github.io/web/
+- **ウェブサイト**: https://agricultural-llc.web.app
 
 ---
 
