@@ -4,8 +4,8 @@ import type { GenericEntry } from "@/types";
 export const sortByDate = (entries: GenericEntry[]): GenericEntry[] => {
   const sortedEntries = entries.sort(
     (a, b) => {
-      const dateA = 'date' in a.data && a.data.date ? new Date(a.data.date).valueOf() : 0;
-      const dateB = 'date' in b.data && b.data.date ? new Date(b.data.date).valueOf() : 0;
+      const dateA = 'date' in (a as any).data && (a as any).data.date ? new Date((a as any).data.date).valueOf() : 0;
+      const dateB = 'date' in (b as any).data && (b as any).data.date ? new Date((b as any).data.date).valueOf() : 0;
       return dateB - dateA;
     }
   );
@@ -15,7 +15,7 @@ export const sortByDate = (entries: GenericEntry[]): GenericEntry[] => {
 // Sort by title
 export const sortByTitle = (entries: GenericEntry[]): GenericEntry[] => {
   const sortedEntries = entries.sort((a, b) =>
-    a.data.title.localeCompare(b.data.title)
+    (a as any).data.title.localeCompare((b as any).data.title)
   );
   return sortedEntries;
 };
@@ -23,8 +23,8 @@ export const sortByTitle = (entries: GenericEntry[]): GenericEntry[] => {
 // Sort by complexity
 export const sortByComplexity = (entries: GenericEntry[]): GenericEntry[] => {
   const sortedEntries = entries.sort((a, b) => {
-    const complexityA = 'complexity' in a.data ? a.data.complexity : 1;
-    const complexityB = 'complexity' in b.data ? b.data.complexity : 1;
+    const complexityA = 'complexity' in (a as any).data ? (a as any).data.complexity : 1;
+    const complexityB = 'complexity' in (b as any).data ? (b as any).data.complexity : 1;
     return complexityB - complexityA;
   });
   return sortedEntries;
