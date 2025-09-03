@@ -8,13 +8,17 @@ import rehypeKatex from "rehype-katex";
 import remarkCollapse from "remark-collapse";
 import remarkMath from "remark-math";
 import remarkToc from "remark-toc";
-// import cloudflare from "@astrojs/cloudflare";
+import cloudflare from "@astrojs/cloudflare";
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://Agricultural-LLC.github.io/web", // GitHub Pages用のURL
-  base: "/web/", // リポジトリ名を設定
-  trailingSlash: "always", // GitHub Pages用にスラッシュを常に追加
+  site: "https://agricultural-llc.web.app",
+  output: "server",
+  adapter: cloudflare({
+    platformProxy: {
+      enabled: true
+    }
+  }),
   prefetch: {
     prefetchAll: true
   },
@@ -23,7 +27,6 @@ export default defineConfig({
       include: ['fuse.js']
     }
   },
-  // adapter: cloudflare(), // 本番デプロイ時に有効化
   integrations: [react(), sitemap(), tailwind({
     config: {
       applyBaseStyles: false
