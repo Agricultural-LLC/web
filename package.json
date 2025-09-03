@@ -41,7 +41,7 @@
     "remark-collapse": "^0.1.2",
     "remark-math": "^6.0.0",
     "remark-toc": "^8.0.1",
-    "sharp": "^0.32.4",
+    "sharp": "^0.32.6",
     "swiper": "^10.1.0",
     "tailwind-merge": "^2.5.2"
   },
