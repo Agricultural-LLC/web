@@ -1,6 +1,9 @@
 ---
 import BaseLayout from "@components/base/BaseLayout.astro";
 import PageHeader from "@components/common/PageHeader.astro";
+import Button from "@components/common/Button.astro";
+
+const baseURL = import.meta.env.BASE_URL;
 ---
 
 <BaseLayout title="会社概要 - 農業合同会社">
@@ -185,15 +188,17 @@ import PageHeader from "@components/common/PageHeader.astro";
             </div>
           </div>
 
-          <!-- CTA -->
-          <div class="text-center">
+          <!-- お問い合わせセクション -->
+          <div class="glass rounded-lg p-8 text-center">
             <h2 class="h3 mb-4">農業の未来を一緒に創りませんか？</h2>
-            <p class="mb-8">
+            <p class="mb-6">
               まずは無料相談から。お気軽にお問い合わせください。
             </p>
-            <a href={`${import.meta.env.BASE_URL}contact/`} class="inline-block rounded-lg bg-primary px-8 py-4 font-medium text-white transition hover:bg-opacity-90">
-              お問い合わせはこちら
-            </a>
+            <Button 
+              link={`${baseURL}contact/`} 
+              label="お問い合わせはこちら" 
+              hoverInvert
+            />
           </div>
           
         </div>
