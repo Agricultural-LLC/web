@@ -4,22 +4,13 @@ import type { CollectionEntry, CollectionKey } from "astro:content";
 export type GenericEntry = CollectionEntry<CollectionKey>;
 
 export type AboutEntry = CollectionEntry<"about">;
-export type AuthorsEntry = CollectionEntry<"authors">;
 export type BlogEntry = CollectionEntry<"blog">;
-export type DocsEntry = CollectionEntry<"docs">;
 export type HomeEntry = CollectionEntry<"home">;
-export type PortfolioEntry = CollectionEntry<"portfolio">;
-export type ProjectEntry = CollectionEntry<"project">;
-export type TermsEntry = CollectionEntry<"terms">;
 
 export type SearchableEntry =
   | AboutEntry
-  | AuthorsEntry
   | BlogEntry
-  | DocsEntry
-  | PortfolioEntry
-  | ProjectEntry
-  | TermsEntry;
+  | HomeEntry;
 
 export type SocialLinks = {
   discord?: string;

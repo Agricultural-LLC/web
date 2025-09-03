@@ -1,9 +1,8 @@
 ---
+import type { AboutEntry } from "@/types";
 import BaseLayout from "@components/base/BaseLayout.astro";
 import PageHeader from "@components/common/PageHeader.astro";
-import { markdownify } from "@lib/textConverter";
 import { Image } from "astro:assets";
-import type { AboutEntry } from "@/types";
 import { render } from "astro:content";
 
 interface Props {

@@ -14,10 +14,10 @@ export const getEntries = async (
 ): Promise<GenericEntry[]> => {
   let entries: GenericEntry[] = await getCollection(collection);
   entries = noIndex
-    ? entries.filter((entry: GenericEntry) => !entry.id.match(/^-/))
+    ? entries.filter((entry: GenericEntry) => !(entry as any).id.match(/^-/))
     : entries;
   entries = noDrafts
-    ? entries.filter((entry: GenericEntry) => 'draft' in entry.data && !entry.data.draft)
+    ? entries.filter((entry: GenericEntry) => 'draft' in (entry as any).data && !(entry as any).data.draft)
     : entries;
   entries = sortFunction ? sortFunction(entries) : entries;
   return entries;
@@ -45,7 +45,7 @@ export const getGroups = async (
 ): Promise<GenericEntry[]> => {
   let entries = await getEntries(collection, sortFunction, false);
   entries = entries.filter((entry: GenericEntry) => {
-    const segments = entry.id.split("/");
+    const segments = (entry as any).id.split("/");
     return segments.length === 2 && segments[1] == "-index";
   });
   return entries;
