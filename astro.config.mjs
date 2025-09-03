@@ -8,17 +8,12 @@ import rehypeKatex from "rehype-katex";
 import remarkCollapse from "remark-collapse";
 import remarkMath from "remark-math";
 import remarkToc from "remark-toc";
-import cloudflare from "@astrojs/cloudflare";
+// import cloudflare from "@astrojs/cloudflare"; // Removed for Firebase Hosting
 
 // https://astro.build/config
 export default defineConfig({
   site: "https://agricultural-llc.web.app",
-  output: "server",
-  adapter: cloudflare({
-    platformProxy: {
-      enabled: true
-    }
-  }),
+  output: "static",
   prefetch: {
     prefetchAll: true
   },
