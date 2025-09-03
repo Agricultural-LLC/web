@@ -3,7 +3,6 @@ import type { BlogEntry } from "@/types";
 import BaseLayout from "@components/base/BaseLayout.astro";
 import BlogCard from "@components/blog/Card.astro";
 import EntryHeader from "@components/common/EntryHeader.astro";
-import Share from "@components/common/Share.astro";
 import TableOfContents from "@components/common/TableOfContents.astro";
 import { smartTruncate } from "@lib/textConverter";
 import { render } from "astro:content";
@@ -29,7 +28,7 @@ const entryDescription =
 
 <BaseLayout title={title} description={entryDescription} image={image?.src}>
   <section class="flex container p-4">
-    <div class=`w-full ${actuallyHideToc ? "" : "md:col-9"}`>
+    <div class={`w-full ${actuallyHideToc ? "" : "md:col-9"}`}>
       <article class="">
         <section>
           <EntryHeader
@@ -42,29 +41,18 @@ const entryDescription =
             showTags
           />
         </section>
-        <section class="content mb-4 glass px-4 rounded-lg">
+        <section class="content mb-4 glass px-6 py-6 rounded-lg prose prose-lg max-w-none">
           <Content />
         </section>
       </article>
     </div>
     <div
-      class=`hidden max-h-static_sidemenu sticky top-[5rem] pl-4 ${globalHideToc || hideToc ? "" : "md:flex md:col-3"}`
+      class={`hidden max-h-static_sidemenu sticky top-[5rem] pl-4 ${globalHideToc || hideToc ? "" : "md:flex md:col-3"}`}
     >
       <TableOfContents {headings} />
     </div>
   </section>
 
-  <section class=`container items-start justify-between mt-4`>
-    <hr />
-    <div class="flex items-center justify-center lg:justify-end mt-4">
-      <Share
-        title={title}
-        description={entryDescription}
-        folder={"blog"}
-        id={entry.id}
-      />
-    </div>
-  </section>
   <!-- Related posts -->
   {
     relatedEntries.length > 0 && (

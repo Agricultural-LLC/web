@@ -35,19 +35,19 @@ const entryDescription =
 ---
 
 <div class="h-full m-2 pl-0 bg-gradient-to-br gradient rounded-lg">
-  <div class="glass h-full rounded-lg p-4 intersect:animate-fadeUp opacity-0">
-    <h4 class="mb-2">
-      <a href={`${baseURL}blog/${entry.id}/`}>
+  <div class="glass h-full rounded-lg p-6 intersect:animate-fadeUp opacity-0">
+    <h4 class="mb-4 text-lg font-semibold leading-relaxed">
+      <a href={`${baseURL}blog/${entry.id}/`} class="hover:text-primary transition-colors">
         {title}
       </a>
     </h4>
-    <ul class="mb-2">
+    <ul class="mb-4 flex flex-wrap gap-3 text-sm">
       {
         categories && (
-          <li class="mr-0 inline-block">
+          <li class="inline-block">
             {categories.map((category: string, index: number) => (
-              <a href={`${baseURL}blog/categories/${slugify(category)}/`}>
-                <FaRegFolder className={"ml-2 -mt-1 inline-block"} />
+              <a href={`${baseURL}blog/categories/${slugify(category)}/`} class="inline-flex items-center gap-1 hover:text-primary transition-colors">
+                <FaRegFolder className={"-mt-0.5"} />
                 {upperHumanize(category)}
               </a>
             ))}
@@ -68,22 +68,26 @@ const entryDescription =
       )} -->
       {
         entryDate && (
-          <li class="mr-0 inline-block">
-            <FaRegCalendarAlt className={"ml-2 -mt-1 inline-block"} />
-            {entryDate}
+          <li class="inline-block">
+            <span class="inline-flex items-center gap-1 text-gray-600">
+              <FaRegCalendarAlt className={"-mt-0.5"} />
+              {entryDate}
+            </span>
           </li>
         )
       }
       {
         complexity > 0 && (
-          <li class="mr-0 inline-block">
-            <FaRegClock className={"ml-2 -mt-1 inline-block"} />
-            {entryReadingTime}
+          <li class="inline-block">
+            <span class="inline-flex items-center gap-1 text-gray-600">
+              <FaRegClock className={"-mt-0.5"} />
+              {entryReadingTime}
+            </span>
           </li>
         )
       }
     </ul>
-    <p class="text-sm leading-relaxed text-gray-600 whitespace-pre-line">
+    <p class="text-base leading-relaxed text-gray-700 whitespace-pre-line">
       {entryDescription}
     </p>
   </div>
