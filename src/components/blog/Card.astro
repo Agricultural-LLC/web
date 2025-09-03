@@ -1,14 +1,13 @@
 ---
 import type { BlogEntry } from "@/types";
-import { upperHumanize, plainify, slugify } from "@lib/textConverter";
-import {
-  FaRegFolder,
-  FaRegClock,
-  FaHashtag,
-  FaRegCalendarAlt,
-} from "react-icons/fa";
-import readingTime from "@lib/readingTime";
 import { formatDate } from "@lib/formatDate";
+import readingTime from "@lib/readingTime";
+import { slugify, smartTruncate, upperHumanize } from "@lib/textConverter";
+import {
+FaRegCalendarAlt,
+FaRegClock,
+FaRegFolder
+} from "react-icons/fa";
 
 interface Props {
   entry: BlogEntry;
@@ -32,7 +31,7 @@ const entryDate = date ? formatDate(date) : null;
 const entryReadingTime = readingTime(entry.body!, complexity);
 const entryDescription =
   description ||
-  (autodescription ? plainify(entry.body!.slice(0, descriptionLength)) : null);
+  (autodescription ? smartTruncate(entry.body!, descriptionLength) : null);
 ---
 
 <div class="h-full m-2 pl-0 bg-gradient-to-br gradient rounded-lg">

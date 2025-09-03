@@ -1,17 +1,17 @@
 ---
-import BaseLayout from "@components/base/BaseLayout.astro";
-import PageHeader from "@components/common/PageHeader.astro";
-import Button from "@components/common/Button.astro";
-import { Image } from "astro:assets";
 import farmlandImage from "@assets/agriculture/farmland-01.jpeg";
-import riceFieldImage from "@assets/agriculture/rice-field-01.jpeg";
 import fieldWorkImage from "@assets/agriculture/field-work-01.jpeg";
+import riceFieldImage from "@assets/agriculture/rice-field-01.jpeg";
+import BaseLayout from "@components/base/BaseLayout.astro";
+import Button from "@components/common/Button.astro";
+import PageHeader from "@components/common/PageHeader.astro";
+import { Image } from "astro:assets";
 
 const baseURL = import.meta.env.BASE_URL;
 ---
 
 <BaseLayout title="つながる">
-  <PageHeader title="つながる" />
+  <PageHeader title="つながる" description="農家・JA・行政をつなぎ、地域農業の発展に貢献するプラットフォーム" />
   
   <section class="section">
     <div class="container">

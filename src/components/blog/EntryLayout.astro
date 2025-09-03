@@ -1,12 +1,12 @@
 ---
+import type { BlogEntry } from "@/types";
 import BaseLayout from "@components/base/BaseLayout.astro";
 import BlogCard from "@components/blog/Card.astro";
-import Share from "@components/common/Share.astro";
-import { plainify, smartTruncate } from "@lib/textConverter";
-import type { BlogEntry } from "@/types";
-import TableOfContents from "@components/common/TableOfContents.astro";
-import { render } from "astro:content";
 import EntryHeader from "@components/common/EntryHeader.astro";
+import Share from "@components/common/Share.astro";
+import TableOfContents from "@components/common/TableOfContents.astro";
+import { smartTruncate } from "@lib/textConverter";
+import { render } from "astro:content";
 interface Props {
   entry: BlogEntry;
   relatedEntries: BlogEntry[];
