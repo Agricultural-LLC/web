@@ -1,0 +1,75 @@
+---
+import BaseLayout from "@components/base/BaseLayout.astro";
+import BlogEditor from "@components/admin/BlogEditor";
+import { Toaster } from 'react-hot-toast';
+
+const title = "New Post - Agricultural CMS";
+const description = "Create a new blog post";
+---
+
+<BaseLayout title={title} description={description}>
+  <BlogEditor 
+    client:load 
+    onSave={() => {}}
+    onCancel={() => {}}
+  />
+  <Toaster 
+    client:load
+    position="top-right"
+    toastOptions={{
+      duration: 4000,
+      style: {
+        background: '#363636',
+        color: '#fff',
+      },
+    }}
+  />
+</BaseLayout>
+
+<script>
+  import toast from 'react-hot-toast';
+
+  // Check authentication
+  fetch('/api/auth/me', {
+    credentials: 'include'
+  })
+  .then(response => {
+    if (!response.ok) {
+      window.location.href = '/admin/login';
+    }
+  })
+  .catch(() => {
+    window.location.href = '/admin/login';
+  });
+
+  // Set up editor handlers
+  window.addEventListener('load', () => {
+    const blogEditor = document.querySelector('[data-hydration-key]');
+    if (blogEditor) {
+      blogEditor.onSave = async (slug, frontmatter, content) => {
+        try {
+          const response = await fetch('/api/posts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ slug, frontmatter, content }),
+            credentials: 'include'
+          });
+
+          if (response.ok) {
+            window.location.href = '/admin';
+          } else {
+            const data = await response.json();
+            throw new Error(data.error || 'Failed to create post');
+          }
+        } catch (error) {
+          console.error('Create post error:', error);
+          throw error;
+        }
+      };
+
+      blogEditor.onCancel = () => {
+        window.location.href = '/admin';
+      };
+    }
+  });
+</script>

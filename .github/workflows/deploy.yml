@@ -1,14 +1,29 @@
 name: Deploy to GitHub Pages
 
+# Disabled in favor of Firebase Hosting
+# Uncomment the following lines to re-enable GitHub Pages deployment
+# on:
+#   push:
+#     branches: [ main ]
+#   pull_request:
+#     branches: [ main ]
+
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      enable_github_pages:
+        description: 'Enable GitHub Pages deployment'
+        required: true
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: github.event.inputs.enable_github_pages == 'true'
 
     steps:
     - uses: actions/checkout@v4
@@ -33,7 +48,7 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && github.event.inputs.enable_github_pages == 'true'
     
     permissions:
       pages: write

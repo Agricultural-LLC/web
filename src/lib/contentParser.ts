@@ -1,7 +1,7 @@
 import { getEntry, getCollection, type CollectionKey } from "astro:content";
 import type { GenericEntry } from "@/types";
 
-export const getIndex = async (collection: CollectionKey): Promise<GenericEntry> => {
+export const getIndex = async (collection: CollectionKey): Promise<GenericEntry | undefined> => {
   const index = await getEntry(collection, "-index");
   return index;
 }

@@ -1,0 +1,113 @@
+---
+import BaseLayout from "@components/base/BaseLayout.astro";
+import BlogEditor from "@components/admin/BlogEditor";
+import { Toaster } from 'react-hot-toast';
+
+const { slug } = Astro.params;
+
+if (!slug) {
+  return Astro.redirect('/admin');
+}
+
+const title = `Edit Post: ${slug} - Agricultural CMS`;
+const description = `Edit blog post: ${slug}`;
+---
+
+<BaseLayout title={title} description={description}>
+  <div id="editor-container" data-slug={slug}></div>
+  <Toaster 
+    client:load
+    position="top-right"
+    toastOptions={{
+      duration: 4000,
+      style: {
+        background: '#363636',
+        color: '#fff',
+      },
+    }}
+  />
+</BaseLayout>
+
+<script>
+  // Check authentication and load post data
+  const slug = document.getElementById('editor-container')?.getAttribute('data-slug');
+  
+  fetch('/api/auth/me', {
+    credentials: 'include'
+  })
+  .then(response => {
+    if (!response.ok) {
+      window.location.href = '/admin/login';
+      return;
+    }
+    return response.json();
+  })
+  .then(authData => {
+    if (!authData.user) {
+      window.location.href = '/admin/login';
+      return;
+    }
+    
+    // Load post data
+    return fetch(`/api/posts/${slug}`, {
+      credentials: 'include'
+    });
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Post not found');
+    }
+    return response.json();
+  })
+  .then(data => {
+    // Render editor with post data
+    const container = document.getElementById('editor-container');
+    if (container) {
+      // This would be handled by React hydration in a real implementation
+      console.log('Post data loaded:', data.post);
+      
+      // Create editor component dynamically
+      import('@components/admin/BlogEditor').then(({ default: BlogEditor }) => {
+        const React = window.React;
+        const ReactDOM = window.ReactDOM;
+        
+        if (React && ReactDOM) {
+          const editorElement = React.createElement(BlogEditor, {
+            initialPost: data.post,
+            isEditing: true,
+            onSave: async (slug, frontmatter, content, sha) => {
+              try {
+                const response = await fetch(`/api/posts/${slug}`, {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ frontmatter, content, sha }),
+                  credentials: 'include'
+                });
+
+                if (response.ok) {
+                  window.location.href = '/admin';
+                } else {
+                  const data = await response.json();
+                  throw new Error(data.error || 'Failed to update post');
+                }
+              } catch (error) {
+                console.error('Update post error:', error);
+                throw error;
+              }
+            },
+            onCancel: () => {
+              window.location.href = '/admin';
+            }
+          });
+          
+          ReactDOM.render(editorElement, container);
+        }
+      });
+    }
+  })
+  .catch(error => {
+    console.error('Error loading post:', error);
+    alert('Failed to load post data');
+    window.location.href = '/admin';
+  });
+</script>

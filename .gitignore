@@ -49,6 +49,7 @@ firestore-debug.log
 pubsub-debug.log
 ui-debug.log
 firebase-export-*
+*firebase-adminsdk*.json
 
 # Testing
 coverage/

@@ -1,0 +1,57 @@
+name: Deploy to Firebase Hosting
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Create environment file
+      run: |
+        echo "FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}" >> .env
+        echo "FIREBASE_PRIVATE_KEY='${{ secrets.FIREBASE_PRIVATE_KEY }}'" >> .env
+        echo "FIREBASE_CLIENT_EMAIL=${{ secrets.FIREBASE_CLIENT_EMAIL }}" >> .env
+        echo "GH_PAT=${{ secrets.GH_PAT }}" >> .env
+        echo "GH_OWNER=${{ secrets.GH_OWNER }}" >> .env
+        echo "GH_REPO=${{ secrets.GH_REPO }}" >> .env
+        echo "GH_BRANCH=main" >> .env
+        echo "API_KEY=${{ secrets.API_KEY }}" >> .env
+        echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+        echo "PUBLIC_SITE_URL=https://agricultural-llc.web.app" >> .env
+        echo "PUBLIC_API_URL=https://agricultural-llc.web.app/api" >> .env
+
+    - name: Build Astro site
+      run: npm run build
+      env:
+        NODE_ENV: production
+    
+    - name: Deploy to Firebase Hosting
+      uses: FirebaseExtended/action-hosting-deploy@v0
+      with:
+        repoToken: ${{ secrets.GITHUB_TOKEN }}
+        firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_AGRICULTURAL_LLC }}
+        channelId: live
+        projectId: agricultural-llc
+        
+    - name: Notify deployment success
+      if: success()
+      run: |
+        echo "🚀 Deployment successful!"
+        echo "Site URL: https://agricultural-llc.web.app"
+        echo "Admin URL: https://agricultural-llc.web.app/admin"
