@@ -1,6 +1,5 @@
 backend:
-  name: github
-  repo: Agricultural-LLC/web
+  name: git-gateway
   branch: main
 
 media_folder: "src/assets/uploads"
