@@ -8,7 +8,6 @@ slugify,
 upperHumanize,
 } from "@lib/textConverter";
 import { Image } from "astro:assets";
-import type { CollectionEntry } from "astro:content";
 import {
 FaHashtag,
 FaRegCalendarAlt,
@@ -16,8 +15,19 @@ FaRegClock,
 FaRegFolder,
 } from "react-icons/fa";
 
+interface BlogEntry {
+  title: string;
+  categories?: string[];
+  tags?: string[];
+  image?: any;
+  imageAlt?: string;
+  date?: Date;
+  complexity?: number;
+  body?: string;
+}
+
 interface Props {
-  entry: CollectionEntry<"blog">;
+  entry: BlogEntry;
   showInfo?: boolean;
   showImage?: boolean;
   showTitle?: boolean;

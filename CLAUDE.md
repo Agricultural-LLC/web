@@ -75,7 +75,8 @@ Admin Interface → Firebase Database → Dynamic Content Rendering
 
 ### CMS Features
 
-- **Real-time Editing**: SimpleMDE markdown editor with live preview
+- **Real-time Editing**: Streamlined SimpleMDE markdown editor (simplified single-pane view)
+- **Link Cards**: Auto-generated preview cards using `[linkcard:url]` syntax
 - **Image Management**: Firebase Storage with drag-and-drop upload
 - **Draft System**: Save drafts before publishing
 - **Category & Tags**: Flexible content categorization
@@ -165,6 +166,9 @@ src/
 - ✅ Resolved TypeScript configuration
 - ✅ Removed unused components and assets
 - ✅ Improved form accessibility
+- ✅ Fixed EntryHeader.astro TypeScript errors and data structure issues
+- ✅ Simplified blog editor by removing 2-split mode for better usability
+- ✅ Implemented client-side link card functionality with `[linkcard:url]` syntax
 
 ### Common Issues & Solutions
 

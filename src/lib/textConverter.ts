@@ -14,10 +14,17 @@ export const slugify = (content: string) => {
   return slug(content);
 };
 
-// markdownify with custom header ID injection
+// markdownify with custom header ID injection and link card placeholders
 export const markdownify = (content: string, div?: boolean) => {
+  let processedContent = content;
+  
+  // Convert link card syntax to placeholder divs for client-side processing
   if (div) {
-    let html = marked.parse(content);
+    processedContent = processLinkCardPlaceholders(processedContent);
+  }
+  
+  if (div) {
+    let html = marked.parse(processedContent);
     // Add IDs to headers manually for table of contents linking
     html = html.replace(/<h([1-6])>([^<]+)<\/h([1-6])>/g, (match, level, text, closingLevel) => {
       const headingSlug = slugify(text.trim());
@@ -25,8 +32,16 @@ export const markdownify = (content: string, div?: boolean) => {
     });
     return html;
   } else {
-    return marked.parseInline(content);
+    return marked.parseInline(processedContent);
   }
+};
+
+// Convert link card syntax to placeholder divs for client-side processing
+const processLinkCardPlaceholders = (content: string): string => {
+  const linkCardRegex = /\[linkcard:(https?:\/\/[^\]]+)\]/g;
+  return content.replace(linkCardRegex, (match, url) => {
+    return `<div class="link-card-placeholder" data-url="${url}">Loading link preview...</div>`;
+  });
 };
 
 // hyphen to space, uppercase only first letter in each word
