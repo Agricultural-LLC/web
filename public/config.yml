@@ -1,0 +1,87 @@
+backend:
+  name: github
+  repo: Agricultural-LLC/web
+  branch: main
+
+media_folder: "src/assets/uploads"
+public_folder: "/assets/uploads"
+
+publish_mode: editorial_workflow
+
+collections:
+  - name: "blog"
+    label: "ブログ記事"
+    folder: "src/content/blog"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - {label: "タイトル", name: "title", widget: "string", required: true}
+      - {label: "説明", name: "description", widget: "text", required: true}
+      - {label: "公開日", name: "date", widget: "datetime", required: true, date_format: "YYYY-MM-DD", time_format: false}
+      - label: "画像"
+        name: "image"
+        widget: "image"
+        required: false
+        media_folder: "/src/assets/blog"
+        public_folder: "@assets/blog"
+      - label: "著者"
+        name: "authors"
+        widget: "list"
+        required: false
+        default: ["admin"]
+        field: {label: "Author", name: "author", widget: "string"}
+      - label: "カテゴリー"
+        name: "categories"
+        widget: "list"
+        required: false
+        field: {label: "Category", name: "category", widget: "string"}
+      - label: "タグ"
+        name: "tags"
+        widget: "list"
+        required: false
+        field: {label: "Tag", name: "tag", widget: "string"}
+      - {label: "下書き", name: "draft", widget: "boolean", default: false}
+      - {label: "本文", name: "body", widget: "markdown", required: true}
+
+  - name: "about"
+    label: "About ページ"
+    folder: "src/content/about"
+    create: false
+    slug: "-index"
+    fields:
+      - {label: "タイトル", name: "title", widget: "string", required: true}
+      - {label: "説明", name: "description", widget: "text", required: false}
+      - {label: "自動説明", name: "autodescription", widget: "boolean", default: true}
+      - label: "画像"
+        name: "image"
+        widget: "image"
+        required: false
+        media_folder: "/src/assets"
+        public_folder: "@assets"
+      - {label: "画像Alt", name: "imageAlt", widget: "string", required: false}
+      - {label: "下書き", name: "draft", widget: "boolean", default: false}
+      - {label: "本文", name: "body", widget: "markdown", required: true}
+
+  - name: "home"
+    label: "ホームページ"
+    folder: "src/content/home"
+    create: false
+    slug: "-index"
+    fields:
+      - label: "画像"
+        name: "image"
+        widget: "image"
+        required: false
+        media_folder: "/src/assets"
+        public_folder: "@assets"
+      - {label: "画像Alt", name: "imageAlt", widget: "string", required: false}
+      - {label: "タイトル", name: "title", widget: "string", required: true}
+      - {label: "コンテンツ", name: "content", widget: "text", required: true}
+      - label: "ボタン"
+        name: "button"
+        widget: "object"
+        required: false
+        fields:
+          - {label: "ラベル", name: "label", widget: "string"}
+          - {label: "リンク", name: "link", widget: "string", required: false}
+      - {label: "本文", name: "body", widget: "markdown", required: true}
