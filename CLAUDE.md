@@ -14,7 +14,7 @@ This repository contains the production code for the Agricultural Corporation We
   - 藤井 洋平 (Representative Director, Agricultural DX specialist)
   - 寺田 康佑 (Technical Advisor)
 - **Mission**: A "platform connecting people, technology, and agriculture"
-- **Budget**: Near-zero monthly operational costs (GitHub Pages hosting is free)
+- **Budget**: Near-zero monthly operational costs (Firebase Hosting is free)
 
 ## Current Technology Stack
 
@@ -22,10 +22,10 @@ This repository contains the production code for the Agricultural Corporation We
 - **Frontend Framework**: Astro v5.12.8 (static site generator with Content Collections)
 - **Styling**: Tailwind CSS
 - **UI Components**: React (for interactive components)
-- **Hosting**: GitHub Pages (free, reliable, with GitHub Actions CI/CD)
+- **Hosting**: Firebase Hosting (fast, reliable, with GitHub Actions CI/CD)
 - **Search**: Fuse.js (client-side fuzzy search)
 - **Forms**: SSGform (serverless form handling)
-- **Content Management**: Markdown-based with Astro Content Collections
+- **Content Management**: Separated CMS architecture (see CMS Architecture section below)
 - **Version Control**: GitHub
 
 ### Development Commands
@@ -34,7 +34,7 @@ This repository contains the production code for the Agricultural Corporation We
 # Install dependencies
 npm install
 
-# Start development server (http://localhost:4321/web/)
+# Start development server (http://localhost:4321/)
 npm run dev
 
 # Build for production
@@ -52,6 +52,43 @@ npx tsc --noEmit
 # Clean cache (if needed)
 rm -rf node_modules/.vite .astro
 ```
+
+## CMS Architecture
+
+This project uses a **separated CMS architecture** for optimal maintainability and performance:
+
+### Architecture Overview
+
+```
+[Main Website Repository]
+├─ Repository: Agricultural-LLC/web
+├─ Hosting: Firebase Hosting
+├─ URL: https://agricultural-llc.web.app/
+└─ Role: Content delivery and user experience
+
+[CMS Management System] (Separate Repository)
+├─ Repository: Agricultural-LLC/agricultural-cms
+├─ Hosting: Netlify (with Netlify Identity)
+├─ URL: https://agricultural-cms.netlify.app/
+└─ Role: Content creation and editing
+
+[Content Flow]
+CMS Edit → GitHub (web repository) → GitHub Actions → Firebase Hosting
+```
+
+### Benefits of Separated Architecture
+
+- **Independence**: Main site and CMS operate independently
+- **Maintainability**: Updates to either system don't affect the other
+- **Performance**: Main site optimized for delivery, CMS optimized for editing
+- **Security**: CMS authentication is isolated from main site
+- **Scalability**: Each system can be scaled independently
+
+### Content Management Process
+
+1. **Content Creation**: Use CMS interface at separate URL
+2. **Content Review**: Editorial workflow through GitHub pull requests
+3. **Content Publishing**: Automated deployment to main site via GitHub Actions
 
 ## Site Architecture
 
