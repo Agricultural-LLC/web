@@ -1,4 +1,4 @@
-import type { CollectionEntry } from 'astro:content';
+import type { CollectionEntry } from "astro:content";
 
 export interface MarkdownHeading {
   depth: number;
@@ -52,7 +52,7 @@ export interface PostFrontmatter {
 export interface User {
   id: string;
   username: string;
-  role: 'admin' | 'editor';
+  role: "admin" | "editor";
 }
 
 export interface AuthToken {

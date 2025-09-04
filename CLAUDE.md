@@ -55,40 +55,41 @@ rm -rf node_modules/.vite .astro
 
 ## CMS Architecture
 
-This project uses a **separated CMS architecture** for optimal maintainability and performance:
+This project uses an **integrated CMS architecture** for streamlined content management:
 
 ### Architecture Overview
 
 ```
-[Main Website Repository]
+[Unified Website & CMS System]
 ├─ Repository: Agricultural-LLC/web
 ├─ Hosting: Firebase Hosting
-├─ URL: https://agricultural-llc.web.app/
-└─ Role: Content delivery and user experience
-
-[CMS Management System] (Separate Repository)
-├─ Repository: Agricultural-LLC/agricultural-cms
-├─ Hosting: Netlify (with Netlify Identity)
-├─ URL: https://agricultural-cms.netlify.app/
-└─ Role: Content creation and editing
+├─ Public Site: https://agricultural-llc.web.app/
+├─ Admin Interface: https://agricultural-llc.web.app/admin/
+├─ Data Storage: Firebase Realtime Database
+├─ File Storage: Firebase Storage
+└─ Authentication: Firebase Auth
 
 [Content Flow]
-CMS Edit → GitHub (web repository) → GitHub Actions → Firebase Hosting
+Admin Interface → Firebase Database → Dynamic Content Rendering
 ```
 
-### Benefits of Separated Architecture
+### CMS Features
 
-- **Independence**: Main site and CMS operate independently
-- **Maintainability**: Updates to either system don't affect the other
-- **Performance**: Main site optimized for delivery, CMS optimized for editing
-- **Security**: CMS authentication is isolated from main site
-- **Scalability**: Each system can be scaled independently
+- **Real-time Editing**: Streamlined SimpleMDE markdown editor (simplified single-pane view)
+- **Link Cards**: Auto-generated preview cards using `[linkcard:url]` syntax
+- **Image Management**: Firebase Storage with drag-and-drop upload
+- **Draft System**: Save drafts before publishing
+- **Category & Tags**: Flexible content categorization
+- **Authentication**: Secure Firebase Auth integration
+- **Responsive Design**: Mobile-friendly admin interface
 
 ### Content Management Process
 
-1. **Content Creation**: Use CMS interface at separate URL
-2. **Content Review**: Editorial workflow through GitHub pull requests
-3. **Content Publishing**: Automated deployment to main site via GitHub Actions
+1. **Access Admin**: Navigate to `/admin/` and authenticate
+2. **Create/Edit**: Use the integrated editor with markdown support
+3. **Upload Media**: Drag-and-drop images with automatic optimization
+4. **Preview & Publish**: Review content before publishing
+5. **Real-time Updates**: Changes appear immediately on the site
 
 ## Site Architecture
 
@@ -124,10 +125,10 @@ The website consists of the following pages:
 - Optimize for regional search rankings
 
 ### Content Management
-- Blog posts go in `src/content/blog/`
-- Use frontmatter for metadata
-- Follow existing Markdown patterns
-- Images should be optimized before upload
+- Blog posts managed via Firebase Realtime Database
+- Admin interface at `/admin/blog/` for content editing
+- Images stored in Firebase Storage with automatic optimization
+- Real-time content updates without site rebuilds
 
 ## File Structure
 
@@ -137,17 +138,21 @@ src/
 │   ├── agriculture/  # Agricultural images
 │   └── backgrounds/  # Background patterns
 ├── components/    # Astro/React components
+│   ├── admin/     # CMS admin components
 │   ├── base/      # Layout components
 │   ├── blog/      # Blog-specific components
 │   ├── common/    # Shared components
 │   ├── home/      # Homepage components
 │   └── search/    # Search functionality
-├── content/       # Markdown content
+├── content/       # Static markdown content
 │   ├── about/     # About page content
-│   ├── blog/      # Blog posts
 │   └── home/      # Homepage content
 ├── lib/           # Utility functions
+│   ├── firebase/ # Firebase integration
+│   └── cms/       # CMS-specific utilities
 ├── pages/         # Page routes
+│   ├── admin/     # CMS admin interface
+│   └── api/       # API endpoints
 ├── styles/        # Global styles
 └── types/         # TypeScript definitions
 ```
@@ -161,6 +166,9 @@ src/
 - ✅ Resolved TypeScript configuration
 - ✅ Removed unused components and assets
 - ✅ Improved form accessibility
+- ✅ Fixed EntryHeader.astro TypeScript errors and data structure issues
+- ✅ Simplified blog editor by removing 2-split mode for better usability
+- ✅ Implemented client-side link card functionality with `[linkcard:url]` syntax
 
 ### Common Issues & Solutions
 

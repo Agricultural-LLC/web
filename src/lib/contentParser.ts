@@ -1,23 +1,28 @@
 import { getEntry, getCollection, type CollectionKey } from "astro:content";
 import type { GenericEntry } from "@/types";
 
-export const getIndex = async (collection: CollectionKey): Promise<GenericEntry | undefined> => {
+export const getIndex = async (
+  collection: CollectionKey,
+): Promise<GenericEntry | undefined> => {
   const index = await getEntry(collection, "-index");
   return index;
-}
+};
 
 export const getEntries = async (
   collection: CollectionKey,
-  sortFunction?: ((array: any[]) => any[]),
+  sortFunction?: (array: any[]) => any[],
   noIndex = true,
-  noDrafts = true
+  noDrafts = true,
 ): Promise<GenericEntry[]> => {
   let entries: GenericEntry[] = await getCollection(collection);
   entries = noIndex
     ? entries.filter((entry: GenericEntry) => !(entry as any).id.match(/^-/))
     : entries;
   entries = noDrafts
-    ? entries.filter((entry: GenericEntry) => 'draft' in (entry as any).data && !(entry as any).data.draft)
+    ? entries.filter(
+        (entry: GenericEntry) =>
+          "draft" in (entry as any).data && !(entry as any).data.draft,
+      )
     : entries;
   entries = sortFunction ? sortFunction(entries) : entries;
   return entries;
@@ -26,14 +31,14 @@ export const getEntries = async (
 // Fetch all pages in all specified collections, flattened into a single array
 export const getEntriesBatch = async (
   collections: CollectionKey[],
-  sortFunction?: ((array: any[]) => any[]),
+  sortFunction?: (array: any[]) => any[],
   noIndex = true,
-  noDrafts = true
+  noDrafts = true,
 ): Promise<GenericEntry[]> => {
   const allCollections = await Promise.all(
     collections.map(async (collection) => {
       return await getEntries(collection, sortFunction, noIndex, noDrafts);
-    })
+    }),
   );
   return allCollections.flat();
 };
@@ -41,7 +46,7 @@ export const getEntriesBatch = async (
 // Fetch top-level folders within a collection
 export const getGroups = async (
   collection: CollectionKey,
-  sortFunction?: ((array: any[]) => any[])
+  sortFunction?: (array: any[]) => any[],
 ): Promise<GenericEntry[]> => {
   let entries = await getEntries(collection, sortFunction, false);
   entries = entries.filter((entry: GenericEntry) => {
@@ -55,12 +60,16 @@ export const getGroups = async (
 export const getEntriesInGroup = async (
   collection: CollectionKey,
   groupSlug: string,
-  sortFunction?: ((array: any[]) => any[]),
+  sortFunction?: (array: any[]) => any[],
 ): Promise<GenericEntry[]> => {
   let entries = await getEntries(collection, sortFunction);
   entries = entries.filter((data: any) => {
     const segments = data.id.split("/");
-    return segments[0] === groupSlug && segments.length > 1 && segments[1] !== "-index";
+    return (
+      segments[0] === groupSlug &&
+      segments.length > 1 &&
+      segments[1] !== "-index"
+    );
   });
   return entries;
 };

@@ -1,24 +1,24 @@
 ---
-import type { BlogEntry } from "@/types";
-import { getEntries } from "@lib/contentParser";
-import { getTaxa } from "@lib/taxonomyParser";
-import taxonomyFilter from "@lib/taxonomyFilter";
 import TaxonLayout from "@components/blog/TaxonLayout.astro";
+import { 
+  getFirebaseTags, 
+  getFirebaseBlogEntriesByTag, 
+  type BlogEntry 
+} from "@lib/firebaseLoader";
 
 export async function getStaticPaths() {
-  const taxa = await getTaxa("blog", "tags");
-  const paths = taxa.map((taxon) => ({
+  const tags = await getFirebaseTags();
+  const paths = tags.map((tag) => ({
     params: {
-      tag: taxon,
+      tag: tag,
     },
-    props: { taxon },
+    props: { taxon: tag },
   }));
   return paths;
 }
 
 const { taxon } = Astro.props;
-const entries = await getEntries("blog") as BlogEntry[];
-const filteredEntries: BlogEntry[] = taxonomyFilter(entries, "tags", taxon!);
+const filteredEntries: BlogEntry[] = await getFirebaseBlogEntriesByTag(taxon!);
 ---
 
 <TaxonLayout taxon={taxon} entries={filteredEntries} />

@@ -8,7 +8,6 @@ import rehypeKatex from "rehype-katex";
 import remarkCollapse from "remark-collapse";
 import remarkMath from "remark-math";
 import remarkToc from "remark-toc";
-// import cloudflare from "@astrojs/cloudflare"; // Removed for Firebase Hosting
 
 // https://astro.build/config
 export default defineConfig({

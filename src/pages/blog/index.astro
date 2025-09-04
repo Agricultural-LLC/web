@@ -1,19 +1,42 @@
 ---
 import CollectionLayout from "@components/blog/CollectionLayout.astro";
-import { getTaxaMultiset, getTaxa } from "@lib/taxonomyParser";
-import { getEntries, getIndex } from "@lib/contentParser";
-import { sortByDate } from "@lib/sortFunctions";
-import type { BlogEntry } from "@/types";
+import { 
+  getFirebaseBlogEntries, 
+  getFirebaseCategories, 
+  getFirebaseTags,
+  type BlogEntry 
+} from "@lib/firebaseLoader";
 
 const { slug } = Astro.params;
 const currentPageIndex = slug && !isNaN(Number(slug)) ? Number(slug) : 1;
 
-const entryIndex = (await getIndex("blog")) as BlogEntry;
-const entries = (await getEntries("blog", sortByDate)) as BlogEntry[];
+// Firebaseから記事を取得
+const entries = await getFirebaseBlogEntries();
+const categories = await getFirebaseCategories();
+const tags = await getFirebaseTags();
 
-const allCategories = await getTaxaMultiset("blog", "categories");
-const categories = await getTaxa("blog", "categories");
-const tags = await getTaxa("blog", "tags");
+// 仮のentryIndex（ブログトップページ情報）
+const entryIndex: BlogEntry = {
+  id: 'blog-index',
+  slug: 'blog',
+  title: '取り組み',
+  description: 'スマート農業やデジタル技術を活用した農業の最新情報をお届けします',
+  date: new Date(),
+  image: '',
+  authors: ['農業合同会社'],
+  categories: [],
+  tags: [],
+  draft: false,
+  url: '/blog/'
+};
+
+// カテゴリの頻度計算（allCategories相当）
+const allCategories: string[] = [];
+entries.forEach(entry => {
+  entry.categories.forEach(category => {
+    allCategories.push(category);
+  });
+});
 
 const entriesPerPage = 4;
 const indexOfLastEntry = currentPageIndex * entriesPerPage;

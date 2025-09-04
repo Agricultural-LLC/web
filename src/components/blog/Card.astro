@@ -22,7 +22,7 @@ const {
   categories,
   tags,
   complexity,
-} = entry.data;
+} = entry;
 const baseURL = import.meta.env.BASE_URL;
 
 const descriptionLength = 200;
@@ -37,7 +37,7 @@ const entryDescription =
 <div class="h-full m-2 pl-0 bg-gradient-to-br gradient rounded-lg">
   <div class="glass h-full rounded-lg p-6 intersect:animate-fadeUp opacity-0">
     <h4 class="mb-4 text-lg font-semibold leading-relaxed">
-      <a href={`${baseURL}blog/${entry.id}/`} class="hover:text-primary transition-colors">
+      <a href={`${baseURL}blog/${entry.slug}/`} class="hover:text-primary transition-colors">
         {title}
       </a>
     </h4>

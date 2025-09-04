@@ -4,16 +4,17 @@ import BaseLayout from "@components/base/BaseLayout.astro";
 import BlogCard from "@components/blog/Card.astro";
 import EntryHeader from "@components/common/EntryHeader.astro";
 import TableOfContents from "@components/common/TableOfContents.astro";
-import { smartTruncate } from "@lib/textConverter";
-import { render } from "astro:content";
+import { smartTruncate, markdownify, extractHeadings } from "@lib/textConverter";
 interface Props {
   entry: BlogEntry;
   relatedEntries: BlogEntry[];
 }
 
 const { entry, relatedEntries }: Props = Astro.props;
-const { title, description, autodescription, image, hideToc } = entry.data;
-const { Content, headings } = await render(entry);
+const { title, description, autodescription, image, hideToc, body } = entry;
+// Convert markdown to HTML and extract headings for table of contents
+const renderedBody = body ? markdownify(body, true) : '';
+const headings = body ? extractHeadings(body) : [];
 
 const descriptionLenth = 200; // the max length in characters for the auto-generated description
 const globalHideToc = false; // set true to always hide the table of contents (right side menu)
@@ -33,6 +34,7 @@ const entryDescription =
         <section>
           <EntryHeader
             entry={entry}
+            showTitle
             showImage
             showAuthor
             showDate
@@ -41,8 +43,8 @@ const entryDescription =
             showTags
           />
         </section>
-        <section class="content mb-4 glass px-6 py-6 rounded-lg prose prose-lg max-w-none">
-          <Content />
+        <section class="content mb-4 glass px-6 py-6 rounded-lg prose prose-lg max-w-none dark:prose-invert">
+          <div set:html={renderedBody} />
         </section>
       </article>
     </div>
@@ -70,4 +72,66 @@ const entryDescription =
       </section>
     )
   }
+
+  <style>
+    .link-card-placeholder {
+      @apply my-4 p-4 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-center text-gray-600 dark:text-gray-300 animate-pulse;
+    }
+  </style>
+
+  <script>
+    // Process link card placeholders on the client side
+    document.addEventListener('DOMContentLoaded', async () => {
+      const placeholders = document.querySelectorAll('.link-card-placeholder');
+      
+      for (const placeholder of placeholders) {
+        const url = placeholder.getAttribute('data-url');
+        if (!url) continue;
+        
+        try {
+          const response = await fetch('/api/link-preview', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ url })
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            placeholder.innerHTML = createLinkCardHTML(data);
+            placeholder.classList.remove('link-card-placeholder');
+            placeholder.classList.add('link-card');
+          } else {
+            // Fallback to simple link
+            placeholder.innerHTML = `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline">${url}</a>`;
+            placeholder.classList.remove('link-card-placeholder');
+          }
+        } catch (error) {
+          console.error('Error loading link preview:', error);
+          // Fallback to simple link
+          placeholder.innerHTML = `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline">${url}</a>`;
+          placeholder.classList.remove('link-card-placeholder');
+        }
+      }
+    });
+    
+    function createLinkCardHTML(data) {
+      const { title, description, image, url } = data;
+      
+      return `
+        <div class="my-4 p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:shadow-md transition-shadow bg-white dark:bg-gray-800">
+          <a href="${url}" target="_blank" rel="noopener noreferrer" class="flex items-start space-x-4 no-underline">
+            ${image ? `<img src="${image}" alt="${title || ''}" class="w-20 h-20 object-cover rounded flex-shrink-0" loading="lazy">` : ''}
+            <div class="flex-1 min-w-0">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1 line-clamp-2">${title || url}</h3>
+              ${description ? `<p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-3 mb-2">${description}</p>` : ''}
+              <p class="text-xs text-gray-400 truncate">${new URL(url).hostname}</p>
+            </div>
+          </a>
+        </div>
+      `;
+    }
+  </script>
+
 </BaseLayout>

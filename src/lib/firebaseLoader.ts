@@ -1,0 +1,195 @@
+import { initializeApp, getApp, getApps } from 'firebase/app';
+import { getDatabase, ref, get } from 'firebase/database';
+
+// Firebase Client SDK初期化関数（PUBLIC_変数を使用）
+function initializeFirebase() {
+  if (getApps().length === 0) {
+    const firebaseConfig = {
+      apiKey: import.meta.env.PUBLIC_FIREBASE_API_KEY,
+      authDomain: import.meta.env.PUBLIC_FIREBASE_AUTH_DOMAIN,
+      databaseURL: import.meta.env.PUBLIC_FIREBASE_DATABASE_URL,
+      projectId: import.meta.env.PUBLIC_FIREBASE_PROJECT_ID,
+      storageBucket: import.meta.env.PUBLIC_FIREBASE_STORAGE_BUCKET,
+      messagingSenderId: import.meta.env.PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+      appId: import.meta.env.PUBLIC_FIREBASE_APP_ID
+    };
+
+    console.log('🔧 Firebase Client initialization...');
+    console.log('Project ID:', import.meta.env.PUBLIC_FIREBASE_PROJECT_ID);
+    console.log('Database URL:', import.meta.env.PUBLIC_FIREBASE_DATABASE_URL);
+    
+    initializeApp(firebaseConfig);
+    console.log('✅ Firebase Client initialized');
+  }
+  
+  const app = getApp();
+  return getDatabase(app);
+}
+
+// Firebase記事の型定義
+export interface FirebaseBlogEntry {
+  id: string;
+  title: string;
+  description: string;
+  body: string;
+  date: string;
+  image: string;
+  authors: string[];
+  categories: string[];
+  tags: string[];
+  draft: boolean;
+  slug: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// BlogEntry型に変換
+export interface BlogEntry {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  date: Date;
+  image: string;
+  imageAlt?: string;
+  authors: string[];
+  categories: string[];
+  tags: string[];
+  draft: boolean;
+  complexity?: number;
+  body?: string;
+  url?: string;
+}
+
+// Firebaseから記事を取得
+export async function getFirebaseBlogEntries(): Promise<BlogEntry[]> {
+  try {
+    console.log('🔍 Fetching blog entries from Firebase...');
+    const db = initializeFirebase();
+    const snapshot = await get(ref(db, 'cms/blog'));
+    
+    if (!snapshot.exists()) {
+      console.log('❌ No blog data found in Firebase');
+      return [];
+    }
+
+    const data = snapshot.val();
+    console.log('📊 Raw Firebase data:', Object.keys(data).length, 'entries found');
+    
+    const entries: BlogEntry[] = [];
+
+    for (const [id, post] of Object.entries(data as Record<string, FirebaseBlogEntry>)) {
+      console.log(`📝 Processing entry: ${id}`, {
+        title: post.title,
+        draft: post.draft,
+        slug: post.slug
+      });
+      
+      if (!post.draft) { // 下書きは除外
+        entries.push({
+          id,
+          slug: post.slug,
+          title: post.title,
+          description: post.description,
+          date: new Date(post.date),
+          image: post.image,
+          imageAlt: post.title, // デフォルトでタイトルを使用
+          authors: post.authors,
+          categories: post.categories,
+          tags: post.tags,
+          draft: post.draft,
+          complexity: 1, // デフォルト値
+          body: post.body,
+          url: `/blog/${post.slug}/`
+        });
+      }
+    }
+
+    // 日付順でソート（新しい順）
+    entries.sort((a, b) => b.date.getTime() - a.date.getTime());
+    
+    console.log(`✅ Successfully loaded ${entries.length} published entries`);
+    return entries;
+    
+  } catch (error) {
+    console.error('❌ Error loading Firebase blog entries:', error);
+    return [];
+  }
+}
+
+// 単一記事を取得
+export async function getFirebaseBlogEntry(slug: string): Promise<BlogEntry | null> {
+  try {
+    const db = initializeFirebase();
+    const snapshot = await get(ref(db, 'cms/blog'));
+    
+    if (!snapshot.exists()) {
+      return null;
+    }
+
+    const data = snapshot.val();
+    
+    for (const [id, post] of Object.entries(data as Record<string, FirebaseBlogEntry>)) {
+      if (post.slug === slug && !post.draft) {
+        return {
+          id,
+          slug: post.slug,
+          title: post.title,
+          description: post.description,
+          date: new Date(post.date),
+          image: post.image,
+          imageAlt: post.title, // デフォルトでタイトルを使用
+          authors: post.authors,
+          categories: post.categories,
+          tags: post.tags,
+          draft: post.draft,
+          complexity: 1, // デフォルト値
+          body: post.body,
+          url: `/blog/${post.slug}/`
+        };
+      }
+    }
+    
+    return null;
+    
+  } catch (error) {
+    console.error('Error loading Firebase blog entry:', error);
+    return null;
+  }
+}
+
+// カテゴリ一覧を取得
+export async function getFirebaseCategories(): Promise<string[]> {
+  const entries = await getFirebaseBlogEntries();
+  const categories = new Set<string>();
+  
+  entries.forEach(entry => {
+    entry.categories.forEach(category => categories.add(category));
+  });
+  
+  return Array.from(categories).sort();
+}
+
+// タグ一覧を取得
+export async function getFirebaseTags(): Promise<string[]> {
+  const entries = await getFirebaseBlogEntries();
+  const tags = new Set<string>();
+  
+  entries.forEach(entry => {
+    entry.tags.forEach(tag => tags.add(tag));
+  });
+  
+  return Array.from(tags).sort();
+}
+
+// カテゴリ別記事を取得
+export async function getFirebaseBlogEntriesByCategory(category: string): Promise<BlogEntry[]> {
+  const entries = await getFirebaseBlogEntries();
+  return entries.filter(entry => entry.categories.includes(category));
+}
+
+// タグ別記事を取得
+export async function getFirebaseBlogEntriesByTag(tag: string): Promise<BlogEntry[]> {
+  const entries = await getFirebaseBlogEntries();
+  return entries.filter(entry => entry.tags.includes(tag));
+}

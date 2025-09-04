@@ -17,7 +17,10 @@ export const getTaxa = async (collection: CollectionKey, name: string) => {
   return taxonomy;
 };
 
-export const getTaxaMultiset = async (collection: CollectionKey, name: string) => {
+export const getTaxaMultiset = async (
+  collection: CollectionKey,
+  name: string,
+) => {
   const entries = await getEntries(collection);
   const taxonomyPages = entries.map((entry: any) => entry.data[name]);
   let taxonomies: string[] = [];

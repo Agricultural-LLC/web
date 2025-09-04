@@ -4,18 +4,18 @@
 
 ## 📋 プロジェクトステータス
 
-**現在**: 分離アーキテクチャに移行完了、Firebase Hostingで稼働中  
-**サイト**: https://agricultural-llc.web.app  
-**CMS**: 別リポジトリで管理（Agricultural-LLC/agricultural-cms）
+**現在**: 統合CMSアーキテクチャで稼働中、Firebase全面採用  
+**公開サイト**: https://agricultural-llc.web.app  
+**管理画面**: https://agricultural-llc.web.app/admin/
 
 | 機能 | ステータス | 詳細 |
 |------|-----------|------|
-| 🌐 本番サイト | ✅ 稼働中 | Firebase Hosting |
-| 📝 CMS管理画面 | ✅ 分離完了 | 独立リポジトリ（Netlify + Decap CMS） |
-| 🔄 CI/CD | ✅ 稼働中 | GitHub Actions |
-| 📊 パフォーマンス | ✅ 最適化済み | ビルド時間1.89秒、31ページ生成 |
-
-詳細は [MIGRATION_STATUS.md](./MIGRATION_STATUS.md) を参照してください。
+| 🌐 公開サイト | ✅ 稼働中 | Firebase Hosting |
+| 📝 CMS管理画面 | ✅ 統合完了 | `/admin/` - SimpleMDE エディタ |
+| 🗄️ データベース | ✅ 稼働中 | Firebase Realtime Database |
+| 📁 ファイル管理 | ✅ 稼働中 | Firebase Storage |
+| 🔐 認証システム | ✅ 稼働中 | Firebase Authentication |
+| 🔄 CI/CD | ✅ 稼働中 | GitHub Actions → Firebase |
 
 ## 概要
 
@@ -32,24 +32,37 @@
 
 ## アーキテクチャ
 
-このプロジェクトは**分離アーキテクチャ**を採用しています：
+このプロジェクトは**統合CMSアーキテクチャ**を採用しています：
 
-- **メインサイト** (本リポジトリ): コンテンツ配信に特化
-- **CMS管理** (別リポジトリ): コンテンツ編集に特化
-- **連携**: CMS→GitHub→自動デプロイ→メインサイト反映
+- **統合システム** (本リポジトリ): サイト配信 + CMS管理機能
+- **Firebase連携**: Database + Storage + Auth の完全統合
+- **リアルタイム更新**: 管理画面での編集が即座にサイトに反映
+- **シンプル運用**: 単一リポジトリで完結する保守性
 
 ## 技術スタック
 
+### Frontend
 - **フレームワーク**: Astro v5.12.8
 - **スタイリング**: Tailwind CSS
 - **UIコンポーネント**: React
-- **検索機能**: Fuse.js, Pagefind
+- **検索機能**: Fuse.js
 - **開発言語**: TypeScript
+- **エディタ**: SimpleMDE (Markdown)
+
+### Backend & Infrastructure
 - **ホスティング**: Firebase Hosting
+- **データベース**: Firebase Realtime Database  
+- **ファイルストレージ**: Firebase Storage
+- **認証**: Firebase Authentication
 - **CI/CD**: GitHub Actions
 - **フォーム**: SSGform
-- **コンテンツ管理**: Markdown-based with Astro Content Collections
-- **CMS**: 別リポジトリ管理 (Agricultural-LLC/agricultural-cms)
+
+### Content Management
+- **CMS**: 統合管理画面 (`/admin/`)
+- **エディタ**: SimpleMDE (streamlined single-pane view)
+- **リンクカード**: `[linkcard:url]` 構文で自動プレビュー生成
+- **画像管理**: Firebase Storage (drag & drop)
+- **リアルタイム**: Firebase Database sync
 
 ## 開発環境のセットアップ
 
@@ -106,23 +119,28 @@ src/
 │   ├── agriculture/  # 農業関連画像
 │   └── backgrounds/  # 背景画像
 ├── components/    # Astro/Reactコンポーネント
+│   ├── admin/     # CMS管理画面
 │   ├── base/      # 基本レイアウト
 │   ├── blog/      # ブログ関連
 │   ├── common/    # 共通コンポーネント
 │   ├── home/      # ホームページ専用
 │   └── search/    # 検索機能
-├── content/       # コンテンツ（Markdown）
+├── content/       # 静的コンテンツ（Markdown）
 │   ├── about/     # 会社概要
-│   ├── blog/      # ブログ記事
 │   └── home/      # トップページ
 ├── lib/           # ユーティリティ関数
+│   ├── cms/       # CMS機能
+│   ├── firebase/  # Firebase統合
+│   └── firebaseLoader.ts  # データローダー
 ├── pages/         # ページルーティング
+│   ├── admin/     # CMS管理画面
+│   ├── api/       # APIエンドポイント
 │   ├── index.astro    # トップページ
 │   ├── about.astro    # 会社概要
 │   ├── connect.astro  # つながる
 │   ├── cases.astro    # 事例紹介
 │   ├── contact.astro  # お問い合わせ
-│   └── blog/          # ブログ
+│   └── blog/          # ブログ（Firebase連携）
 ├── styles/        # グローバルスタイル
 └── types/         # TypeScript型定義
 ```
@@ -151,16 +169,19 @@ GitHub Actionsを使用した自動デプロイが設定されています。
 ### ブログ記事の追加
 
 #### CMS管理画面を使用（推奨）
-1. https://agricultural-llc.web.app/admin/ にアクセス
-2. 「ブログ記事」セクションで新規作成
-3. エディターで記事を執筆・プレビュー
-4. 保存すると自動的にプルリクエストが作成
-5. レビュー後にマージで本番反映
+1. https://agricultural-llc.web.app/admin/ でログイン
+2. 「ブログ記事」から「新規作成」または既存記事を編集
+3. SimpleMDEエディターで記事を執筆（ライブプレビュー付き）
+4. 画像はドラッグ&ドロップでFirebase Storageに自動アップロード
+5. 「公開」または「下書き保存」で即座にサイトに反映
 
-#### 直接編集（開発者向け）
-1. `src/content/blog/` ディレクトリに新しいMarkdownファイルを作成
-2. フロントマターに必要な情報を記載
-3. 記事本文を執筆
+#### CMS機能
+- **リアルタイム編集**: 保存と同時にサイトに反映
+- **リンクカード**: `[linkcard:https://example.com]` でWebページのプレビューを自動生成
+- **画像管理**: 自動最適化とCDN配信
+- **カテゴリ・タグ**: 柔軟な分類システム
+- **下書き機能**: 公開前の編集・確認
+- **レスポンシブ**: モバイル対応のエディタ（簡素化されたシングルペイン表示）
 
 ### 事例の追加
 
@@ -178,13 +199,19 @@ GitHub Actionsを使用した自動デプロイが設定されています。
 
 ## 最近のアップデート
 
-### 2025年09月03日 - Decap CMS統合完了
-- ✅ **Decap CMS実装完了** - ブラウザベースのコンテンツ管理
-- ✅ **Editorial Workflow導入** - プルリクエストベースの承認フロー
-- ✅ **管理画面稼働開始** - `/admin` でアクセス可能
-- ✅ **TypeScriptエラー完全解消** - authorsコンポーネント削除
-- ✅ **パフォーマンス最適化** - ビルド時間1.89秒達成
-- ✅ **CI/CD統合** - GitHub ActionsとCMSの完全連携
+### 2025年09月04日 - エディター改善とリンクカード機能追加
+- ✅ **リンクカード機能実装** - `[linkcard:url]`構文でWebページプレビューを自動生成
+- ✅ **エディター簡素化** - 2分割モードを廃止し、使いやすいシングルペイン表示に変更
+- ✅ **TypeScriptエラー修正** - EntryHeader.astroコンポーネントのデータ構造エラーを解決
+- ✅ **コードリファクタリング** - 不要なコード削除とドキュメント更新
+
+### Firebase統合CMS完成（2025年09月04日）
+- ✅ **統合CMSアーキテクチャ完了** - Firebase Database + Storage + Auth
+- ✅ **SimpleMDEエディタ導入** - ライブプレビュー付きマークダウン編集
+- ✅ **リアルタイム更新システム** - 編集内容が即座にサイトに反映
+- ✅ **画像管理システム** - ドラッグ&ドロップでFirebase Storage連携
+- ✅ **コードスニペット修正** - ライト/ダークモードの色コントラスト改善
+- ✅ **ドキュメント整理完了** - 不要ファイル削除とREADME最新化
 
 ## トラブルシューティング
 
