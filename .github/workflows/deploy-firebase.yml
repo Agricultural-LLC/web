@@ -51,13 +51,16 @@ jobs:
       env:
         NODE_ENV: production
     
+    - name: Install Firebase CLI
+      run: npm install -g firebase-tools
+      
     - name: Deploy Functions and Hosting to Firebase
       env:
         FIREBASE_SERVICE_ACCOUNT_AGRICULTURAL_LLC: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_AGRICULTURAL_LLC }}
       run: |
         echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_AGRICULTURAL_LLC }}' > $HOME/firebase-service-account.json
         export GOOGLE_APPLICATION_CREDENTIALS="$HOME/firebase-service-account.json"
-        npx firebase deploy --only functions,hosting --project agricultural-llc
+        firebase deploy --only functions,hosting --project agricultural-llc
         
     - name: Notify deployment success
       if: success()
