@@ -15,8 +15,8 @@ function initializeFirebase() {
     };
 
     console.log('🔧 Firebase Client initialization...');
-    console.log('Project ID:', import.meta.env.PUBLIC_FIREBASE_PROJECT_ID);
-    console.log('Database URL:', import.meta.env.PUBLIC_FIREBASE_DATABASE_URL);
+    console.log('Project ID:', import.meta.env.PUBLIC_FIREBASE_PROJECT_ID || 'agricultural-llc');
+    console.log('Database URL:', import.meta.env.PUBLIC_FIREBASE_DATABASE_URL || 'https://agricultural-llc-default-rtdb.asia-southeast1.firebasedatabase.app');
     
     initializeApp(firebaseConfig);
     console.log('✅ Firebase Client initialized');
