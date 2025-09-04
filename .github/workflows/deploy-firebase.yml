@@ -22,11 +22,21 @@ jobs:
     - name: Install dependencies
       run: npm ci
     
+    - name: Install Functions dependencies
+      run: cd functions && npm ci
+    
     - name: Create environment file
       run: |
         echo "FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}" >> .env
         echo "FIREBASE_PRIVATE_KEY='${{ secrets.FIREBASE_PRIVATE_KEY }}'" >> .env
         echo "FIREBASE_CLIENT_EMAIL=${{ secrets.FIREBASE_CLIENT_EMAIL }}" >> .env
+        echo "PUBLIC_FIREBASE_API_KEY=${{ secrets.PUBLIC_FIREBASE_API_KEY }}" >> .env
+        echo "PUBLIC_FIREBASE_AUTH_DOMAIN=agricultural-llc.firebaseapp.com" >> .env
+        echo "PUBLIC_FIREBASE_DATABASE_URL=https://agricultural-llc-default-rtdb.asia-southeast1.firebasedatabase.app" >> .env
+        echo "PUBLIC_FIREBASE_PROJECT_ID=agricultural-llc" >> .env
+        echo "PUBLIC_FIREBASE_STORAGE_BUCKET=agricultural-llc.firebasestorage.app" >> .env
+        echo "PUBLIC_FIREBASE_MESSAGING_SENDER_ID=${{ secrets.PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}" >> .env
+        echo "PUBLIC_FIREBASE_APP_ID=${{ secrets.PUBLIC_FIREBASE_APP_ID }}" >> .env
         echo "GH_PAT=${{ secrets.GH_PAT }}" >> .env
         echo "GH_OWNER=${{ secrets.GH_OWNER }}" >> .env
         echo "GH_REPO=${{ secrets.GH_REPO }}" >> .env
@@ -41,13 +51,13 @@ jobs:
       env:
         NODE_ENV: production
     
-    - name: Deploy to Firebase Hosting
-      uses: FirebaseExtended/action-hosting-deploy@v0
-      with:
-        repoToken: ${{ secrets.GITHUB_TOKEN }}
-        firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_AGRICULTURAL_LLC }}
-        channelId: live
-        projectId: agricultural-llc
+    - name: Deploy Functions and Hosting to Firebase
+      env:
+        FIREBASE_SERVICE_ACCOUNT_AGRICULTURAL_LLC: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_AGRICULTURAL_LLC }}
+      run: |
+        echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_AGRICULTURAL_LLC }}' > $HOME/firebase-service-account.json
+        export GOOGLE_APPLICATION_CREDENTIALS="$HOME/firebase-service-account.json"
+        npx firebase deploy --only functions,hosting --project agricultural-llc
         
     - name: Notify deployment success
       if: success()
