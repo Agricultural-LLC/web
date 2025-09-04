@@ -89,7 +89,7 @@ const entryDescription =
         if (!url) continue;
         
         try {
-          const response = await fetch('/api/link-preview', {
+          const response = await fetch('https://us-central1-agricultural-llc.cloudfunctions.net/api/link-preview', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
