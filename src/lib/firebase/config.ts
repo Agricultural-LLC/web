@@ -3,21 +3,21 @@ import { getAuth, connectAuthEmulator } from "firebase/auth";
 import { getDatabase, connectDatabaseEmulator } from "firebase/database";
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "your-api-key",
+  apiKey: import.meta.env.PUBLIC_FIREBASE_API_KEY || "your-api-key",
   authDomain:
-    process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ||
+    import.meta.env.PUBLIC_FIREBASE_AUTH_DOMAIN ||
     "agricultural-llc.firebaseapp.com",
   databaseURL:
-    process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL ||
+    import.meta.env.PUBLIC_FIREBASE_DATABASE_URL ||
     "https://agricultural-llc-default-rtdb.firebaseio.com",
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "agricultural-llc",
+  projectId: import.meta.env.PUBLIC_FIREBASE_PROJECT_ID || "agricultural-llc",
   storageBucket:
-    process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET ||
+    import.meta.env.PUBLIC_FIREBASE_STORAGE_BUCKET ||
     "agricultural-llc.appspot.com",
   messagingSenderId:
-    process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "123456789",
+    import.meta.env.PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "123456789",
   appId:
-    process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:123456789:web:abc123def456",
+    import.meta.env.PUBLIC_FIREBASE_APP_ID || "1:123456789:web:abc123def456",
 };
 
 const app = initializeApp(firebaseConfig);
