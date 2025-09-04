@@ -1,15 +1,13 @@
 ---
-import type { BlogEntry } from "@/types";
-import { sortByDate } from "@lib/sortFunctions";
 import EntryLayout from "@components/blog/EntryLayout.astro";
-import { getEntries } from "@lib/contentParser";
 import similerItems from "@lib/similarItems";
+import { getFirebaseBlogEntries, getFirebaseBlogEntry, type BlogEntry } from "@lib/firebaseLoader";
 
 export async function getStaticPaths() {
-  const entries = (await getEntries("blog", sortByDate)) as BlogEntry[];
+  const entries = await getFirebaseBlogEntries();
   const paths = entries.map((entry) => ({
     params: {
-      entry: entry.id,
+      entry: entry.slug, // スラッグを使用
     },
     props: { entry, entries },
   }));

@@ -1,5 +1,5 @@
-import { Octokit } from '@octokit/rest';
-import matter from 'gray-matter';
+import { Octokit } from "@octokit/rest";
+import matter from "gray-matter";
 
 export interface BlogPost {
   slug: string;
@@ -34,9 +34,9 @@ class GitHubCMS {
     this.octokit = new Octokit({
       auth: process.env.GH_PAT,
     });
-    this.owner = process.env.GH_OWNER || 'Agricultural-LLC';
-    this.repo = process.env.GH_REPO || 'web';
-    this.branch = process.env.GH_BRANCH || 'main';
+    this.owner = process.env.GH_OWNER || "Agricultural-LLC";
+    this.repo = process.env.GH_REPO || "web";
+    this.branch = process.env.GH_BRANCH || "main";
   }
 
   async getAllPosts(): Promise<BlogPost[]> {
@@ -44,18 +44,18 @@ class GitHubCMS {
       const { data } = await this.octokit.rest.repos.getContent({
         owner: this.owner,
         repo: this.repo,
-        path: 'src/content/blog',
+        path: "src/content/blog",
         ref: this.branch,
       });
 
       if (!Array.isArray(data)) {
-        throw new Error('Expected directory contents');
+        throw new Error("Expected directory contents");
       }
 
       const posts: BlogPost[] = [];
-      
+
       for (const file of data) {
-        if (file.type === 'file' && file.name.endsWith('.md')) {
+        if (file.type === "file" && file.name.endsWith(".md")) {
           const fileData = await this.octokit.rest.repos.getContent({
             owner: this.owner,
             repo: this.repo,
@@ -63,14 +63,18 @@ class GitHubCMS {
             ref: this.branch,
           });
 
-          if ('content' in fileData.data) {
-            const content = Buffer.from(fileData.data.content, 'base64').toString('utf-8');
-            const { data: frontmatter, content: markdownContent } = matter(content);
-            
+          if ("content" in fileData.data) {
+            const content = Buffer.from(
+              fileData.data.content,
+              "base64",
+            ).toString("utf-8");
+            const { data: frontmatter, content: markdownContent } =
+              matter(content);
+
             posts.push({
-              slug: file.name.replace('.md', ''),
-              title: frontmatter.title || '',
-              description: frontmatter.description || '',
+              slug: file.name.replace(".md", ""),
+              title: frontmatter.title || "",
+              description: frontmatter.description || "",
               date: frontmatter.date || new Date().toISOString(),
               authors: frontmatter.authors || [],
               categories: frontmatter.categories || [],
@@ -83,9 +87,11 @@ class GitHubCMS {
         }
       }
 
-      return posts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      return posts.sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+      );
     } catch (error) {
-      console.error('Error fetching posts:', error);
+      console.error("Error fetching posts:", error);
       throw error;
     }
   }
@@ -99,14 +105,14 @@ class GitHubCMS {
         ref: this.branch,
       });
 
-      if ('content' in data) {
-        const content = Buffer.from(data.content, 'base64').toString('utf-8');
+      if ("content" in data) {
+        const content = Buffer.from(data.content, "base64").toString("utf-8");
         const { data: frontmatter, content: markdownContent } = matter(content);
-        
+
         return {
           slug,
-          title: frontmatter.title || '',
-          description: frontmatter.description || '',
+          title: frontmatter.title || "",
+          description: frontmatter.description || "",
           date: frontmatter.date || new Date().toISOString(),
           authors: frontmatter.authors || [],
           categories: frontmatter.categories || [],
@@ -122,12 +128,16 @@ class GitHubCMS {
       if ((error as any).status === 404) {
         return null;
       }
-      console.error('Error fetching post:', error);
+      console.error("Error fetching post:", error);
       throw error;
     }
   }
 
-  async createPost(slug: string, frontmatter: PostFrontmatter, content: string): Promise<BlogPost> {
+  async createPost(
+    slug: string,
+    frontmatter: PostFrontmatter,
+    content: string,
+  ): Promise<BlogPost> {
     try {
       // Check if post already exists
       const existingPost = await this.getPost(slug);
@@ -137,23 +147,31 @@ class GitHubCMS {
 
       const fileContent = matter.stringify(content, {
         ...frontmatter,
-        date: frontmatter.date instanceof Date ? frontmatter.date.toISOString() : frontmatter.date,
+        date:
+          frontmatter.date instanceof Date
+            ? frontmatter.date.toISOString()
+            : frontmatter.date,
       });
 
-      const { data } = await this.octokit.rest.repos.createOrUpdateFileContents({
-        owner: this.owner,
-        repo: this.repo,
-        path: `src/content/blog/${slug}.md`,
-        message: `feat: Add new blog post "${frontmatter.title}"`,
-        content: Buffer.from(fileContent).toString('base64'),
-        branch: this.branch,
-      });
+      const { data } = await this.octokit.rest.repos.createOrUpdateFileContents(
+        {
+          owner: this.owner,
+          repo: this.repo,
+          path: `src/content/blog/${slug}.md`,
+          message: `feat: Add new blog post "${frontmatter.title}"`,
+          content: Buffer.from(fileContent).toString("base64"),
+          branch: this.branch,
+        },
+      );
 
       return {
         slug,
         title: frontmatter.title,
         description: frontmatter.description,
-        date: frontmatter.date instanceof Date ? frontmatter.date.toISOString() : frontmatter.date,
+        date:
+          frontmatter.date instanceof Date
+            ? frontmatter.date.toISOString()
+            : frontmatter.date,
         authors: frontmatter.authors || [],
         categories: frontmatter.categories || [],
         tags: frontmatter.tags || [],
@@ -162,33 +180,46 @@ class GitHubCMS {
         sha: data.content?.sha,
       };
     } catch (error) {
-      console.error('Error creating post:', error);
+      console.error("Error creating post:", error);
       throw error;
     }
   }
 
-  async updatePost(slug: string, frontmatter: PostFrontmatter, content: string, sha: string): Promise<BlogPost> {
+  async updatePost(
+    slug: string,
+    frontmatter: PostFrontmatter,
+    content: string,
+    sha: string,
+  ): Promise<BlogPost> {
     try {
       const fileContent = matter.stringify(content, {
         ...frontmatter,
-        date: frontmatter.date instanceof Date ? frontmatter.date.toISOString() : frontmatter.date,
+        date:
+          frontmatter.date instanceof Date
+            ? frontmatter.date.toISOString()
+            : frontmatter.date,
       });
 
-      const { data } = await this.octokit.rest.repos.createOrUpdateFileContents({
-        owner: this.owner,
-        repo: this.repo,
-        path: `src/content/blog/${slug}.md`,
-        message: `feat: Update blog post "${frontmatter.title}"`,
-        content: Buffer.from(fileContent).toString('base64'),
-        sha,
-        branch: this.branch,
-      });
+      const { data } = await this.octokit.rest.repos.createOrUpdateFileContents(
+        {
+          owner: this.owner,
+          repo: this.repo,
+          path: `src/content/blog/${slug}.md`,
+          message: `feat: Update blog post "${frontmatter.title}"`,
+          content: Buffer.from(fileContent).toString("base64"),
+          sha,
+          branch: this.branch,
+        },
+      );
 
       return {
         slug,
         title: frontmatter.title,
         description: frontmatter.description,
-        date: frontmatter.date instanceof Date ? frontmatter.date.toISOString() : frontmatter.date,
+        date:
+          frontmatter.date instanceof Date
+            ? frontmatter.date.toISOString()
+            : frontmatter.date,
         authors: frontmatter.authors || [],
         categories: frontmatter.categories || [],
         tags: frontmatter.tags || [],
@@ -197,7 +228,7 @@ class GitHubCMS {
         sha: data.content?.sha,
       };
     } catch (error) {
-      console.error('Error updating post:', error);
+      console.error("Error updating post:", error);
       throw error;
     }
   }
@@ -213,26 +244,28 @@ class GitHubCMS {
         branch: this.branch,
       });
     } catch (error) {
-      console.error('Error deleting post:', error);
+      console.error("Error deleting post:", error);
       throw error;
     }
   }
 
   async uploadImage(filename: string, buffer: Buffer): Promise<string> {
     try {
-      const { data } = await this.octokit.rest.repos.createOrUpdateFileContents({
-        owner: this.owner,
-        repo: this.repo,
-        path: `public/blog/${filename}`,
-        message: `feat: Add blog image ${filename}`,
-        content: buffer.toString('base64'),
-        branch: this.branch,
-      });
+      const { data } = await this.octokit.rest.repos.createOrUpdateFileContents(
+        {
+          owner: this.owner,
+          repo: this.repo,
+          path: `public/blog/${filename}`,
+          message: `feat: Add blog image ${filename}`,
+          content: buffer.toString("base64"),
+          branch: this.branch,
+        },
+      );
 
       // Return the public URL for the uploaded image
       return `/blog/${filename}`;
     } catch (error) {
-      console.error('Error uploading image:', error);
+      console.error("Error uploading image:", error);
       throw error;
     }
   }

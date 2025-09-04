@@ -1,4 +1,4 @@
-import type { SearchableEntry } from "@/types"
+import type { SearchableEntry } from "@/types";
 import Fuse from "fuse.js";
 import React, { useEffect, useRef, useState } from "react";
 import { plainify } from "@lib/textConverter";
@@ -94,16 +94,20 @@ const SearchPage = ({ searchList }: Props) => {
               <div className="py-2 px-0" key={`search-${index}`}>
                 <div className="h-full glass col-10 lg:col-8 mx-auto rounded-lg p-4 intersect:animate-fade opacity-0">
                   <h4 className="mb-2">
-                    <a href={"/" + getPath(item)}>
-                      {(item as any).data.title}
-                    </a>
+                    <a href={"/" + getPath(item)}>{(item as any).data.title}</a>
                   </h4>
-                  { (item as any).data.description && (
+                  {(item as any).data.description && (
                     <p className="">{(item as any).data.description}</p>
                   )}
-                  {  !(item as any).data.description && (item as any).data.autodescription && (item as any).body && (
-                    <p className="">{plainify((item as any).body.slice(0, descriptionLength))}</p>
-                  )}
+                  {!(item as any).data.description &&
+                    (item as any).data.autodescription &&
+                    (item as any).body && (
+                      <p className="">
+                        {plainify(
+                          (item as any).body.slice(0, descriptionLength),
+                        )}
+                      </p>
+                    )}
                 </div>
               </div>
             ))

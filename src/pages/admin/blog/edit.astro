@@ -1,0 +1,826 @@
+---
+// Get Firebase configuration from environment variables
+const firebaseConfig = {
+  apiKey: import.meta.env.PUBLIC_FIREBASE_API_KEY,
+  authDomain: import.meta.env.PUBLIC_FIREBASE_AUTH_DOMAIN,
+  databaseURL: import.meta.env.PUBLIC_FIREBASE_DATABASE_URL,
+  projectId: import.meta.env.PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.PUBLIC_FIREBASE_APP_ID
+};
+---
+<!DOCTYPE html>
+<html lang="ja" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ブログ記事編集 - 農業合同会社 CMS</title>
+  <meta name="description" content="ブログ記事の編集画面" />
+  <meta name="robots" content="noindex, nofollow" />
+  
+  <!-- Firebase Configuration using inline script -->
+  <script define:vars={{ firebaseConfig }}>
+    // Make firebaseConfig globally available
+    window.firebaseConfig = firebaseConfig;
+    console.log('=== FIREBASE CONFIG DEBUG ===');
+    console.log('firebaseConfig from define:vars:', firebaseConfig);
+    console.log('Database URL:', firebaseConfig.databaseURL);
+    console.log('===============================');
+  </script>
+  
+  <!-- Tailwind CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  
+  <!-- SimpleMDE CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+  
+  <style>
+    body {
+      font-family: 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+      background-color: #f8fafc;
+    }
+    
+    .form-section {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      margin-bottom: 24px;
+    }
+    
+    .CodeMirror, .editor-preview {
+      font-family: 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, monospace;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    
+    .editor-toolbar {
+      border-top: none;
+      border-left: none;
+      border-right: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header class="bg-white shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+          <div class="flex items-center">
+            <a href="/admin/blog/" class="text-blue-600 hover:text-blue-800 mr-4">
+              ← 記事一覧
+            </a>
+            <h1 class="text-xl font-semibold text-gray-800" id="page-title">記事編集</h1>
+          </div>
+          
+          <div class="flex items-center space-x-4">
+            <button 
+              id="save-draft-button"
+              class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition duration-200"
+            >
+              下書き保存
+            </button>
+            <button 
+              id="publish-button"
+              class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition duration-200"
+            >
+              公開
+            </button>
+            <span id="user-email" class="text-gray-600 text-sm"></span>
+            <button 
+              id="logout-button"
+              class="text-gray-600 hover:text-gray-800 text-sm px-3 py-2 rounded-md hover:bg-gray-100 transition duration-200"
+            >
+              ログアウト
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+    
+    <!-- Loading State -->
+    <div id="loading" class="max-w-4xl mx-auto py-12 text-center">
+      <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <p class="mt-2 text-gray-600">読み込み中...</p>
+    </div>
+    
+    <!-- Main Content -->
+    <main id="editor-content" class="hidden max-w-4xl mx-auto py-6 px-4">
+      <form id="post-form">
+        
+        <!-- Basic Information Section -->
+        <div class="form-section">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-800">基本情報</h2>
+          </div>
+          <div class="p-6 space-y-6">
+            
+            <div>
+              <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
+                タイトル *
+              </label>
+              <input 
+                type="text" 
+                id="title" 
+                name="title"
+                required
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="記事のタイトルを入力"
+              />
+            </div>
+            
+            <div>
+              <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
+                説明 *
+              </label>
+              <textarea 
+                id="description" 
+                name="description"
+                rows="3"
+                required
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="記事の説明を入力（SEO用）"
+              ></textarea>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label for="date" class="block text-sm font-medium text-gray-700 mb-2">
+                  公開日 *
+                </label>
+                <input 
+                  type="date" 
+                  id="date" 
+                  name="date"
+                  required
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              
+              <div>
+                <label for="image" class="block text-sm font-medium text-gray-700 mb-2">
+                  記事画像
+                </label>
+                
+                <!-- Image Upload Area -->
+                <div id="image-upload-area" class="space-y-4">
+                  <!-- Upload Dropzone -->
+                  <div 
+                    id="upload-dropzone"
+                    class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-gray-400 transition-colors"
+                  >
+                    <div id="upload-content">
+                      <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                      <p class="text-gray-600 mb-2">
+                        <span class="font-medium text-blue-600 hover:text-blue-500">クリックしてファイルを選択</span>
+                        またはドラッグ&ドロップ
+                      </p>
+                      <p class="text-xs text-gray-500">PNG, JPG, GIF, WebP (最大5MB)</p>
+                    </div>
+                    
+                    <!-- Upload Progress -->
+                    <div id="upload-progress" class="hidden space-y-2">
+                      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                      <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div id="progress-bar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                      </div>
+                      <p class="text-sm text-gray-600">アップロード中...</p>
+                    </div>
+                  </div>
+                  
+                  <!-- Image Preview -->
+                  <div id="image-preview" class="hidden space-y-3">
+                    <div class="relative inline-block">
+                      <img id="preview-image" src="" alt="プレビュー" class="max-w-full h-auto max-h-64 rounded-lg shadow-sm">
+                      <button 
+                        type="button"
+                        id="remove-image"
+                        class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                        title="画像を削除"
+                      >
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                      </button>
+                    </div>
+                    <div class="text-sm text-gray-600">
+                      <p>✅ アップロード完了</p>
+                    </div>
+                  </div>
+                  
+                  <!-- Error Message -->
+                  <div id="upload-error" class="hidden bg-red-50 border border-red-200 rounded-md p-3">
+                    <div class="flex">
+                      <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                        </svg>
+                      </div>
+                      <div class="ml-3">
+                        <p id="error-text" class="text-sm text-red-700"></p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Hidden input for image URL -->
+                <input 
+                  type="hidden" 
+                  id="image" 
+                  name="image"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Metadata Section -->
+        <div class="form-section">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-800">メタデータ</h2>
+          </div>
+          <div class="p-6 space-y-6">
+            
+            <div>
+              <label for="authors" class="block text-sm font-medium text-gray-700 mb-2">
+                著者 *
+              </label>
+              <input 
+                type="text" 
+                id="authors" 
+                name="authors"
+                value="admin"
+                required
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="admin"
+              />
+              <p class="mt-1 text-xs text-gray-500">複数の場合はカンマ区切り</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label for="categories" class="block text-sm font-medium text-gray-700 mb-2">
+                  カテゴリー *
+                </label>
+                <select 
+                  id="categories" 
+                  name="categories"
+                  multiple
+                  required
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="はじめての方へ">はじめての方へ</option>
+                  <option value="実践ノウハウ">実践ノウハウ</option>
+                  <option value="成功事例">成功事例</option>
+                  <option value="農業の未来と手段">農業の未来と手段</option>
+                </select>
+                <p class="mt-1 text-xs text-gray-500">Ctrlキーを押しながら複数選択可</p>
+              </div>
+              
+              <div>
+                <label for="tags" class="block text-sm font-medium text-gray-700 mb-2">
+                  タグ
+                </label>
+                <input 
+                  type="text" 
+                  id="tags" 
+                  name="tags"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="スマート農業, IoT, センサー"
+                />
+                <p class="mt-1 text-xs text-gray-500">カンマ区切りで入力</p>
+              </div>
+            </div>
+
+            <!-- Draft Status -->
+            <div class="mt-6">
+              <div class="flex items-center">
+                <input 
+                  type="checkbox" 
+                  id="draft" 
+                  name="draft"
+                  class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <label for="draft" class="ml-2 block text-sm text-gray-700">
+                  下書きとして保存（公開しない）
+                </label>
+              </div>
+              <p class="mt-1 text-xs text-gray-500">チェックを外すと記事が公開されます</p>
+            </div>
+            
+          </div>
+        </div>
+        
+        <!-- Content Editor Section -->
+        <div class="form-section">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-800">本文</h2>
+          </div>
+          <div class="p-6">
+            <textarea id="markdown-editor" style="min-height: 500px;"></textarea>
+          </div>
+        </div>
+        
+        <!-- Error/Success Messages -->
+        <div id="message-area" class="hidden mb-6">
+          <div id="error-message" class="hidden p-4 bg-red-100 border border-red-400 text-red-700 rounded-md text-sm"></div>
+          <div id="success-message" class="hidden p-4 bg-green-100 border border-green-400 text-green-700 rounded-md text-sm"></div>
+        </div>
+        
+      </form>
+    </main>
+  </div>
+
+  <!-- SimpleMDE JavaScript -->
+  <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+
+  <!-- Firebase SDK v10 - Modular API -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+    import { getDatabase, ref, set, get, update, push } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+    import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, uploadBytesResumable } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
+    
+    // Wait for window.firebaseConfig to be available
+    if (!window.firebaseConfig) {
+      console.error('Firebase config not available from inline script');
+      document.body.innerHTML = '<div style="padding: 2rem; text-align: center; color: red;">Firebase設定エラー: 設定が正しく読み込まれませんでした</div>';
+      throw new Error('Firebase config not loaded');
+    }
+
+    // Use firebaseConfig from global window object
+    const config = window.firebaseConfig;
+
+    // Validate config exists
+    if (!config || !config.apiKey) {
+      console.error('Firebase config not properly loaded from Astro');
+      document.body.innerHTML = '<div style="padding: 2rem; text-align: center; color: red;">Firebase設定エラー: 環境変数が正しく読み込まれませんでした</div>';
+      throw new Error('Firebase config not loaded');
+    }
+
+    // Initialize Firebase
+    const app = initializeApp(config);
+    const auth = getAuth(app);
+    const database = getDatabase(app, config.databaseURL);
+    const storage = getStorage(app);
+
+    console.log('Firebase initialized with modular API');
+
+    // Global state
+    let currentPostId = null;
+    let simpleMDE = null;
+    
+    // DOM elements
+    const loading = document.getElementById('loading');
+    const editorContent = document.getElementById('editor-content');
+    const pageTitle = document.getElementById('page-title');
+    const userEmail = document.getElementById('user-email');
+    const logoutButton = document.getElementById('logout-button');
+    const saveDraftButton = document.getElementById('save-draft-button');
+    const publishButton = document.getElementById('publish-button');
+    const messageArea = document.getElementById('message-area');
+    const errorMessage = document.getElementById('error-message');
+    const successMessage = document.getElementById('success-message');
+
+    // Form elements
+    const titleInput = document.getElementById('title');
+    const descriptionInput = document.getElementById('description');
+    const dateInput = document.getElementById('date');
+    const imageInput = document.getElementById('image');
+    const authorsInput = document.getElementById('authors');
+    const categoriesSelect = document.getElementById('categories');
+    const tagsInput = document.getElementById('tags');
+
+    // Image upload elements
+    const uploadDropzone = document.getElementById('upload-dropzone');
+    const uploadContent = document.getElementById('upload-content');
+    const uploadProgress = document.getElementById('upload-progress');
+    const progressBar = document.getElementById('progress-bar');
+    const imagePreview = document.getElementById('image-preview');
+    const previewImage = document.getElementById('preview-image');
+    const removeImageBtn = document.getElementById('remove-image');
+    const uploadError = document.getElementById('upload-error');
+    const errorText = document.getElementById('error-text');
+
+    // Auth check and initialization
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = '/admin/';
+        return;
+      }
+      
+      userEmail.textContent = user.email;
+      initializeEditor();
+      initializeImageUpload();
+    });
+
+    // Initialize editor
+    function initializeEditor() {
+      // Set default date to today
+      const today = new Date().toISOString().split('T')[0];
+      dateInput.value = today;
+      
+      // Get post ID from URL if editing
+      const urlParams = new URLSearchParams(window.location.search);
+      currentPostId = urlParams.get('id');
+      
+      if (currentPostId) {
+        pageTitle.textContent = '記事編集';
+        loadPost(currentPostId);
+      } else {
+        pageTitle.textContent = '新規記事作成';
+        showEditor();
+      }
+    }
+
+    // Load existing post
+    async function loadPost(postId) {
+      try {
+        const postRef = ref(database, `cms/blog/${postId}`);
+        const snapshot = await get(postRef);
+        
+        if (snapshot.exists()) {
+          const post = snapshot.val();
+          populateForm(post);
+          showEditor();
+        } else {
+          showError('記事が見つかりません');
+        }
+      } catch (error) {
+        console.error('Error loading post:', error);
+        showError('記事の読み込みに失敗しました');
+      }
+    }
+
+    // Populate form with post data
+    function populateForm(post) {
+      console.log('Populating form with post:', post);
+      
+      titleInput.value = post.title || '';
+      descriptionInput.value = post.description || '';
+      dateInput.value = post.date || '';
+      imageInput.value = post.image || '';
+      authorsInput.value = Array.isArray(post.authors) ? post.authors.join(', ') : post.authors || 'admin';
+      tagsInput.value = Array.isArray(post.tags) ? post.tags.join(', ') : post.tags || '';
+      
+      // Set categories
+      if (Array.isArray(post.categories)) {
+        Array.from(categoriesSelect.options).forEach(option => {
+          option.selected = post.categories.includes(option.value);
+        });
+      }
+      
+      // Show image preview if image exists
+      if (post.image && post.image.trim()) {
+        showImagePreview(post.image);
+      }
+      
+      // Store the post body for later use when editor is ready
+      window.pendingPostBody = post.body || '';
+      console.log('Set pending post body:', window.pendingPostBody);
+    }
+
+    // Show editor
+    function showEditor() {
+      loading.classList.add('hidden');
+      editorContent.classList.remove('hidden');
+      
+      // Initialize SimpleMDE
+      if (window.SimpleMDE && !simpleMDE) {
+        console.log('Initializing SimpleMDE...');
+        
+        // Get initial value from pending body or empty string
+        const initialValue = window.pendingPostBody || '';
+        console.log('Editor initial value:', initialValue);
+        
+        const textarea = document.getElementById('markdown-editor');
+        textarea.value = initialValue;
+        
+        simpleMDE = new SimpleMDE({
+          element: textarea,
+          initialValue: initialValue,
+          spellChecker: false,
+          status: ['autosave', 'lines', 'words', 'cursor'],
+          toolbar: [
+            'bold', 'italic', 'heading', '|',
+            'quote', 'unordered-list', 'ordered-list', '|',
+            'link', 'image', '|',
+            'preview', 'side-by-side', 'fullscreen', '|',
+            'guide'
+          ],
+          shortcuts: {
+            togglePreview: 'Ctrl-P',
+            toggleSideBySide: 'F9',
+            toggleFullScreen: 'F11'
+          }
+        });
+        
+        console.log('SimpleMDE initialized with content:', initialValue);
+        
+        // Clear pending body after setting
+        window.pendingPostBody = null;
+      }
+    }
+
+    // Event handlers
+    logoutButton.addEventListener('click', () => {
+      signOut(auth);
+    });
+
+    saveDraftButton.addEventListener('click', () => {
+      savePost(true);
+    });
+
+    publishButton.addEventListener('click', () => {
+      savePost(false);
+    });
+
+    // Save post
+    async function savePost(isDraft) {
+      try {
+        const formData = getFormData();
+        formData.draft = isDraft;
+        
+        if (!validateForm(formData)) {
+          return;
+        }
+        
+        const postData = {
+          ...formData,
+          updatedAt: new Date().toISOString()
+        };
+        
+        if (currentPostId) {
+          // Update existing post
+          await update(ref(database, `cms/blog/${currentPostId}`), postData);
+          showSuccess(`記事が${isDraft ? '下書き保存' : '公開'}されました`);
+        } else {
+          // Create new post
+          postData.createdAt = new Date().toISOString();
+          postData.slug = generateSlug(formData.title);
+          
+          const newPostRef = push(ref(database, 'cms/blog'));
+          await set(newPostRef, postData);
+          
+          currentPostId = newPostRef.key;
+          const newUrl = new URL(window.location.href);
+          newUrl.searchParams.set('id', currentPostId);
+          history.replaceState({}, '', newUrl);
+          
+          pageTitle.textContent = '記事編集';
+          showSuccess(`記事が${isDraft ? '下書き保存' : '公開'}されました`);
+        }
+      } catch (error) {
+        console.error('Error saving post:', error);
+        showError('保存に失敗しました: ' + error.message);
+      }
+    }
+
+    // Get form data
+    function getFormData() {
+      const selectedCategories = Array.from(categoriesSelect.selectedOptions).map(option => option.value);
+      const tagsArray = tagsInput.value.split(',').map(tag => tag.trim()).filter(tag => tag);
+      const authorsArray = authorsInput.value.split(',').map(author => author.trim()).filter(author => author);
+      
+      return {
+        title: titleInput.value.trim(),
+        description: descriptionInput.value.trim(),
+        date: dateInput.value,
+        image: imageInput.value.trim(),
+        authors: authorsArray.length > 0 ? authorsArray : ['admin'],
+        categories: selectedCategories,
+        tags: tagsArray,
+        body: getMarkdownContent()
+      };
+    }
+
+    // Get markdown content from editor
+    function getMarkdownContent() {
+      if (simpleMDE) {
+        const value = simpleMDE.value();
+        console.log('Getting markdown content from SimpleMDE:', value);
+        return value || '';
+      }
+      
+      // Fallback: try to get from textarea
+      const textarea = document.getElementById('markdown-editor');
+      const fallbackValue = textarea ? textarea.value : '';
+      console.log('Fallback markdown content:', fallbackValue);
+      return fallbackValue;
+    }
+
+    // Validate form
+    function validateForm(data) {
+      const errors = [];
+      
+      if (!data.title) errors.push('タイトルは必須です');
+      if (!data.description) errors.push('説明は必須です');
+      if (!data.date) errors.push('公開日は必須です');
+      if (!data.body) errors.push('本文は必須です');
+      if (data.categories.length === 0) errors.push('カテゴリーを選択してください');
+      
+      if (errors.length > 0) {
+        showError(errors.join('\n'));
+        return false;
+      }
+      
+      return true;
+    }
+
+    // Generate slug from title
+    function generateSlug(title) {
+      return title
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .trim();
+    }
+
+    // Show error message
+    function showError(message) {
+      errorMessage.textContent = message;
+      errorMessage.classList.remove('hidden');
+      successMessage.classList.add('hidden');
+      messageArea.classList.remove('hidden');
+      
+      setTimeout(() => {
+        messageArea.classList.add('hidden');
+      }, 5000);
+    }
+
+    // Show success message
+    function showSuccess(message) {
+      successMessage.textContent = message;
+      successMessage.classList.remove('hidden');
+      errorMessage.classList.add('hidden');
+      messageArea.classList.remove('hidden');
+      
+      setTimeout(() => {
+        messageArea.classList.add('hidden');
+      }, 3000);
+    }
+
+    // Image upload functionality
+    function initializeImageUpload() {
+      // Hidden file input for click upload
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = 'image/*';
+      fileInput.style.display = 'none';
+      document.body.appendChild(fileInput);
+
+      // Click upload
+      uploadDropzone.addEventListener('click', () => {
+        if (!uploadProgress.classList.contains('hidden')) return; // Don't allow clicking during upload
+        fileInput.click();
+      });
+
+      fileInput.addEventListener('change', (e) => {
+        const files = e.target.files;
+        if (files && files.length > 0) {
+          handleFileUpload(files[0]);
+        }
+      });
+
+      // Drag and drop functionality
+      uploadDropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadDropzone.classList.add('border-blue-400', 'bg-blue-50');
+      });
+
+      uploadDropzone.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        uploadDropzone.classList.remove('border-blue-400', 'bg-blue-50');
+      });
+
+      uploadDropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadDropzone.classList.remove('border-blue-400', 'bg-blue-50');
+        
+        const files = e.dataTransfer.files;
+        if (files && files.length > 0) {
+          handleFileUpload(files[0]);
+        }
+      });
+
+      // Remove image button
+      removeImageBtn.addEventListener('click', () => {
+        removeImage();
+      });
+    }
+
+    async function handleFileUpload(file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        showUploadError('アップロードできるのは画像ファイルのみです');
+        return;
+      }
+
+      // Validate file size (5MB)
+      const maxSize = 5 * 1024 * 1024;
+      if (file.size > maxSize) {
+        showUploadError('ファイルサイズは5MB以下にしてください');
+        return;
+      }
+
+      try {
+        // Hide upload content and show progress
+        uploadContent.classList.add('hidden');
+        uploadProgress.classList.remove('hidden');
+        uploadError.classList.add('hidden');
+
+        // Generate unique filename
+        const timestamp = Date.now();
+        const randomString = Math.random().toString(36).substring(2);
+        const fileExtension = file.name.split('.').pop();
+        const fileName = `${timestamp}_${randomString}.${fileExtension}`;
+
+        // Create storage reference
+        const fileRef = storageRef(storage, `blog/${fileName}`);
+        
+        // Upload file with progress tracking
+        const uploadTask = uploadBytesResumable(fileRef, file, {
+          contentType: file.type,
+          customMetadata: {
+            originalName: file.name,
+            uploadedAt: new Date().toISOString()
+          }
+        });
+
+        // Track upload progress
+        uploadTask.on('state_changed', 
+          (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            progressBar.style.width = progress + '%';
+          },
+          (error) => {
+            console.error('Upload error:', error);
+            showUploadError('アップロードに失敗しました: ' + error.message);
+            resetUploadUI();
+          },
+          async () => {
+            try {
+              // Upload completed successfully, get download URL
+              const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+              
+              // Set the image URL in the hidden input
+              imageInput.value = downloadURL;
+              
+              // Show preview
+              showImagePreview(downloadURL);
+              
+              // Reset upload UI
+              uploadContent.classList.remove('hidden');
+              uploadProgress.classList.add('hidden');
+              progressBar.style.width = '0%';
+              
+            } catch (error) {
+              console.error('Error getting download URL:', error);
+              showUploadError('URLの取得に失敗しました');
+              resetUploadUI();
+            }
+          }
+        );
+
+      } catch (error) {
+        console.error('Upload error:', error);
+        showUploadError('アップロードに失敗しました: ' + error.message);
+        resetUploadUI();
+      }
+    }
+
+    function showImagePreview(imageUrl) {
+      previewImage.src = imageUrl;
+      uploadDropzone.classList.add('hidden');
+      imagePreview.classList.remove('hidden');
+      uploadError.classList.add('hidden');
+    }
+
+    function removeImage() {
+      imageInput.value = '';
+      previewImage.src = '';
+      imagePreview.classList.add('hidden');
+      uploadDropzone.classList.remove('hidden');
+      uploadError.classList.add('hidden');
+      resetUploadUI();
+    }
+
+    function showUploadError(message) {
+      errorText.textContent = message;
+      uploadError.classList.remove('hidden');
+      resetUploadUI();
+    }
+
+    function resetUploadUI() {
+      uploadContent.classList.remove('hidden');
+      uploadProgress.classList.add('hidden');
+      progressBar.style.width = '0%';
+    }
+    
+  </script>
+</body>
+</html>

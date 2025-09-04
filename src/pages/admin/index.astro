@@ -1,0 +1,356 @@
+---
+// Get Firebase configuration from environment variables
+const firebaseConfig = {
+  apiKey: import.meta.env.PUBLIC_FIREBASE_API_KEY,
+  authDomain: import.meta.env.PUBLIC_FIREBASE_AUTH_DOMAIN,
+  databaseURL: import.meta.env.PUBLIC_FIREBASE_DATABASE_URL,
+  projectId: import.meta.env.PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.PUBLIC_FIREBASE_APP_ID
+};
+
+// Server-side debug: Log environment variables
+console.log('=== SERVER-SIDE DEBUG ===');
+console.log('PUBLIC_FIREBASE_API_KEY:', import.meta.env.PUBLIC_FIREBASE_API_KEY);
+console.log('PUBLIC_FIREBASE_DATABASE_URL:', import.meta.env.PUBLIC_FIREBASE_DATABASE_URL);
+console.log('firebaseConfig object:', firebaseConfig);
+console.log('=========================');
+
+// Validate that all required config values are present
+const requiredEnvVars = [
+  'PUBLIC_FIREBASE_API_KEY',
+  'PUBLIC_FIREBASE_AUTH_DOMAIN',
+  'PUBLIC_FIREBASE_DATABASE_URL',
+  'PUBLIC_FIREBASE_PROJECT_ID'
+];
+
+const missingVars = requiredEnvVars.filter(varName => !import.meta.env[varName]);
+if (missingVars.length > 0) {
+  console.warn('Missing Firebase environment variables:', missingVars);
+}
+---
+<!DOCTYPE html>
+<html lang="ja" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>農業合同会社 CMS - 管理画面</title>
+  <meta name="description" content="農業合同会社 CMS管理システム" />
+  <meta name="robots" content="noindex, nofollow" />
+  
+  <!-- Firebase Configuration using inline script -->
+  <script define:vars={{ firebaseConfig }}>
+    // Make firebaseConfig globally available
+    window.firebaseConfig = firebaseConfig;
+    console.log('=== FIREBASE CONFIG DEBUG ===');
+    console.log('firebaseConfig from define:vars:', firebaseConfig);
+    console.log('Database URL:', firebaseConfig.databaseURL);
+    console.log('===============================');
+  </script>
+  
+  <!-- Firebase SDK v10 - Modular API -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+    import { getDatabase, ref, set, get, child } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+    
+    // Wait for window.firebaseConfig to be available
+    if (!window.firebaseConfig) {
+      console.error('Firebase config not available from inline script');
+      document.body.innerHTML = '<div style="padding: 2rem; text-align: center; color: red;">Firebase設定エラー: 設定が正しく読み込まれませんでした</div>';
+      throw new Error('Firebase config not loaded');
+    }
+
+    // Use firebaseConfig from global window object
+    const config = window.firebaseConfig;
+
+    // Validate config exists
+    if (!config || !config.apiKey) {
+      console.error('Firebase config not properly loaded from Astro');
+      document.body.innerHTML = '<div style="padding: 2rem; text-align: center; color: red;">Firebase設定エラー: 環境変数が正しく読み込まれませんでした</div>';
+      throw new Error('Firebase config not loaded');
+    }
+
+    // Initialize Firebase
+    const app = initializeApp(config);
+    const auth = getAuth(app);
+    const database = getDatabase(app, config.databaseURL);
+
+    console.log('Firebase initialized with modular API');
+    console.log('Config values being used:');
+    console.log('- API Key:', config.apiKey);
+    console.log('- Auth Domain:', config.authDomain);
+    console.log('- Database URL:', config.databaseURL);
+    console.log('- Project ID:', config.projectId);
+    console.log('App:', app);
+    console.log('Auth:', auth);
+    console.log('Database:', database);
+
+    // DOM elements
+    const loading = document.getElementById('loading');
+    const loginForm = document.getElementById('login-form');
+    const dashboard = document.getElementById('dashboard');
+    const loginFormElement = document.getElementById('login-form-element');
+    const errorMessage = document.getElementById('error-message');
+    const userEmail = document.getElementById('user-email');
+    const logoutButton = document.getElementById('logout-button');
+
+    // Auth state observer
+    onAuthStateChanged(auth, (user) => {
+      loading.classList.add('hidden');
+      
+      if (user) {
+        loginForm.classList.add('hidden');
+        dashboard.classList.remove('hidden');
+        userEmail.textContent = user.email;
+        console.log('User logged in:', user.email);
+      } else {
+        dashboard.classList.add('hidden');
+        loginForm.classList.remove('hidden');
+        console.log('User logged out');
+      }
+    });
+
+    // Login form handler
+    loginFormElement.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        console.log('Login successful:', userCredential.user.email);
+        errorMessage.classList.add('hidden');
+      } catch (error) {
+        console.error('Login error:', error);
+        errorMessage.textContent = getErrorMessage(error.code);
+        errorMessage.classList.remove('hidden');
+      }
+    });
+
+    // Logout handler
+    logoutButton.addEventListener('click', async () => {
+      try {
+        await signOut(auth);
+        console.log('Logout successful');
+      } catch (error) {
+        console.error('Logout error:', error);
+      }
+    });
+
+    // Navigation functions
+    window.showBlogList = () => {
+      window.location.href = '/admin/blog/';
+    };
+
+    window.showBlogEditor = () => {
+      window.location.href = '/admin/blog/edit/';
+    };
+
+    window.triggerDeploy = () => {
+      alert('デプロイ機能は実装中です');
+    };
+
+    window.viewSite = () => {
+      // Get the current origin and open the main site
+      const mainSiteUrl = window.location.origin + '/';
+      window.open(mainSiteUrl, '_blank');
+    };
+
+    function getErrorMessage(errorCode) {
+      switch (errorCode) {
+        case 'auth/user-not-found':
+          return 'ユーザーが見つかりません';
+        case 'auth/wrong-password':
+          return 'パスワードが間違っています';
+        case 'auth/invalid-email':
+          return 'メールアドレスの形式が正しくありません';
+        case 'auth/too-many-requests':
+          return '試行回数が多すぎます。しばらく待ってから再試行してください';
+        case 'auth/invalid-credential':
+          return 'ログイン情報が正しくありません';
+        default:
+          return 'ログインに失敗しました: ' + errorCode;
+      }
+    }
+  </script>
+  
+  <!-- Tailwind CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  
+  <!-- Admin Styles -->
+  <style>
+    body {
+      font-family: 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    
+    .glass {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .card {
+      background: white;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      border-radius: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- Loading State -->
+    <div id="loading" class="fixed inset-0 flex items-center justify-center z-50">
+      <div class="glass rounded-lg p-8 text-white text-center">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+        <p>読み込み中...</p>
+      </div>
+    </div>
+    
+    <!-- Login Form -->
+    <div id="login-form" class="hidden fixed inset-0 flex items-center justify-center p-4">
+      <div class="card w-full max-w-md p-8">
+        <div class="text-center mb-8">
+          <h1 class="text-2xl font-bold text-gray-800 mb-2">農業合同会社 CMS</h1>
+          <p class="text-gray-600">管理画面にログイン</p>
+        </div>
+        
+        <form id="login-form-element">
+          <div class="mb-4">
+            <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+              メールアドレス
+            </label>
+            <input 
+              type="email" 
+              id="email" 
+              name="email"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="admin@agricultural-llc.com"
+            />
+          </div>
+          
+          <div class="mb-6">
+            <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+              パスワード
+            </label>
+            <input 
+              type="password" 
+              id="password" 
+              name="password"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="••••••••"
+            />
+          </div>
+          
+          <div id="error-message" class="hidden mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-md text-sm"></div>
+          
+          <button 
+            type="submit" 
+            id="login-button"
+            class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200"
+          >
+            ログイン
+          </button>
+        </form>
+      </div>
+    </div>
+    
+    <!-- Dashboard -->
+    <div id="dashboard" class="hidden min-h-screen">
+      <!-- Header -->
+      <header class="glass">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="flex justify-between items-center h-16">
+            <div class="flex items-center">
+              <h1 class="text-xl font-semibold text-white">農業合同会社 CMS</h1>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+              <span id="user-email" class="text-white text-sm"></span>
+              <button 
+                id="logout-button"
+                class="text-white hover:text-gray-300 text-sm px-3 py-2 rounded-md hover:bg-white/10 transition duration-200"
+              >
+                ログアウト
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+      
+      <!-- Main Content -->
+      <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div class="px-4 py-6 sm:px-0">
+          <!-- Header -->
+          <div class="mb-8">
+            <h1 class="text-2xl font-bold text-gray-800">ブログ管理システム</h1>
+            <p class="text-gray-600 mt-2">農業DXに関するブログ記事の作成・編集・管理を行います</p>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <!-- Blog Management Card -->
+            <div class="card p-8">
+              <div class="flex items-center mb-6">
+                <div class="p-4 bg-green-500 rounded-xl">
+                  <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                </div>
+                <div class="ml-4">
+                  <h3 class="text-xl font-semibold text-gray-800">記事管理</h3>
+                  <p class="text-gray-600">既存記事の管理・編集</p>
+                </div>
+              </div>
+              
+              <button class="w-full px-6 py-4 bg-green-500 text-white rounded-lg hover:bg-green-600 transition duration-200 font-medium" onclick="showBlogList()">
+                📝 記事一覧・編集
+              </button>
+            </div>
+            
+            <!-- New Post Card -->
+            <div class="card p-8">
+              <div class="flex items-center mb-6">
+                <div class="p-4 bg-blue-500 rounded-xl">
+                  <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                  </svg>
+                </div>
+                <div class="ml-4">
+                  <h3 class="text-xl font-semibold text-gray-800">新規作成</h3>
+                  <p class="text-gray-600">新しい記事を作成</p>
+                </div>
+              </div>
+              
+              <button class="w-full px-6 py-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 font-medium" onclick="showBlogEditor()">
+                ➕ 新規記事作成
+              </button>
+            </div>
+            
+          </div>
+          
+          <!-- Site Tools -->
+          <div class="mt-8 bg-gray-50 rounded-lg p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">サイト管理</h3>
+            <div class="flex space-x-4">
+              <button class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition duration-200" onclick="viewSite()">
+                👀 サイト確認
+              </button>
+              <button class="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition duration-200" onclick="triggerDeploy()">
+                🚀 サイト更新
+              </button>
+            </div>
+          </div>
+        </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

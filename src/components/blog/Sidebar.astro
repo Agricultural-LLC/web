@@ -31,11 +31,11 @@ const baseURL = import.meta.env.BASE_URL;
             return (
               <li>
                 <a
-                  class=""
+                  class="flex justify-between items-center hover:text-primary transition-colors py-1"
                   href={`${baseURL}blog/categories/${category}/`}
                 >
-                  {upperHumanize(category)}{" "}
-                  <div class="inline-block pl-1">({count})</div>
+                  <span class="truncate mr-2">{upperHumanize(category)}</span>
+                  <span class="text-sm text-gray-500 flex-shrink-0">({count})</span>
                 </a>
               </li>
             );
@@ -54,21 +54,19 @@ const baseURL = import.meta.env.BASE_URL;
         </a>
       </h4>
       <hr class="mb-2 -mt-1" />
-      <ul>
+      <div class="flex flex-wrap gap-2">
         {
           tags.map((tag: any) => {
             return (
-              <li class="inline-block m-1">
-                <Button
-                  label={tag}
-                  link={`${baseURL}blog/tags/${lowerHumanize(tag)}/`}
-                  type="secondary"
-                />
-              </li>
+              <Button
+                label={tag}
+                link={`${baseURL}blog/tags/${lowerHumanize(tag)}/`}
+                type="secondary"
+              />
             );
           })
         }
-      </ul>
+      </div>
     </div>
   </div>
 </div>

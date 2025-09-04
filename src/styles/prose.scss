@@ -3,12 +3,12 @@
   // Base
   @apply prose max-w-none intersect:animate-fadeUp;
   @apply prose-headings:mb-[.3em] prose-headings:mt-[.6em];
-  
+
   // 日本語コンテンツ用の調整
   line-height: 1.7;
   letter-spacing: 0.01em;
   font-size: 1rem;
-  
+
   // 見出しのスタイリング
   @apply prose-h1:text-h1-sm md:prose-h1:text-h1 prose-h1:font-bold prose-h1:text-gray-900;
   @apply prose-h2:text-h2-sm md:prose-h2:text-h2 prose-h2:font-bold prose-h2:text-gray-800;
@@ -16,42 +16,42 @@
   @apply prose-h4:text-lg prose-h4:font-semibold prose-h4:text-gray-700;
   @apply prose-h5:text-base prose-h5:font-medium prose-h5:text-gray-700;
   @apply prose-h6:text-base prose-h6:font-medium prose-h6:text-gray-600;
-  
+
   // 段落のスタイリング
   @apply prose-p:text-base prose-p:text-gray-700 prose-p:dark:text-gray-300;
-  
+
   // リンクのスタイリング
   @apply prose-a:text-blue-600 prose-a:underline hover:prose-a:text-blue-800 prose-a:dark:text-blue-400 hover:prose-a:dark:text-blue-300;
-  
+
   // 画像のスタイリング
   @apply prose-img:max-w-full prose-img:rounded-lg prose-img:shadow-md;
-  
+
   // 水平線のスタイリング
   @apply prose-hr:border-gray-300 prose-hr:dark:border-gray-600 prose-hr:my-6;
-  
+
   // 太字のスタイリング
   @apply prose-strong:font-bold prose-strong:text-gray-900 prose-strong:dark:text-gray-100;
-  
+
   // コードブロックのスタイリング
   @apply prose-pre:rounded-lg prose-pre:bg-gray-100 prose-pre:dark:bg-gray-800 prose-pre:p-4 prose-pre:overflow-x-auto;
-  
+
   // インラインコードのスタイリング
-  @apply prose-code:px-2 prose-code:py-1 prose-code:bg-gray-100 prose-code:dark:bg-gray-800 prose-code:rounded prose-code:text-sm prose-code:font-mono;
-  
+  @apply prose-code:px-2 prose-code:py-1 prose-code:bg-gray-100 prose-code:dark:bg-gray-800 prose-code:rounded prose-code:text-sm prose-code:font-mono prose-code:text-gray-800 prose-code:dark:text-gray-200;
+
   // ブロッククォートのスタイリング
   @apply prose-blockquote:border-l-4 prose-blockquote:border-blue-500 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-gray-700 prose-blockquote:dark:text-gray-300;
-  
+
   // テーブルのスタイリング
   @apply prose-table:w-full prose-table:border-collapse prose-table:border prose-table:border-gray-300 prose-table:dark:border-gray-600;
   @apply prose-thead:bg-gray-50 prose-thead:dark:bg-gray-800;
   @apply prose-th:border prose-th:border-gray-300 prose-th:dark:border-gray-600 prose-th:px-4 prose-th:py-2 prose-th:text-left prose-th:font-semibold;
   @apply prose-td:border prose-td:border-gray-300 prose-td:dark:border-gray-600 prose-td:px-4 prose-td:py-2;
-  
+
   // リストのスタイリング
   @apply prose-ul:list-disc prose-ul:pl-6 prose-ul:text-gray-700 prose-ul:dark:text-gray-300;
   @apply prose-ol:list-decimal prose-ol:pl-6 prose-ol:text-gray-700 prose-ol:dark:text-gray-300;
   @apply prose-li:my-1;
-  
+
   // 日本語文章の自然な改行と読みやすさの向上
   p {
     text-align: left;
@@ -60,54 +60,83 @@
     margin-bottom: 1em;
     line-height: 1.7;
   }
-  
+
   // 段落間の適切な間隔
   p + p {
     margin-top: 1em;
   }
-  
+
   // 見出しの間隔調整
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     margin-top: 1.5em;
     margin-bottom: 0.5em;
     line-height: 1.4;
     font-weight: 600;
   }
-  
+
   // リストの間隔調整
-  ul, ol {
+  ul,
+  ol {
     margin-top: 0.5em;
     margin-bottom: 1em;
-    
+
     li {
       margin-bottom: 0.25em;
       line-height: 1.6;
     }
   }
-  
+
   // ネストしたリストの調整
-  ul ul, ol ol, ul ol, ol ul {
+  ul ul,
+  ol ol,
+  ul ol,
+  ol ul {
     margin-top: 0.25em;
     margin-bottom: 0.5em;
   }
-  
+
   // 強調テキストの調整
-  strong, b {
+  strong,
+  b {
     font-weight: 700;
-    color: #111827;
+    color: #111827; // ライトモード
   }
-  
+
   // 斜体テキストの調整
-  em, i {
+  em,
+  i {
     font-style: italic;
-    color: #374151;
+    color: #374151; // ライトモード
   }
-  
+
+  // ダークモード時の強調テキスト
+  :global(.dark) & strong,
+  :global(.dark) & b {
+    color: #f9fafb;
+  }
+
+  // ダークモード時の斜体テキスト
+  :global(.dark) & em,
+  :global(.dark) & i {
+    color: #d1d5db;
+  }
+
   // コードブロック内のコード
   pre code {
     background: none;
     padding: 0;
     border-radius: 0;
     font-size: inherit;
+    color: #374151; // ライトモード: ダークグレー
+  }
+
+  // ダークモード時のコードブロック内テキスト
+  :global(.dark) & pre code {
+    color: #e5e7eb; // ダークモード: ライトグレー
   }
 }

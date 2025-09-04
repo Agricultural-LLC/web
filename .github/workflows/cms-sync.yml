@@ -1,0 +1,90 @@
+name: CMS Content Sync
+
+on:
+  repository_dispatch:
+    types: [cms-update]
+  workflow_dispatch:
+  # Run daily to catch any missed updates
+  schedule:
+    - cron: '0 2 * * *'
+
+jobs:
+  sync-content:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+      pull-requests: write
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Setup Firebase Service Account
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > service-account.json
+          
+      - name: Sync Firebase to Markdown
+        run: node scripts/sync-firebase.js
+        env:
+          FIREBASE_DATABASE_URL: ${{ secrets.FIREBASE_DATABASE_URL }}
+          
+      - name: Check for changes
+        id: changes
+        run: |
+          if [ -n "$(git status --porcelain src/content/)" ]; then
+            echo "changes=true" >> $GITHUB_OUTPUT
+            echo "Files changed:"
+            git status --porcelain src/content/
+          else
+            echo "changes=false" >> $GITHUB_OUTPUT
+            echo "No content changes detected"
+          fi
+          
+      - name: Commit and push changes
+        if: steps.changes.outputs.changes == 'true'
+        run: |
+          git config --local user.email "cms@agricultural-llc.com"
+          git config --local user.name "CMS Bot"
+          git add src/content/
+          git commit -m "content: CMS更新 $(date +%Y-%m-%d_%H:%M:%S)"
+          git push
+          
+      - name: Build and deploy
+        if: steps.changes.outputs.changes == 'true'
+        run: |
+          npm run build
+          
+      - name: Deploy to Firebase
+        if: steps.changes.outputs.changes == 'true'
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+          projectId: agricultural-llc
+          channelId: live
+          
+      - name: Cleanup
+        if: always()
+        run: |
+          rm -f service-account.json
+          
+      - name: Report status
+        if: always()
+        run: |
+          if [ "${{ steps.changes.outputs.changes }}" == "true" ]; then
+            echo "✅ CMS content synced and deployed successfully"
+          else
+            echo "ℹ️ No content changes to sync"
+          fi
