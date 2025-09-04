@@ -4,14 +4,14 @@
 
 ## 📋 プロジェクトステータス
 
-**現在**: Decap CMS統合完了、Firebase Hostingで稼働中  
-**管理画面**: https://agricultural-llc.web.app/admin/  
-**URL**: https://agricultural-llc.web.app
+**現在**: 分離アーキテクチャに移行完了、Firebase Hostingで稼働中  
+**サイト**: https://agricultural-llc.web.app  
+**CMS**: 別リポジトリで管理（Agricultural-LLC/agricultural-cms）
 
 | 機能 | ステータス | 詳細 |
 |------|-----------|------|
 | 🌐 本番サイト | ✅ 稼働中 | Firebase Hosting |
-| 📝 CMS管理画面 | ✅ 稼働中 | Decap CMS (test-repoモード) |
+| 📝 CMS管理画面 | ✅ 分離完了 | 独立リポジトリ（Netlify + Decap CMS） |
 | 🔄 CI/CD | ✅ 稼働中 | GitHub Actions |
 | 📊 パフォーマンス | ✅ 最適化済み | ビルド時間1.89秒、31ページ生成 |
 
@@ -29,20 +29,27 @@
 - 📊 **事例紹介** - スマート農業の成功事例
 - 📞 **お問い合わせ** - 無料相談フォーム
 - 🔍 **キーワード検索** - サイト内コンテンツの全文検索
-- ⚙️ **CMS管理画面** - Decap CMSによるコンテンツ管理
+
+## アーキテクチャ
+
+このプロジェクトは**分離アーキテクチャ**を採用しています：
+
+- **メインサイト** (本リポジトリ): コンテンツ配信に特化
+- **CMS管理** (別リポジトリ): コンテンツ編集に特化
+- **連携**: CMS→GitHub→自動デプロイ→メインサイト反映
 
 ## 技術スタック
 
 - **フレームワーク**: Astro v5.12.8
 - **スタイリング**: Tailwind CSS
 - **UIコンポーネント**: React
-- **CMS**: Decap CMS (旧Netlify CMS)
 - **検索機能**: Fuse.js, Pagefind
 - **開発言語**: TypeScript
 - **ホスティング**: Firebase Hosting
 - **CI/CD**: GitHub Actions
 - **フォーム**: SSGform
-- **コンテンツ管理**: Editorial Workflow (プルリクエストベース)
+- **コンテンツ管理**: Markdown-based with Astro Content Collections
+- **CMS**: 別リポジトリ管理 (Agricultural-LLC/agricultural-cms)
 
 ## 開発環境のセットアップ
 
