@@ -2,9 +2,10 @@
 import BaseLayout from "@components/base/BaseLayout.astro";
 import PageHeader from "@components/common/PageHeader.astro";
 import { render } from "astro:content";
+import type { CollectionEntry } from "astro:content";
 
 interface Props {
-  entry: TermsEntry;
+  entry: CollectionEntry<"terms">;
 }
 
 const { entry } = Astro.props;
