@@ -80,76 +80,168 @@ const entryDescription =
   </style>
 
   <script>
-    // Process link card placeholders on the client side - Offline version
-    document.addEventListener('DOMContentLoaded', () => {
+    // Process link card placeholders on the client side - Enhanced version with API fallback
+    document.addEventListener('DOMContentLoaded', async () => {
       const placeholders = document.querySelectorAll('.link-card-placeholder');
       
-      placeholders.forEach(placeholder => {
+      for (const placeholder of placeholders) {
         const url = placeholder.getAttribute('data-url');
-        if (!url) return;
+        if (!url) continue;
         
-        // Create link card from URL analysis (offline-friendly)
-        const linkCardHTML = createOfflineLinkCard(url);
-        placeholder.innerHTML = linkCardHTML;
-        placeholder.classList.remove('link-card-placeholder');
-        placeholder.classList.add('link-card');
-      });
+        try {
+          // Create enhanced link card with API fallback
+          const linkCardHTML = await createLinkCard(url);
+          placeholder.innerHTML = linkCardHTML;
+          placeholder.classList.remove('link-card-placeholder');
+          placeholder.classList.add('link-card');
+        } catch (error) {
+          console.error('Error creating link card:', error);
+          // Fallback to basic link
+          placeholder.innerHTML = `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+        }
+      }
     });
     
-    function createOfflineLinkCard(url) {
+    async function createLinkCard(url) {
       let hostname = '';
       let title = '';
-      let protocol = '';
+      let description = '';
+      let imageUrl = '';
       
       try {
         const urlObj = new URL(url);
         hostname = urlObj.hostname;
-        protocol = urlObj.protocol;
         
-        // Generate title from URL
-        if (hostname.includes('github.com')) {
-          const pathParts = urlObj.pathname.split('/').filter(p => p);
-          title = pathParts.length > 1 ? `${pathParts[0]}/${pathParts[1]}` : hostname;
-        } else if (hostname.includes('youtube.com') || hostname.includes('youtu.be')) {
-          title = 'YouTube';
-        } else if (hostname.includes('twitter.com') || hostname.includes('x.com')) {
-          title = 'Twitter/X';
-        } else if (hostname.includes('linkedin.com')) {
-          title = 'LinkedIn';
-        } else {
-          // Use domain name as title
-          title = hostname.replace('www.', '');
+        // Try Firebase Function first (with timeout)
+        try {
+          const response = await Promise.race([
+            fetch('https://us-central1-agricultural-llc.cloudfunctions.net/api/link-preview', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Origin': window.location.origin
+              },
+              body: JSON.stringify({ url })
+            }),
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('timeout')), 3000)
+            )
+          ]);
+
+          if (response.ok) {
+            const data = await response.json();
+            return createLinkCardHTML(data.url, data.title || hostname, data.description || '', data.image || '', data.siteName || hostname);
+          }
+        } catch (error) {
+          console.log('Firebase Function not available, using offline fallback:', error.message);
         }
+
+        // Offline fallback with enhanced site recognition
+        title = getEnhancedTitle(urlObj);
+        description = getEnhancedDescription(urlObj);
+        imageUrl = getEnhancedImage(urlObj);
+        
       } catch (e) {
         hostname = url;
         title = url;
       }
       
-      // Determine icon based on domain
-      let iconSvg = '';
+      return createLinkCardHTML(url, title, description, imageUrl, hostname);
+    }
+
+    function getEnhancedTitle(urlObj) {
+      const hostname = urlObj.hostname;
+      const pathname = urlObj.pathname;
+      
       if (hostname.includes('github.com')) {
-        iconSvg = `<svg class="w-12 h-12 text-gray-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>`;
-      } else {
-        iconSvg = `<svg class="w-12 h-12 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>`;
+        const pathParts = pathname.split('/').filter(p => p);
+        if (pathParts.length >= 2) {
+          return `${pathParts[0]}/${pathParts[1]}`;
+        }
+        return 'GitHub Repository';
+      } else if (hostname.includes('youtube.com') || hostname.includes('youtu.be')) {
+        return 'YouTube Video';
+      } else if (hostname.includes('twitter.com') || hostname.includes('x.com')) {
+        return 'Twitter Post';
+      } else if (hostname.includes('linkedin.com')) {
+        return 'LinkedIn';
+      } else if (hostname.includes('stackoverflow.com')) {
+        return 'Stack Overflow';
+      } else if (hostname.includes('qiita.com')) {
+        return 'Qiita記事';
+      } else if (hostname.includes('zenn.dev')) {
+        return 'Zenn記事';
+      } else if (hostname.includes('note.com')) {
+        return 'note記事';
       }
       
+      return hostname.replace('www.', '').split('.')[0];
+    }
+
+    function getEnhancedDescription(urlObj) {
+      const hostname = urlObj.hostname;
+      const pathname = urlObj.pathname;
+      
+      if (hostname.includes('github.com')) {
+        const pathParts = pathname.split('/').filter(p => p);
+        if (pathParts.length >= 2) {
+          return `GitHubリポジトリ - ${pathParts[0]}のプロジェクト`;
+        }
+      } else if (hostname.includes('youtube.com') || hostname.includes('youtu.be')) {
+        return 'YouTube動画コンテンツ';
+      } else if (hostname.includes('qiita.com')) {
+        return 'プログラミングに関する技術記事';
+      } else if (hostname.includes('zenn.dev')) {
+        return 'エンジニアのための技術記事';
+      }
+      
+      return `${hostname}のコンテンツ`;
+    }
+
+    function getEnhancedImage(urlObj) {
+      const hostname = urlObj.hostname;
+      
+      if (hostname.includes('github.com')) {
+        return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTgiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA5OCA5NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik00OC44NTQgMEM3NS42NjEgMCA5Ny4zMDggMjEuNjQ3IDk3LjMwOCA0OC40NTRDOTY4ODEgNzUuMjYxIDc1LjY2MSA5NiA0OC44NTQgOTZDMjIuMDQ3IDk2IDAuNCA3NS4yNjEgMC40IDQ4LjQ1NEMwLjQgMjEuNjQ3IDIyLjA0NyAwIDQ4Ljg1NCAwWiIgZmlsbD0iIzI0MjkyRSIvPgo8cGF0aCBmaWxsPSJ3aGl0ZSIgZD0iTTQ4Ljg1NCA5Ljc1QzI3LjYxIDkuNzUgMTAuMTUgMjcuMjEgMTAuMTUgNDguNDU0QzEwLjE1IDY1LjE4MSAyMC4yMDYgNzkuNDA3IDM0LjM5NSA4NS4xMjNDMzYuMjA5IDg1LjQ2NSAzNi44OSA4NC4zOTMgMzYuODkgODMuNjUzVjc2LjYwNEMzMS42OTEgNzcuNzEgMzEuMTQ5IDc0LjkwNCAzMS4xNDkgNzQuOTA0QzI5LjA0MiA3MC40NjggMjUuOTcxIDY5LjM3OSAyNS45NzEgNjkuMzc5QzIzLjE3OCA2Ny4yODggMjYuMTUxIDY3LjMyIDI2LjE1MSA2Ny4zMkMyOS4yODMgNjcuNjEyIDMwLjk1NiA3MC43MjQgMzAuOTU2IDcwLjcyNEMzMy42MyA3NS40OTcgMzguMjMzIDc0LjE0NiAzNy4wMjggNzMuNjI5QzM3LjMzNSA3MS42MTYgMzguMjAzIDcwLjI5IDM5LjE0MiA2OS43MjNDMzEuNzY3IDY5LjEzMiAyNC4wMTYgNjYuNTIgMjQuMDE2IDUzLjA5NkMyNC4wMTYgNDkuMzYzIDI1LjM5OCA0Ni4zMTcgMzAuOTk3IDQ0LjE0N0MzMC42MTkgNDMuNTM5IDI5LjYxNSA0MC4xMTQgMzEuMzU2IDM1LjU2MkMzMS4zNTYgMzUuNTYyIDM0LjIzNCA0NC44NSAzNi45MzQgNDYuMTYzQzM5LjQ1MiA0NS40ODIgNDIuMTk4IDQ1LjEzNCA0NC45NTYgNDUuMTMzQzQ3LjcxIDQ1LjEzMyA1MC40OTQgNDUuNDgyIDUzLjAyNyA0Ni4xNjNDNTUuNzI2IDQ0Ljg1IDU4LjYwNyAzNS41NjIgNTguNjA3IDM1LjU2MkM2MC4zNDggNDAuMTE0IDU5LjM0MiA0My41MzkgNTguOTYgNDQuMTQ3QzY0LjU2MiA0Ni4zMTcgNjUuOTMgNDkuMzYzIDY1LjkzIDUzLjA5NkM2NS45MyA2Ni41MiA1OC4xNDMgNjkuMTMyIDUwLjc1IDY5LjcyM0M1MS42ODkgNzAuNTczIDUyLjQ5NiA3MS44MjIgNTIuNDk2IDc0LjYwOFY4My42NTNDNTIuNDk2IDg0LjM5MyA1My4xNzggODUuNDY1IDU0Ljk5MiA4NS4xMjNDNjkuMTM3IDc5LjQwNyA3OS4xNTggNjUuMTgxIDc5LjE1OCA0OC40NTRDNZKUUE4IDI3LjIxIDcwLjA5OCA5Ljc1IDQ4Ljg1NCA5Ljc1WiIvPgo8L3N2Zz4K';
+      }
+      return '';
+    }
+
+    function createLinkCardHTML(url, title, description, imageUrl, siteName) {
+      const iconSvg = getIconSvg(siteName);
+      const imageSection = imageUrl ? 
+        `<div class="flex-shrink-0 w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded overflow-hidden">
+          <img src="${imageUrl}" alt="" class="w-full h-full object-cover" onerror="this.style.display='none'">
+        </div>` :
+        `<div class="flex-shrink-0 flex items-center justify-center w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded">
+          ${iconSvg}
+        </div>`;
+
       return `
-        <div class="my-4 p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:shadow-md transition-shadow bg-white dark:bg-gray-800 link-card">
+        <div class="my-4 p-5 border border-gray-200 dark:border-gray-600 rounded-xl hover:shadow-lg hover:border-gray-300 dark:hover:border-gray-500 transition-all duration-200 bg-white dark:bg-gray-800 link-card">
           <a href="${url}" target="_blank" rel="noopener noreferrer" class="flex items-start space-x-4 no-underline text-inherit">
-            <div class="flex-shrink-0 flex items-center justify-center w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded">
-              ${iconSvg}
-            </div>
+            ${imageSection}
             <div class="flex-1 min-w-0">
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1 line-clamp-2">${title}</h3>
-              <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">${url}</p>
-              <p class="text-xs text-gray-400 flex items-center">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2 leading-tight">${title}</h3>
+              ${description ? `<p class="text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">${description}</p>` : ''}
+              <p class="text-xs text-gray-500 dark:text-gray-400 flex items-center">
                 <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                ${hostname}
+                ${siteName}
               </p>
             </div>
           </a>
         </div>
       `;
+    }
+
+    function getIconSvg(hostname) {
+      if (hostname.includes('github.com')) {
+        return `<svg class="w-10 h-10 text-gray-700 dark:text-gray-300" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>`;
+      } else if (hostname.includes('youtube.com') || hostname.includes('youtu.be')) {
+        return `<svg class="w-10 h-10 text-red-600" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>`;
+      } else {
+        return `<svg class="w-10 h-10 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>`;
+      }
     }
   </script>
 
