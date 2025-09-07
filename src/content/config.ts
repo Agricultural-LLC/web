@@ -20,20 +20,6 @@ const about = defineCollection({
     }),
 });
 
-const blog = defineCollection({
-  loader: glob({ pattern: "**\/[^_]*.{md,mdx}", base: "./src/content/blog" }),
-  schema: ({ image }) =>
-    searchable.extend({
-      date: z.date().optional(),
-      image: image().optional(),
-      imageAlt: z.string().default(""),
-      authors: z.array(z.string()).optional(),
-      categories: z.array(z.string()).optional(),
-      tags: z.array(z.string()).optional(),
-      complexity: z.number().default(1),
-      hideToc: z.boolean().default(false),
-    }),
-});
 
 const home = defineCollection({
   loader: glob({ pattern: "-index.{md,mdx}", base: "./src/content/home" }),
@@ -55,6 +41,5 @@ const home = defineCollection({
 // Export collections
 export const collections = {
   about,
-  blog,
   home,
 };
