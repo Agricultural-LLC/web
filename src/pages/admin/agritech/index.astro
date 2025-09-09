@@ -59,7 +59,7 @@ const firebaseConfig = {
           </div>
           
           <div class="flex items-center space-x-4">
-            <a href="/admin/blog/edit/" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition duration-200">
+            <a href="/admin/agritech/edit/" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition duration-200">
               新規記事作成
             </a>
             <span id="user-email" class="text-gray-600 text-sm"></span>
@@ -102,7 +102,7 @@ const firebaseConfig = {
               <h3 class="mt-2 text-sm font-medium text-gray-900">記事がありません</h3>
               <p class="mt-1 text-sm text-gray-500">最初の記事を作成しましょう</p>
               <div class="mt-6">
-                <a href="/admin/blog/edit/" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                <a href="/admin/agritech/edit/" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                   新規記事作成
                 </a>
               </div>
@@ -315,7 +315,7 @@ const firebaseConfig = {
     window.loadPosts = loadPosts;
     
     window.editPost = (postId) => {
-      window.location.href = `/admin/blog/edit/?id=${postId}`;
+      window.location.href = `/admin/agritech/edit/?id=${postId}`;
     };
 
     window.deletePost = async (postId, title) => {
