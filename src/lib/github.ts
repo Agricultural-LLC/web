@@ -255,7 +255,7 @@ class GitHubCMS {
         {
           owner: this.owner,
           repo: this.repo,
-          path: `public/blog/${filename}`,
+          path: `public/agritech/${filename}`,
           message: `feat: Add blog image ${filename}`,
           content: buffer.toString("base64"),
           branch: this.branch,
@@ -263,7 +263,7 @@ class GitHubCMS {
       );
 
       // Return the public URL for the uploaded image
-      return `/blog/${filename}`;
+      return `/agritech/${filename}`;
     } catch (error) {
       console.error("Error uploading image:", error);
       throw error;

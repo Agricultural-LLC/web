@@ -17,7 +17,7 @@ const sizeClasses = {
 <a 
   href={link} 
   target={newtab ? "_blank" : ""}
-  class="no-underline inline-block group transform transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation cta-button-float"
+  class="no-underline block group transform transition-all duration-300 hover:scale-105 active:scale-95 touch-manipulation cta-button-float w-full"
 >
   <div class={`
     bg-gradient-to-r from-green-600 via-blue-600 to-green-700
@@ -32,6 +32,7 @@ const sizeClasses = {
     cta-button-glow
     min-h-[44px] md:min-h-[56px]
     flex items-center justify-center
+    w-full
   `}>
     <div class="flex items-center justify-center gap-2 md:gap-3">
       <span class="whitespace-nowrap">{label}</span>

@@ -22,7 +22,7 @@ export interface UploadResult {
  */
 export async function uploadImage(
   file: File,
-  directory = "blog",
+  directory = "agritech",
 ): Promise<UploadResult> {
   try {
     // Validate file type
@@ -83,7 +83,7 @@ export async function uploadImage(
  */
 export async function deleteImage(
   fileName: string,
-  directory = "blog",
+  directory = "agritech",
 ): Promise<boolean> {
   try {
     const storageRef = ref(storage, `${directory}/${fileName}`);

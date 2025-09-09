@@ -100,7 +100,7 @@ export async function getFirebaseBlogEntries(): Promise<BlogEntry[]> {
           draft: post.draft,
           complexity: 1, // デフォルト値
           body: post.body,
-          url: `/blog/${post.slug}/`
+          url: `/agritech/${post.slug}/`
         });
       }
     }
@@ -145,7 +145,7 @@ export async function getFirebaseBlogEntry(slug: string): Promise<BlogEntry | nu
           draft: post.draft,
           complexity: 1, // デフォルト値
           body: post.body,
-          url: `/blog/${post.slug}/`
+          url: `/agritech/${post.slug}/`
         };
       }
     }

@@ -1,5 +1,5 @@
 ---
-import CollectionLayout from "@components/blog/CollectionLayout.astro";
+import CollectionLayout from "@components/agritech/CollectionLayout.astro";
 import { 
   getFirebaseBlogEntries, 
   getFirebaseCategories, 
@@ -19,7 +19,7 @@ const tags = await getFirebaseTags();
 const entryIndex: BlogEntry = {
   id: 'blog-index',
   slug: 'blog',
-  title: '取り組み',
+  title: '農てっく!',
   description: 'スマート農業やデジタル技術を活用した農業の最新情報をお届けします',
   date: new Date(),
   image: '',
@@ -27,7 +27,7 @@ const entryIndex: BlogEntry = {
   categories: [],
   tags: [],
   draft: false,
-  url: '/blog/'
+  url: '/agritech/'
 };
 
 // カテゴリの頻度計算（allCategories相当）
