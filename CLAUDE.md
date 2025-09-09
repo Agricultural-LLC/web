@@ -140,7 +140,7 @@ src/
 ├── components/    # Astro/React components
 │   ├── admin/     # CMS admin components
 │   ├── base/      # Layout components
-│   ├── blog/      # Blog-specific components
+│   ├── agritech/  # Agritech-specific components
 │   ├── common/    # Shared components
 │   ├── home/      # Homepage components
 │   └── search/    # Search functionality
@@ -167,7 +167,7 @@ src/
 - ✅ Removed unused components and assets
 - ✅ Improved form accessibility
 - ✅ Fixed EntryHeader.astro TypeScript errors and data structure issues
-- ✅ Simplified blog editor by removing 2-split mode for better usability
+- ✅ Simplified agritech editor by removing 2-split mode for better usability
 - ✅ Implemented client-side link card functionality with `[linkcard:url]` syntax
 
 ### Common Issues & Solutions
