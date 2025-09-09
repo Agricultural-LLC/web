@@ -37,7 +37,7 @@ const entryDescription =
 <div class="h-full m-2 pl-0 bg-gradient-to-br gradient rounded-lg">
   <div class="glass h-full rounded-lg p-6 intersect:animate-fadeUp opacity-0">
     <h4 class="mb-4 text-lg font-semibold leading-relaxed">
-      <a href={`${baseURL}blog/${entry.slug}/`} class="hover:text-primary transition-colors">
+      <a href={`${baseURL}agritech/${entry.slug}/`} class="hover:text-primary transition-colors">
         {title}
       </a>
     </h4>
@@ -46,7 +46,7 @@ const entryDescription =
         categories && (
           <li class="inline-block">
             {categories.map((category: string, index: number) => (
-              <a href={`${baseURL}blog/categories/${slugify(category)}/`} class="inline-flex items-center gap-1 hover:text-primary transition-colors">
+              <a href={`${baseURL}agritech/categories/${slugify(category)}/`} class="inline-flex items-center gap-1 hover:text-primary transition-colors">
                 <FaRegFolder className={"-mt-0.5"} />
                 {upperHumanize(category)}
               </a>
@@ -58,7 +58,7 @@ const entryDescription =
         <li class="mr-0 inline-block">
           {
             tags.map((tag: string, index: number) => (
-              <a href={`${baseURL}blog/tags/${slugify(tag)}/`}>
+              <a href={`${baseURL}agritech/tags/${slugify(tag)}/`}>
                 <FaHashtag className={"ml-2 -mt-1 inline-block"} />
                 {lowerHumanize(tag)}
               </a>
