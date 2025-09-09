@@ -9,6 +9,10 @@ export interface MarkdownHeading {
 // Generic entry type for content collections
 export type GenericEntry = CollectionEntry<any>;
 
+// Collection entry types
+export type AboutEntry = CollectionEntry<"about">;
+export type HomeEntry = CollectionEntry<"home">;
+
 // Search related types
 export interface SearchableEntry {
   id: string;
@@ -82,4 +86,24 @@ export interface PostResponse {
 export interface LoginFormData {
   username: string;
   password: string;
+}
+
+// Firebase BlogEntry type (not using Astro collections)
+export interface BlogEntry {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  date: Date;
+  image: string;
+  imageAlt?: string;
+  authors: string[];
+  categories: string[];
+  tags: string[];
+  draft: boolean;
+  complexity?: number;
+  body?: string;
+  url?: string;
+  autodescription?: boolean;
+  hideToc?: boolean;
 }

@@ -1,4 +1,5 @@
 ---
+import type { BlogEntry } from "@/types";
 import { formatDate } from "@lib/formatDate";
 import readingTime from "@lib/readingTime";
 import {
@@ -15,22 +16,12 @@ FaRegClock,
 FaRegFolder,
 } from "react-icons/fa";
 
-interface BlogEntry {
-  title: string;
-  categories?: string[];
-  tags?: string[];
-  image?: any;
-  imageAlt?: string;
-  date?: Date;
-  complexity?: number;
-  body?: string;
-}
-
 interface Props {
   entry: BlogEntry;
   showInfo?: boolean;
   showImage?: boolean;
   showTitle?: boolean;
+  showAuthor?: boolean;
   showDate?: boolean;
   showReadingTime?: boolean;
   showCategories?: boolean;
@@ -42,6 +33,7 @@ const {
   showInfo = true,
   showImage = false,
   showTitle = false,
+  showAuthor = false,
   showDate = false,
   showReadingTime = false,
   showCategories = false,
@@ -99,7 +91,7 @@ tags?.sort((a: string, b: string) => a.localeCompare(b));
           {categories && showCategories && (
             <li class="mr-1 inline-block">
               {categories.map((category: string, index: number) => (
-                <a href={`${baseURL}blog/categories/${slugify(category)}/`}>
+                <a href={`${baseURL}agritech/categories/${slugify(category)}/`}>
                   <FaRegFolder className={"ml-2 -mt-1 inline-block"} />
                   {upperHumanize(category)}
                 </a>
@@ -109,7 +101,7 @@ tags?.sort((a: string, b: string) => a.localeCompare(b));
           {tags && showTags && (
             <li class="mr-1 inline-block">
               {tags.map((tag: string, index: number) => (
-                <a href={`${baseURL}blog/tags/${slugify(tag)}/`}>
+                <a href={`${baseURL}agritech/tags/${slugify(tag)}/`}>
                   <FaHashtag className={"ml-2 -mt-1 inline-block"} />
                   {lowerHumanize(tag)}
                 </a>
