@@ -97,7 +97,7 @@ The website consists of the following pages:
 1. **Homepage** (`/`) - Vision message, company overview, activity highlights
 2. **About Page** (`/about/`) - Company information and leadership profiles
 3. **Connect Page** (`/connect/`) - Activities with farmers, JA, and government
-4. **Blog** (`/blog/`) - Agricultural DX information and insights
+4. **農てっく!** (`/agritech/`) - Agricultural DX information and insights
 5. **Case Studies** (`/cases/`) - Regional success stories
 6. **Contact Page** (`/contact/`) - Contact form with validation
 7. **Search** (`/search/`) - Full-text search across all content
@@ -126,7 +126,7 @@ The website consists of the following pages:
 
 ### Content Management
 - Blog posts managed via Firebase Realtime Database
-- Admin interface at `/admin/blog/` for content editing
+- Admin interface at `/admin/agritech/` for content editing
 - Images stored in Firebase Storage with automatic optimization
 - Real-time content updates without site rebuilds
 
