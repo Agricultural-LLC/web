@@ -1,8 +1,8 @@
 ---
 import type { BlogEntry } from "@/types";
 import BaseLayout from "@components/base/BaseLayout.astro";
-import BlogCard from "@components/blog/Card.astro";
-import BlogSidebar from "@components/blog/Sidebar.astro";
+import BlogCard from "@components/agritech/Card.astro";
+import BlogSidebar from "@components/agritech/Sidebar.astro";
 import PageHeader from "@components/common/PageHeader.astro";
 import Pagination from "@components/common/Pagination.astro";
 
@@ -42,7 +42,7 @@ const {
             ))
           }
           <Pagination
-            collection="blog"
+            collection="agritech"
             pageIndex={pageIndex}
             pageCount={pageCount}
           />

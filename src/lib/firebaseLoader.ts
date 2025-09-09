@@ -1,5 +1,6 @@
 import { initializeApp, getApp, getApps } from 'firebase/app';
 import { getDatabase, ref, get } from 'firebase/database';
+import type { BlogEntry } from '@/types';
 
 // Firebase Client SDK初期化関数（PUBLIC_変数を使用）
 function initializeFirebase() {
@@ -43,23 +44,7 @@ export interface FirebaseBlogEntry {
   updatedAt: string;
 }
 
-// BlogEntry型に変換
-export interface BlogEntry {
-  id: string;
-  slug: string;
-  title: string;
-  description: string;
-  date: Date;
-  image: string;
-  imageAlt?: string;
-  authors: string[];
-  categories: string[];
-  tags: string[];
-  draft: boolean;
-  complexity?: number;
-  body?: string;
-  url?: string;
-}
+// BlogEntry type is now imported from @/types
 
 // Firebaseから記事を取得
 export async function getFirebaseBlogEntries(): Promise<BlogEntry[]> {
@@ -100,7 +85,7 @@ export async function getFirebaseBlogEntries(): Promise<BlogEntry[]> {
           draft: post.draft,
           complexity: 1, // デフォルト値
           body: post.body,
-          url: `/blog/${post.slug}/`
+          url: `/agritech/${post.slug}/`
         });
       }
     }
@@ -145,7 +130,7 @@ export async function getFirebaseBlogEntry(slug: string): Promise<BlogEntry | nu
           draft: post.draft,
           complexity: 1, // デフォルト値
           body: post.body,
-          url: `/blog/${post.slug}/`
+          url: `/agritech/${post.slug}/`
         };
       }
     }
@@ -185,11 +170,11 @@ export async function getFirebaseTags(): Promise<string[]> {
 // カテゴリ別記事を取得
 export async function getFirebaseBlogEntriesByCategory(category: string): Promise<BlogEntry[]> {
   const entries = await getFirebaseBlogEntries();
-  return entries.filter(entry => entry.categories.includes(category));
+  return entries.filter((entry: BlogEntry) => entry.categories.includes(category));
 }
 
 // タグ別記事を取得
 export async function getFirebaseBlogEntriesByTag(tag: string): Promise<BlogEntry[]> {
   const entries = await getFirebaseBlogEntries();
-  return entries.filter(entry => entry.tags.includes(tag));
+  return entries.filter((entry: BlogEntry) => entry.tags.includes(tag));
 }

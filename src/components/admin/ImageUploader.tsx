@@ -61,7 +61,7 @@ export default function ImageUploader({
         }, 200);
 
         // Upload to Firebase Storage
-        const result: UploadResult = await uploadImage(file, "blog");
+        const result: UploadResult = await uploadImage(file, "agritech");
 
         clearInterval(progressInterval);
 

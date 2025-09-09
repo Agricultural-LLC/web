@@ -4,8 +4,27 @@ import type { CollectionEntry, CollectionKey } from "astro:content";
 export type GenericEntry = CollectionEntry<CollectionKey>;
 
 export type AboutEntry = CollectionEntry<"about">;
-export type BlogEntry = CollectionEntry<"blog">;
 export type HomeEntry = CollectionEntry<"home">;
+
+// Firebase BlogEntry type (not using Astro collections)
+export interface BlogEntry {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  date: Date;
+  image: string;
+  imageAlt?: string;
+  authors: string[];
+  categories: string[];
+  tags: string[];
+  draft: boolean;
+  complexity?: number;
+  body?: string;
+  url?: string;
+  autodescription?: boolean;
+  hideToc?: boolean;
+}
 
 export type SearchableEntry = AboutEntry | BlogEntry | HomeEntry;
 
@@ -24,13 +43,6 @@ export type Author = {
   social?: SocialLinks;
 };
 
-export type Project = {
-  title: string;
-  description?: string;
-  image?: string;
-  imageAlt?: string;
-  link?: string;
-};
 
 export type Button = {
   label: string;

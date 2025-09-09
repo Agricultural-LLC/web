@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "@components/base/BaseLayout.astro";
 import Button from "@components/common/Button.astro";
+import CTAButton from "@components/home/CTAButton.astro";
 import PageHeader from "@components/common/PageHeader.astro";
 
 const baseURL = import.meta.env.BASE_URL;
@@ -210,18 +211,37 @@ const baseURL = import.meta.env.BASE_URL;
             </div>
           </div>
 
-          <!-- お問い合わせセクション -->
-          <div class="glass rounded-lg p-8 text-center">
-            <h2 class="h3 mb-4">農業の未来を一緒に創りませんか？</h2>
-            <p class="mb-6">
-              まずは無料相談から。お気軽にお問い合わせください。
-            </p>
-            <Button 
-              link={`${baseURL}contact/`} 
-              label="お問い合わせはこちら" 
-              hoverInvert
-            />
-          </div>
+          <!-- CTA Button Section -->
+          <section class="py-8 text-center">
+            <div class="container">
+              <div class="row justify-center">
+                <div class="lg:col-6">
+                  <div class="space-y-6">
+                    <!-- 事例を見るCTA -->
+                    <div class="w-full">
+                      <div class="w-64 mx-auto">
+                        <CTAButton
+                          label="事例を見る"
+                          link={`${baseURL}cases/`}
+                          size="large"
+                        />
+                      </div>
+                    </div>
+                    <!-- お問い合わせCTA -->
+                    <div class="w-full">
+                      <div class="w-64 mx-auto">
+                        <CTAButton
+                          label="お問い合わせ"
+                          link={`${baseURL}contact/`}
+                          size="large"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
           
         </div>
       </div>

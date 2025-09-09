@@ -1,8 +1,8 @@
 ---
-import TaxaLayout from "@components/blog/TaxaLayout.astro";
+import TaxaLayout from "@components/agritech/TaxaLayout.astro";
 import { getTaxa, getTaxaMultiset } from "@lib/taxonomyParser";
 
-const collection = "blog";
+const collection = "agritech";
 const taxonomy = "tags";
 const taxa = await getTaxa(collection, taxonomy);
 const allTaxa = await getTaxaMultiset(collection, taxonomy);
