@@ -15,7 +15,7 @@ const { title = "", description }: Props = Astro.props;
       <div class="md:col-10 lg:col-8">
         <div class="glass rounded-lg p-8 text-center intersect:animate-fadeDown opacity-0 intersect-no-queue">
           <h1 set:text={upperHumanize(title)} />
-          {description && <p class="mt-4 text-lg opacity-80">{description}</p>}
+          {description && <p class="mt-4 text-lg opacity-80 whitespace-pre-line">{description}</p>}
         </div>
       </div>
     </div>
