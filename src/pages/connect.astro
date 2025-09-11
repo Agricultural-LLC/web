@@ -13,13 +13,15 @@ const baseURL = import.meta.env.BASE_URL;
 ---
 
 <BaseLayout title="つながる - 農業合同会社 | 北海道農業ネットワーク">
-  <PageHeader title="つながる" description="「つながる」は、農業合同会社のアイデンティティです。人と人、現場とデータ、行政と民間、学びと実装――\n点を線に、線を面につなぎ、地域の営農を持続可能にします。" />
-  
+  <PageHeader
+    title="つながる"
+    description="「つながる」は、農業合同会社のアイデンティティです。\n人と人、現場とデータ、行政と民間、学びと実装――\n点を線に、線を面につなぎ、地域の営農を持続可能にします。"
+  />
+
   <section class="section">
     <div class="container">
       <div class="row">
         <div class="lg:col-8 mx-auto">
-          
           <!-- メインビジュアル -->
           <div class="mb-12 rounded-lg overflow-hidden">
             <Image
@@ -55,10 +57,20 @@ const baseURL = import.meta.env.BASE_URL;
               </div>
               <h3 class="h4 mb-3">私たちがつなぐもの</h3>
               <ul class="text-sm list-disc pl-5 space-y-2">
-                <li>人 × 人：農家・JA・自治体・<br>民間の役割を可視化し、協働の<br>“場”を設計</li>
-                <li>現場 × データ：記録→見える化→議論→改善の循環をKPIで支援</li>
-                <li>実証 × 運用：PoCの学びを<br>翌シーズンの営農計画へ<br>着実に反映</li>
-                <li>教育 × 仕事：講習・研修を<br>地域の実案件と接続し、<br>人材の“定着”につなぐ</li>
+                <li>
+                  人 × 人：<br />農家/JA/自治体/民間<br />の役割を可視化し、<br
+                  />協働の“場”を設計
+                </li>
+                <li>
+                  現場 × データ：<br />記録→見える化→議論→改善の循環をKPIで支援
+                </li>
+                <li>
+                  実証 × 運用：<br />PoCの学びを翌シーズンの営農計画へ着実に反映
+                </li>
+                <li>
+                  教育 × 仕事：<br
+                  />講習・研修を地域の実案件と接続し、人材の“定着”につなぐ
+                </li>
               </ul>
             </div>
 
@@ -75,10 +87,12 @@ const baseURL = import.meta.env.BASE_URL;
               </div>
               <h3 class="h4 mb-3">つながりを生む仕掛け</h3>
               <ul class="text-sm list-disc pl-5 space-y-2">
-                <li>標準化された記録様式<br>（粒度・尺度の統一）</li>
-                <li>ダッシュボードによる共通の<br>“見る場”</li>
-                <li>季節の節目レビュー<br>（収穫後のKPI振り返りと<br>来期設計）</li>
-                <li>共有ルール<br>（公開範囲／活用許可の明確化）</li>
+                <li>標準化された記録様式<br />（粒度・尺度の統一）</li>
+                <li>ダッシュボードによる<br />共通の“見る場”</li>
+                <li>
+                  季節の節目レビュー<br />（収穫後のKPI振り返り/<br />来期設計）
+                </li>
+                <li>共有ルール<br />（公開範囲/活用許可の明確化）</li>
               </ul>
             </div>
 
@@ -95,22 +109,32 @@ const baseURL = import.meta.env.BASE_URL;
               </div>
               <h3 class="h4 mb-3">期待できる効果</h3>
               <ul class="text-sm list-disc pl-5 space-y-2">
-                <li>議論が「天候要因」で<br>止まらず、原因の掘り下げ<br>→対策設計へ前進</li>
-                <li>収量・安定性の向上、<br>資材・人件費の最適化</li>
-                <li>現場知の形式知化による<br>継承可能性の向上</li>
+                <li>
+                  議論が「天候要因」で止まらず、原因の掘り下げ<br
+                  />→対策設計へ前進
+                </li>
+                <li>収量・安定性の向上、<br />資材・人件費の最適化</li>
+                <li>現場知の形式知化による<br />継承可能性の向上</li>
               </ul>
             </div>
           </div>
 
           <!-- 具体的な取り組み -->
-          <div class="prose prose-lg max-w-none mb-12">
-            <h2>ハイライト</h2>
+          <div class="prose prose-lg max-w-none mb-12 dark:text-gray-300">
+            <h2 class="dark:text-white">ハイライト</h2>
             <ul>
-              <li>地域実装プロジェクト数：3件</li>
-              <li>連携パートナー：農業生産者、団体（JA／自治体／民間）</li>
-              <li>ドローン関連支援：散布・計測・講習</li>
-              <li>主なツール：散布ドローン〈某社製〉 / マルチスペクトル対応ドローン〈某社製〉/ <br>衛星・気象データ分析ツー / データ連携基盤・ダッシュボード / 自社開発ツール</li>
-             
+              <li>地域実装プロジェクト数：<b class="dark:text-white">3件</b></li>
+              <li>
+                連携パートナー：<b class="dark:text-white">農業生産者</b>、団体（<b class="dark:text-white">JA</b>／<b class="dark:text-white">自治体</b
+                >／<b class="dark:text-white">民間</b>）
+              </li>
+              <li>ドローン関連支援：<b class="dark:text-white">散布</b>・<b class="dark:text-white">計測</b>・<b class="dark:text-white">講習</b></li>
+              <li>
+                主なツール：<b class="dark:text-white">散布・マルチスペクトル対応ドローン</b> /
+                <b class="dark:text-white">衛星・気象データ分析ツール</b> <br />/
+                <b class="dark:text-white">データ連携基盤・ダッシュボード</b> /
+                <b class="dark:text-white">自社開発ツール</b>
+              </li>
             </ul>
           </div>
 
@@ -145,7 +169,6 @@ const baseURL = import.meta.env.BASE_URL;
               </div>
             </div>
           </section>
-          
         </div>
       </div>
     </div>

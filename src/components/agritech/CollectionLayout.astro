@@ -3,8 +3,10 @@ import type { BlogEntry } from "@/types";
 import BaseLayout from "@components/base/BaseLayout.astro";
 import BlogCard from "@components/agritech/Card.astro";
 import BlogSidebar from "@components/agritech/Sidebar.astro";
-import PageHeader from "@components/common/PageHeader.astro";
 import Pagination from "@components/common/Pagination.astro";
+import agritechIcon from "@assets/blog/agritech.png";
+import { upperHumanize } from "@lib/textConverter";
+import { Image } from "astro:assets";
 
 interface Props {
   entryIndex: BlogEntry;
@@ -28,7 +30,31 @@ const {
 ---
 
 <BaseLayout title={entryIndex.title} description={entryIndex.description}>
-  <PageHeader title={entryIndex.title} />
+  <!-- 農てっく！専用ヘッダー -->
+  <section class="section-sm">
+    <div class="container">
+      <div class="row">
+        <!-- タイトル部分（左側） -->
+        <div class="col-12 md:col-7 lg:col-8">
+          <div class="glass rounded-lg p-8 text-center intersect:animate-fadeDown opacity-0 intersect-no-queue">
+            <h1 class="dark:text-white" set:text={upperHumanize(entryIndex.title)} />
+          </div>
+        </div>
+        <!-- アイコン部分（右側） -->
+        <div class="hidden md:flex md:col-5 lg:col-4 items-center justify-center">
+          <div class="intersect:animate-fadeDown opacity-0 intersect-no-queue">
+            <Image
+              src={agritechIcon}
+              alt="農てっく！アイコン"
+              width={200}
+              height={200}
+              class="w-40 h-40 md:w-40 md:h-40 lg:w-60 lg:h-60 rounded-lg shadow-lg"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
   <section class="section">
     <div class="flex container">
       <div class="row px-0 mx-0 w-full">
