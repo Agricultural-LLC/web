@@ -37,7 +37,7 @@ const entryDescription =
 <div class="h-full m-2 pl-0 bg-gradient-to-br gradient rounded-lg">
   <div class="glass h-full rounded-lg p-6 intersect:animate-fadeUp opacity-0">
     <h4 class="mb-4 text-lg font-semibold leading-relaxed">
-      <a href={`${baseURL}agritech/${entry.slug}/`} class="hover:text-primary transition-colors">
+      <a href={`${baseURL}agritech/${entry.slug}/`} class="hover:text-primary transition-colors dark:text-white">
         {title}
       </a>
     </h4>
@@ -69,7 +69,7 @@ const entryDescription =
       {
         entryDate && (
           <li class="inline-block">
-            <span class="inline-flex items-center gap-1 text-gray-600">
+            <span class="inline-flex items-center gap-1 text-gray-600 dark:text-gray-400">
               <FaRegCalendarAlt className={"-mt-0.5"} />
               {entryDate}
             </span>
@@ -79,7 +79,7 @@ const entryDescription =
       {
         complexity > 0 && (
           <li class="inline-block">
-            <span class="inline-flex items-center gap-1 text-gray-600">
+            <span class="inline-flex items-center gap-1 text-gray-600 dark:text-gray-400">
               <FaRegClock className={"-mt-0.5"} />
               {entryReadingTime}
             </span>
@@ -87,7 +87,7 @@ const entryDescription =
         )
       }
     </ul>
-    <p class="text-base leading-relaxed text-gray-700 whitespace-pre-line">
+    <p class="text-base leading-relaxed text-gray-700 dark:text-gray-300 whitespace-pre-line">
       {entryDescription}
     </p>
   </div>

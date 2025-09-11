@@ -1,7 +1,8 @@
 ---
-import farmlandImage from "@assets/agriculture/farmland-01.jpeg";
-import fieldWorkImage from "@assets/agriculture/field-work-01.jpeg";
-import riceFieldImage from "@assets/agriculture/rice-field-01.jpeg";
+import farmScene01Image from "@assets/agriculture/farm-scene-01.jpeg";
+import farmlandImage from "@assets/blog/drone-farming.png";
+import fieldWorkImage from "@assets/blog/future-farming.png";
+import riceFieldImage from "@assets/blog/farming-technology.png";
 import BaseLayout from "@components/base/BaseLayout.astro";
 import Button from "@components/common/Button.astro";
 import CTAButton from "@components/home/CTAButton.astro";
@@ -12,17 +13,19 @@ const baseURL = import.meta.env.BASE_URL;
 ---
 
 <BaseLayout title="つながる - 農業合同会社 | 北海道農業ネットワーク">
-  <PageHeader title="つながる" description="農家・JA・行政機関をつなぎ、北海道の地域農業を発展させるプラットフォーム" />
-  
+  <PageHeader
+    title="つながる"
+    description="「つながる」は、農業合同会社のアイデンティティです。\n人と人、現場とデータ、行政と民間、学びと実装――\n点を線に、線を面につなぎ、地域の営農を持続可能にします。"
+  />
+
   <section class="section">
     <div class="container">
       <div class="row">
         <div class="lg:col-8 mx-auto">
-          
           <!-- メインビジュアル -->
           <div class="mb-12 rounded-lg overflow-hidden">
             <Image
-              src={farmlandImage}
+              src={farmScene01Image}
               alt="農業の風景"
               width={800}
               height={400}
@@ -31,18 +34,17 @@ const baseURL = import.meta.env.BASE_URL;
           </div>
 
           <!-- 活動紹介 -->
-          <div class="prose prose-lg max-w-none mb-12">
-            <h2>農家・JA・行政をつなぐプラットフォーム</h2>
+          <!--<div class="prose prose-lg max-w-none mb-12">
+            <h2>つながる</h2>
             <p>
-              私たち農業合同会社は、北海道美唄市を拠点に、農家の皆様、JA、行政機関をつなぐ
-              架け橋として活動しています。最新の農業技術と地域の知恵を融合させ、
-              持続可能な農業の未来を共に創造していきます。
+              「つながる」は、農業合同会社のアイデンティティです。人と人、現場とデータ、行政と民間、学びと実装――
+              点を線に、線を面につなぎ、地域の営農を持続可能にします。
             </p>
-          </div>
+          </div>-->
 
           <!-- 3つの活動 -->
           <div class="grid md:grid-cols-3 gap-6 mb-12">
-            <!-- 農家との連携 -->
+            <!-- 私たちがつなぐもの -->
             <div class="glass rounded-lg p-6">
               <div class="mb-4 rounded-lg overflow-hidden">
                 <Image
@@ -53,14 +55,26 @@ const baseURL = import.meta.env.BASE_URL;
                   class="w-full h-auto"
                 />
               </div>
-              <h3 class="h4 mb-3">農家との連携</h3>
-              <p class="text-sm">
-                若手農家から熟練農家まで、幅広い世代の農家さんと協力し、
-                DX技術の導入支援や情報共有を行っています。
-              </p>
+              <h3 class="h4 mb-3">私たちがつなぐもの</h3>
+              <ul class="text-sm list-disc pl-5 space-y-2">
+                <li>
+                  人 × 人：<br />農家/JA/自治体/民間<br />の役割を可視化し、<br
+                  />協働の“場”を設計
+                </li>
+                <li>
+                  現場 × データ：<br />記録→見える化→議論→改善の循環をKPIで支援
+                </li>
+                <li>
+                  実証 × 運用：<br />PoCの学びを翌シーズンの営農計画へ着実に反映
+                </li>
+                <li>
+                  教育 × 仕事：<br
+                  />講習・研修を地域の実案件と接続し、人材の“定着”につなぐ
+                </li>
+              </ul>
             </div>
 
-            <!-- JAとの協働 -->
+            <!-- つながりを生む仕掛け -->
             <div class="glass rounded-lg p-6">
               <div class="mb-4 rounded-lg overflow-hidden">
                 <Image
@@ -71,14 +85,18 @@ const baseURL = import.meta.env.BASE_URL;
                   class="w-full h-auto"
                 />
               </div>
-              <h3 class="h4 mb-3">JAとの協働</h3>
-              <p class="text-sm">
-                地域のJAと密接に連携し、農業技術の普及や
-                販路拡大のサポートを行っています。
-              </p>
+              <h3 class="h4 mb-3">つながりを生む仕掛け</h3>
+              <ul class="text-sm list-disc pl-5 space-y-2">
+                <li>標準化された記録様式<br />（粒度・尺度の統一）</li>
+                <li>ダッシュボードによる<br />共通の“見る場”</li>
+                <li>
+                  季節の節目レビュー<br />（収穫後のKPI振り返り/<br />来期設計）
+                </li>
+                <li>共有ルール<br />（公開範囲/活用許可の明確化）</li>
+              </ul>
             </div>
 
-            <!-- 行政機関との連携 -->
+            <!-- 期待できる効果 -->
             <div class="glass rounded-lg p-6">
               <div class="mb-4 rounded-lg overflow-hidden">
                 <Image
@@ -89,24 +107,34 @@ const baseURL = import.meta.env.BASE_URL;
                   class="w-full h-auto"
                 />
               </div>
-              <h3 class="h4 mb-3">行政機関との連携</h3>
-              <p class="text-sm">
-                美唄市をはじめとする行政機関と協力し、
-                地域農業の振興と発展に貢献しています。
-              </p>
+              <h3 class="h4 mb-3">期待できる効果</h3>
+              <ul class="text-sm list-disc pl-5 space-y-2">
+                <li>
+                  議論が「天候要因」で止まらず、原因の掘り下げ<br
+                  />→対策設計へ前進
+                </li>
+                <li>収量・安定性の向上、<br />資材・人件費の最適化</li>
+                <li>現場知の形式知化による<br />継承可能性の向上</li>
+              </ul>
             </div>
           </div>
 
           <!-- 具体的な取り組み -->
-          <div class="prose prose-lg max-w-none mb-12">
-            <h2>具体的な取り組み</h2>
+          <div class="prose prose-lg max-w-none mb-12 dark:text-gray-300">
+            <h2 class="dark:text-white">ハイライト</h2>
             <ul>
-              <li>スマート農業技術の導入支援とコンサルティング</li>
-              <li>ドローンを活用した農薬散布・生育調査の実施</li>
-              <li>IoTセンサーによる圃場モニタリングシステムの構築</li>
-              <li>農業DXに関する勉強会・セミナーの開催</li>
-              <li>地域農業コミュニティの形成と情報交換の場づくり</li>
-              <li>若手農家の育成と技術継承のサポート</li>
+              <li>地域実装プロジェクト数：<b class="dark:text-white">3件</b></li>
+              <li>
+                連携パートナー：<b class="dark:text-white">農業生産者</b>、団体（<b class="dark:text-white">JA</b>／<b class="dark:text-white">自治体</b
+                >／<b class="dark:text-white">民間</b>）
+              </li>
+              <li>ドローン関連支援：<b class="dark:text-white">散布</b>・<b class="dark:text-white">計測</b>・<b class="dark:text-white">講習</b></li>
+              <li>
+                主なツール：<b class="dark:text-white">散布・マルチスペクトル対応ドローン</b> /
+                <b class="dark:text-white">衛星・気象データ分析ツール</b> <br />/
+                <b class="dark:text-white">データ連携基盤・ダッシュボード</b> /
+                <b class="dark:text-white">自社開発ツール</b>
+              </li>
             </ul>
           </div>
 
@@ -141,7 +169,6 @@ const baseURL = import.meta.env.BASE_URL;
               </div>
             </div>
           </section>
-          
         </div>
       </div>
     </div>
