@@ -1,6 +1,5 @@
 import { slug } from "github-slugger";
 import { marked } from "marked";
-import type { MarkdownHeading } from "@/types";
 
 // Configure marked with GFM support and disable deprecated headerIds
 marked.use({
@@ -17,19 +16,22 @@ export const slugify = (content: string) => {
 // markdownify with custom header ID injection and link card placeholders
 export const markdownify = (content: string, div?: boolean) => {
   let processedContent = content;
-  
+
   // Convert link card syntax to placeholder divs for client-side processing
   if (div) {
     processedContent = processLinkCardPlaceholders(processedContent);
   }
-  
+
   if (div) {
     let html = marked.parse(processedContent);
     // Add IDs to headers manually for table of contents linking
-    html = html.replace(/<h([1-6])>([^<]+)<\/h([1-6])>/g, (match, level, text, closingLevel) => {
-      const headingSlug = slugify(text.trim());
-      return `<h${level} id="${headingSlug}">${text}</h${closingLevel}>`;
-    });
+    html = html.replace(
+      /<h([1-6])>([^<]+)<\/h([1-6])>/g,
+      (match, level, text, closingLevel) => {
+        const headingSlug = slugify(text.trim());
+        return `<h${level} id="${headingSlug}">${text}</h${closingLevel}>`;
+      },
+    );
     return html;
   } else {
     return marked.parseInline(processedContent);
@@ -117,23 +119,23 @@ export const smartTruncate = (content: string, maxLength: number = 200) => {
 // extract headings from markdown for table of contents
 export const extractHeadings = (markdown: string): MarkdownHeading[] => {
   const headings: MarkdownHeading[] = [];
-  
+
   // Parse headings from markdown using regex
   const headingRegex = /^(#{1,6})\s+(.+)$/gm;
   let match;
-  
+
   while ((match = headingRegex.exec(markdown)) !== null) {
     const depth = match[1].length;
     const text = match[2].trim();
     const headingSlug = slugify(text);
-    
+
     headings.push({
       depth,
       slug: headingSlug,
       text,
     });
   }
-  
+
   return headings;
 };
 

@@ -1,15 +1,8 @@
-import type { CollectionEntry } from "astro:content";
+import type { MarkdownHeading } from "astro";
+import type { CollectionEntry, CollectionKey } from "astro:content";
 
-export interface MarkdownHeading {
-  depth: number;
-  slug: string;
-  text: string;
-}
+export type GenericEntry = CollectionEntry<CollectionKey>;
 
-// Generic entry type for content collections
-export type GenericEntry = CollectionEntry<any>;
-
-// Collection entry types
 export type AboutEntry = CollectionEntry<"about">;
 export type HomeEntry = CollectionEntry<"home">;
 
@@ -25,7 +18,7 @@ export interface SearchableEntry {
 
 // Heading hierarchy for table of contents
 export interface HeadingHierarchy extends MarkdownHeading {
-  subheadings: HeadingHierarchy[];
+  children?: HeadingHierarchy[];
 }
 
 // Blog post types
@@ -107,3 +100,48 @@ export interface BlogEntry {
   autodescription?: boolean;
   hideToc?: boolean;
 }
+
+export type SearchableEntryUnion = AboutEntry | BlogEntry | HomeEntry;
+
+export type SocialLinks = {
+  discord?: string;
+  email?: string;
+  github?: string;
+  linkedin?: string;
+  twitter?: string;
+};
+
+export type Author = {
+  name: string;
+  image?: string;
+  imageAlt?: string;
+  social?: SocialLinks;
+};
+
+export type Button = {
+  label: string;
+  link?: string;
+  newtab?: boolean;
+  hoverInvert?: boolean;
+  color?: string;
+};
+
+export type MenuItem = {
+  title?: string;
+  id: string;
+  children: MenuItem[];
+};
+
+export type MenuItemWithDraft = {
+  title?: string;
+  id: string;
+  draft: boolean;
+  children: MenuItemWithDraft[];
+};
+
+export type SideNavMenuProps = {
+  items: MenuItemWithDraft[];
+  level: number;
+  currentPage: string;
+  className?: string;
+};
