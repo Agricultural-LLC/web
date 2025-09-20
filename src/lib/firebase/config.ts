@@ -3,7 +3,9 @@ import { getAuth, connectAuthEmulator } from "firebase/auth";
 import { getDatabase, connectDatabaseEmulator } from "firebase/database";
 
 const firebaseConfig = {
-  apiKey: import.meta.env.PUBLIC_FIREBASE_API_KEY || "AIzaSyCkctZ3zzyHw0JEEf8w-wl_xVE-1lQLo7E",
+  apiKey:
+    import.meta.env.PUBLIC_FIREBASE_API_KEY ||
+    "AIzaSyCkctZ3zzyHw0JEEf8w-wl_xVE-1lQLo7E",
   authDomain:
     import.meta.env.PUBLIC_FIREBASE_AUTH_DOMAIN ||
     "agricultural-llc.firebaseapp.com",
@@ -17,7 +19,8 @@ const firebaseConfig = {
   messagingSenderId:
     import.meta.env.PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "293681935404",
   appId:
-    import.meta.env.PUBLIC_FIREBASE_APP_ID || "1:293681935404:web:188089a29ff3da05490d89",
+    import.meta.env.PUBLIC_FIREBASE_APP_ID ||
+    "1:293681935404:web:188089a29ff3da05490d89",
 };
 
 const app = initializeApp(firebaseConfig);

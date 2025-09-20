@@ -1,57 +1,68 @@
-const similerItems = (currentItem: any, allItems: any, id: string) => {
-  let categories: string[] = [];
-  let tags: string[] = [];
+import type { BlogEntry } from '@/types';
 
-  // set categories
-  if (currentItem.data?.categories?.length > 0) {
-    categories = currentItem.data.categories;
-  }
+interface SimilarItem {
+  id: string;
+  data: {
+    categories: string[];
+    tags: string[];
+  };
+}
 
-  // set tags
-  if (currentItem.data?.tags?.length > 0) {
-    tags = currentItem.data.tags;
-  }
+/**
+ * Find similar items based on categories and tags
+ * @param currentItem - The current item to find similar items for
+ * @param allItems - All available items to search through
+ * @param id - The ID of the current item to exclude from results
+ * @returns Array of similar items sorted by relevance
+ */
+const findSimilarItems = (
+  currentItem: SimilarItem,
+  allItems: SimilarItem[],
+  id: string
+): SimilarItem[] => {
+  const categories = currentItem.data?.categories || [];
+  const tags = currentItem.data?.tags || [];
 
-  // filter by categories
-  const filterByCategories = allItems.filter((item: any) =>
-    categories.find((category) => item.data.categories.includes(category)),
+  // Filter by categories
+  const filterByCategories = allItems.filter((item) =>
+    categories.some((category) => item.data.categories?.includes(category))
   );
 
-  // filter by tags
-  const filterByTags = allItems.filter((item: any) =>
-    tags.find((tag) => item.data.tags.includes(tag)),
+  // Filter by tags
+  const filterByTags = allItems.filter((item) =>
+    tags.some((tag) => item.data.tags?.includes(tag))
   );
 
-  // merged after filter
+  // Merge filtered items
   const mergedItems = [...filterByCategories, ...filterByTags];
 
   // Remove self from list
-  const filterByID = mergedItems.filter((item) => item.id !== id);
+  const filteredByID = mergedItems.filter((item) => item.id !== id);
 
-  // count instances of each item
-  const itemCount = filterByID.reduce((accumulator: any, currentItem: any) => {
-    accumulator[currentItem.id] = (accumulator[currentItem.id] || 0) + 1;
+  // Count instances of each item
+  const itemCount = filteredByID.reduce((accumulator, item) => {
+    accumulator[item.id] = (accumulator[item.id] || 0) + 1;
     return accumulator;
-  }, {});
+  }, {} as Record<string, number>);
 
-  // sort items by number of instances
-  const sortedItems = filterByID.sort(
-    (a: any, b: any) => itemCount[b.id] - itemCount[a.id],
+  // Sort items by number of instances
+  const sortedItems = filteredByID.sort(
+    (a, b) => itemCount[b.id] - itemCount[a.id]
   );
 
-  // remove items with fewer than 2 instances
+  // Remove items with fewer than 2 instances
   const filteredItems = sortedItems.filter(
-    (item: any) => itemCount[item.id] > 1,
+    (item) => itemCount[item.id] > 1
   );
 
-  // remove duplicates
+  // Remove duplicates
   const uniqueItems = [
-    ...new Set(filteredItems.map((item: any) => item.id)),
-  ].map((id: string) => {
-    return filteredItems.find((item: any) => item.id === id);
-  });
+    ...new Set(filteredItems.map((item) => item.id)),
+  ].map((itemId) => {
+    return filteredItems.find((item) => item.id === itemId);
+  }).filter(Boolean) as SimilarItem[];
 
   return uniqueItems;
 };
 
-export default similerItems;
+export default findSimilarItems;

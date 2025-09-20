@@ -1,28 +1,47 @@
-import { initializeApp, getApp, getApps } from 'firebase/app';
-import { getDatabase, ref, get } from 'firebase/database';
-import type { BlogEntry } from '@/types';
+import { initializeApp, getApp, getApps } from "firebase/app";
+import { getDatabase, ref, get } from "firebase/database";
+import type { BlogEntry } from "@/types";
 
 // Firebase Client SDK初期化関数（PUBLIC_変数を使用）
 function initializeFirebase() {
   if (getApps().length === 0) {
     const firebaseConfig = {
-      apiKey: import.meta.env.PUBLIC_FIREBASE_API_KEY || "AIzaSyCkctZ3zzyHw0JEEf8w-wl_xVE-1lQLo7E",
-      authDomain: import.meta.env.PUBLIC_FIREBASE_AUTH_DOMAIN || "agricultural-llc.firebaseapp.com",
-      databaseURL: import.meta.env.PUBLIC_FIREBASE_DATABASE_URL || "https://agricultural-llc-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: import.meta.env.PUBLIC_FIREBASE_PROJECT_ID || "agricultural-llc",
-      storageBucket: import.meta.env.PUBLIC_FIREBASE_STORAGE_BUCKET || "agricultural-llc.firebasestorage.app",
-      messagingSenderId: import.meta.env.PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "293681935404",
-      appId: import.meta.env.PUBLIC_FIREBASE_APP_ID || "1:293681935404:web:188089a29ff3da05490d89"
+      apiKey:
+        import.meta.env.PUBLIC_FIREBASE_API_KEY ||
+        "AIzaSyCkctZ3zzyHw0JEEf8w-wl_xVE-1lQLo7E",
+      authDomain:
+        import.meta.env.PUBLIC_FIREBASE_AUTH_DOMAIN ||
+        "agricultural-llc.firebaseapp.com",
+      databaseURL:
+        import.meta.env.PUBLIC_FIREBASE_DATABASE_URL ||
+        "https://agricultural-llc-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId:
+        import.meta.env.PUBLIC_FIREBASE_PROJECT_ID || "agricultural-llc",
+      storageBucket:
+        import.meta.env.PUBLIC_FIREBASE_STORAGE_BUCKET ||
+        "agricultural-llc.firebasestorage.app",
+      messagingSenderId:
+        import.meta.env.PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "293681935404",
+      appId:
+        import.meta.env.PUBLIC_FIREBASE_APP_ID ||
+        "1:293681935404:web:188089a29ff3da05490d89",
     };
 
-    console.log('🔧 Firebase Client initialization...');
-    console.log('Project ID:', import.meta.env.PUBLIC_FIREBASE_PROJECT_ID || 'agricultural-llc');
-    console.log('Database URL:', import.meta.env.PUBLIC_FIREBASE_DATABASE_URL || 'https://agricultural-llc-default-rtdb.asia-southeast1.firebasedatabase.app');
-    
+    console.log("🔧 Firebase Client initialization...");
+    console.log(
+      "Project ID:",
+      import.meta.env.PUBLIC_FIREBASE_PROJECT_ID || "agricultural-llc",
+    );
+    console.log(
+      "Database URL:",
+      import.meta.env.PUBLIC_FIREBASE_DATABASE_URL ||
+        "https://agricultural-llc-default-rtdb.asia-southeast1.firebasedatabase.app",
+    );
+
     initializeApp(firebaseConfig);
-    console.log('✅ Firebase Client initialized');
+    console.log("✅ Firebase Client initialized");
   }
-  
+
   const app = getApp();
   return getDatabase(app);
 }
@@ -49,28 +68,35 @@ export interface FirebaseBlogEntry {
 // Firebaseから記事を取得
 export async function getFirebaseBlogEntries(): Promise<BlogEntry[]> {
   try {
-    console.log('🔍 Fetching blog entries from Firebase...');
+    console.log("🔍 Fetching blog entries from Firebase...");
     const db = initializeFirebase();
-    const snapshot = await get(ref(db, 'cms/blog'));
-    
+    const snapshot = await get(ref(db, "cms/blog"));
+
     if (!snapshot.exists()) {
-      console.log('❌ No blog data found in Firebase');
+      console.log("❌ No blog data found in Firebase");
       return [];
     }
 
     const data = snapshot.val();
-    console.log('📊 Raw Firebase data:', Object.keys(data).length, 'entries found');
-    
+    console.log(
+      "📊 Raw Firebase data:",
+      Object.keys(data).length,
+      "entries found",
+    );
+
     const entries: BlogEntry[] = [];
 
-    for (const [id, post] of Object.entries(data as Record<string, FirebaseBlogEntry>)) {
+    for (const [id, post] of Object.entries(
+      data as Record<string, FirebaseBlogEntry>,
+    )) {
       console.log(`📝 Processing entry: ${id}`, {
         title: post.title,
         draft: post.draft,
-        slug: post.slug
+        slug: post.slug,
       });
-      
-      if (!post.draft) { // 下書きは除外
+
+      if (!post.draft) {
+        // 下書きは除外
         entries.push({
           id,
           slug: post.slug,
@@ -85,36 +111,39 @@ export async function getFirebaseBlogEntries(): Promise<BlogEntry[]> {
           draft: post.draft,
           complexity: 1, // デフォルト値
           body: post.body,
-          url: `/agritech/${post.slug}/`
+          url: `/agritech/${post.slug}/`,
         });
       }
     }
 
     // 日付順でソート（新しい順）
     entries.sort((a, b) => b.date.getTime() - a.date.getTime());
-    
+
     console.log(`✅ Successfully loaded ${entries.length} published entries`);
     return entries;
-    
   } catch (error) {
-    console.error('❌ Error loading Firebase blog entries:', error);
+    console.error("❌ Error loading Firebase blog entries:", error);
     return [];
   }
 }
 
 // 単一記事を取得
-export async function getFirebaseBlogEntry(slug: string): Promise<BlogEntry | null> {
+export async function getFirebaseBlogEntry(
+  slug: string,
+): Promise<BlogEntry | null> {
   try {
     const db = initializeFirebase();
-    const snapshot = await get(ref(db, 'cms/blog'));
-    
+    const snapshot = await get(ref(db, "cms/blog"));
+
     if (!snapshot.exists()) {
       return null;
     }
 
     const data = snapshot.val();
-    
-    for (const [id, post] of Object.entries(data as Record<string, FirebaseBlogEntry>)) {
+
+    for (const [id, post] of Object.entries(
+      data as Record<string, FirebaseBlogEntry>,
+    )) {
       if (post.slug === slug && !post.draft) {
         return {
           id,
@@ -130,15 +159,14 @@ export async function getFirebaseBlogEntry(slug: string): Promise<BlogEntry | nu
           draft: post.draft,
           complexity: 1, // デフォルト値
           body: post.body,
-          url: `/agritech/${post.slug}/`
+          url: `/agritech/${post.slug}/`,
         };
       }
     }
-    
+
     return null;
-    
   } catch (error) {
-    console.error('Error loading Firebase blog entry:', error);
+    console.error("Error loading Firebase blog entry:", error);
     return null;
   }
 }
@@ -147,11 +175,11 @@ export async function getFirebaseBlogEntry(slug: string): Promise<BlogEntry | nu
 export async function getFirebaseCategories(): Promise<string[]> {
   const entries = await getFirebaseBlogEntries();
   const categories = new Set<string>();
-  
-  entries.forEach(entry => {
-    entry.categories.forEach(category => categories.add(category));
+
+  entries.forEach((entry) => {
+    entry.categories.forEach((category) => categories.add(category));
   });
-  
+
   return Array.from(categories).sort();
 }
 
@@ -159,22 +187,28 @@ export async function getFirebaseCategories(): Promise<string[]> {
 export async function getFirebaseTags(): Promise<string[]> {
   const entries = await getFirebaseBlogEntries();
   const tags = new Set<string>();
-  
-  entries.forEach(entry => {
-    entry.tags.forEach(tag => tags.add(tag));
+
+  entries.forEach((entry) => {
+    entry.tags.forEach((tag) => tags.add(tag));
   });
-  
+
   return Array.from(tags).sort();
 }
 
 // カテゴリ別記事を取得
-export async function getFirebaseBlogEntriesByCategory(category: string): Promise<BlogEntry[]> {
+export async function getFirebaseBlogEntriesByCategory(
+  category: string,
+): Promise<BlogEntry[]> {
   const entries = await getFirebaseBlogEntries();
-  return entries.filter((entry: BlogEntry) => entry.categories.includes(category));
+  return entries.filter((entry: BlogEntry) =>
+    entry.categories.includes(category),
+  );
 }
 
 // タグ別記事を取得
-export async function getFirebaseBlogEntriesByTag(tag: string): Promise<BlogEntry[]> {
+export async function getFirebaseBlogEntriesByTag(
+  tag: string,
+): Promise<BlogEntry[]> {
   const entries = await getFirebaseBlogEntries();
   return entries.filter((entry: BlogEntry) => entry.tags.includes(tag));
 }

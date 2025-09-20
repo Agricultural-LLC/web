@@ -20,7 +20,6 @@ const about = defineCollection({
     }),
 });
 
-
 const home = defineCollection({
   loader: glob({ pattern: "-index.{md,mdx}", base: "./src/content/home" }),
   schema: ({ image }) =>
