@@ -2,6 +2,7 @@
 import type { HomeEntry } from "@/types";
 import BaseLayout from "@components/base/BaseLayout.astro";
 import CTAButton from "@components/home/CTAButton.astro";
+import NewsSection from "@components/news/NewsSection.astro";
 import { markdownify } from "@lib/textConverter";
 import { Image } from "astro:assets";
 
@@ -134,6 +135,9 @@ const { image, imageAlt, title, content, button } = entry.data;
       </div>
     </div>
   </section>
+
+  <!-- News Section -->
+  <NewsSection />
 
   <!-- CTA Button Section -->
   {

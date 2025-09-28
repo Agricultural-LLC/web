@@ -94,13 +94,15 @@ Admin Interface → Firebase Database → Dynamic Content Rendering
 ## Site Architecture
 
 The website consists of the following pages:
-1. **Homepage** (`/`) - Vision message, company overview, activity highlights
+1. **Homepage** (`/`) - Vision message, company overview, activity highlights, news section
 2. **About Page** (`/about/`) - Company information and leadership profiles
 3. **Connect Page** (`/connect/`) - Activities with farmers, JA, and government
 4. **農てっく!** (`/agritech/`) - Agricultural DX information and insights
-5. **Case Studies** (`/cases/`) - Regional success stories
-6. **Contact Page** (`/contact/`) - Contact form with validation
-7. **Search** (`/search/`) - Full-text search across all content
+5. **News** (`/news/`) - Latest news and updates about agricultural DX
+6. **News Detail** (`/news/[id]`) - Individual news article pages
+7. **Case Studies** (`/cases/`) - Regional success stories
+8. **Contact Page** (`/contact/`) - Contact form with validation
+9. **Search** (`/search/`) - Full-text search across all content
 
 ## Development Guidelines
 
@@ -125,8 +127,9 @@ The website consists of the following pages:
 - Optimize for regional search rankings
 
 ### Content Management
-- Blog posts managed via Firebase Realtime Database
-- Admin interface at `/admin/agritech/` for content editing
+- Blog posts and news articles managed via Firebase Realtime Database
+- Admin interfaces at `/admin/agritech/` and `/admin/news/` for content editing
+- News features: priority ordering, featured flags, external links, view counts
 - Images stored in Firebase Storage with automatic optimization
 - Real-time content updates without site rebuilds
 
@@ -141,6 +144,7 @@ src/
 │   ├── admin/     # CMS admin components
 │   ├── base/      # Layout components
 │   ├── agritech/  # Agritech-specific components
+│   ├── news/      # News-specific components
 │   ├── common/    # Shared components
 │   ├── home/      # Homepage components
 │   └── search/    # Search functionality
@@ -160,6 +164,12 @@ src/
 ## Recent Updates & Maintenance
 
 ### Completed Optimizations
+- ✅ Implemented complete News CMS functionality with Firebase integration
+- ✅ Added news section to homepage with featured articles display
+- ✅ Created responsive news listing page with filtering and pagination
+- ✅ Implemented priority ordering and featured flags for news articles
+- ✅ Added view count tracking for news articles
+- ✅ Unified design language across news components (transparent backgrounds, rounded corners)
 - ✅ Unified logo usage across all pages
 - ✅ Standardized CTA sections
 - ✅ Fixed search component hydration issues

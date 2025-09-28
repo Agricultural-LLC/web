@@ -1,0 +1,352 @@
+---
+// Get Firebase configuration from environment variables with fallback values
+const firebaseConfig = {
+  apiKey: import.meta.env.PUBLIC_FIREBASE_API_KEY || "AIzaSyCkctZ3zzyHw0JEEf8w-wl_xVE-1lQLo7E",
+  authDomain: import.meta.env.PUBLIC_FIREBASE_AUTH_DOMAIN || "agricultural-llc.firebaseapp.com",
+  databaseURL: import.meta.env.PUBLIC_FIREBASE_DATABASE_URL || "https://agricultural-llc-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: import.meta.env.PUBLIC_FIREBASE_PROJECT_ID || "agricultural-llc",
+  storageBucket: import.meta.env.PUBLIC_FIREBASE_STORAGE_BUCKET || "agricultural-llc.firebasestorage.app",
+  messagingSenderId: import.meta.env.PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "293681935404",
+  appId: import.meta.env.PUBLIC_FIREBASE_APP_ID || "1:293681935404:web:188089a29ff3da05490d89"
+};
+---
+<!DOCTYPE html>
+<html lang="ja" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ニュース管理 - 農業合同会社 CMS</title>
+  <meta name="description" content="ニュース記事の管理画面" />
+  <meta name="robots" content="noindex, nofollow" />
+  
+  <!-- Firebase Configuration using inline script -->
+  <script define:vars={{ firebaseConfig }}>
+    // Make firebaseConfig globally available
+    window.firebaseConfig = firebaseConfig;
+    console.log('=== FIREBASE CONFIG DEBUG ===');
+    console.log('firebaseConfig from define:vars:', firebaseConfig);
+    console.log('Database URL:', firebaseConfig.databaseURL);
+    console.log('===============================');
+  </script>
+  
+  <!-- Tailwind CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+      background-color: #f8fafc;
+    }
+    
+    .glass {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header class="bg-white shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+          <div class="flex items-center">
+            <a href="/admin/" class="text-purple-600 hover:text-purple-800 mr-4">
+              ← ダッシュボード
+            </a>
+            <h1 class="text-xl font-semibold text-gray-800">ニュース管理</h1>
+          </div>
+          
+          <div class="flex items-center space-x-4">
+            <a href="/admin/news/edit/" class="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition duration-200">
+              新規ニュース作成
+            </a>
+            <span id="user-email" class="text-gray-600 text-sm"></span>
+            <button 
+              id="logout-button"
+              class="text-gray-600 hover:text-gray-800 text-sm px-3 py-2 rounded-md hover:bg-gray-100 transition duration-200"
+            >
+              ログアウト
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <div class="px-4 py-6 sm:px-0">
+        
+        <!-- Loading State -->
+        <div id="loading" class="text-center py-12">
+          <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+          <p class="mt-2 text-gray-600">ニュースを読み込み中...</p>
+        </div>
+        
+        <!-- News Posts List -->
+        <div id="posts-container" class="hidden">
+          <div class="bg-white shadow rounded-lg overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+              <h2 class="text-lg font-semibold text-gray-800">ニュース一覧</h2>
+            </div>
+            
+            <div id="posts-list" class="divide-y divide-gray-200">
+              <!-- Posts will be dynamically loaded here -->
+            </div>
+            
+            <div id="empty-state" class="hidden p-12 text-center">
+              <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+              </svg>
+              <h3 class="mt-2 text-sm font-medium text-gray-900">ニュースがありません</h3>
+              <p class="mt-1 text-sm text-gray-500">最初のニュースを作成しましょう</p>
+              <div class="mt-6">
+                <a href="/admin/news/edit/" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                  新規ニュース作成
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Error State -->
+        <div id="error-state" class="hidden text-center py-12">
+          <div class="text-red-600 mb-4">
+            <svg class="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-medium text-gray-900">エラーが発生しました</h3>
+          <p class="mt-1 text-sm text-gray-500" id="error-message">ニュースの読み込みに失敗しました</p>
+          <div class="mt-6">
+            <button onclick="loadPosts()" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+              再試行
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Firebase SDK v10 - Modular API -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+    import { getDatabase, ref, get, remove } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+    
+    // Wait for window.firebaseConfig to be available
+    if (!window.firebaseConfig) {
+      console.error('Firebase config not available from inline script');
+      document.body.innerHTML = '<div style="padding: 2rem; text-align: center; color: red;">Firebase設定エラー: 設定が正しく読み込まれませんでした</div>';
+      throw new Error('Firebase config not loaded');
+    }
+
+    // Use firebaseConfig from global window object
+    const config = window.firebaseConfig;
+
+    // Validate config exists
+    if (!config || !config.apiKey) {
+      console.error('Firebase config not properly loaded from Astro');
+      document.body.innerHTML = '<div style="padding: 2rem; text-align: center; color: red;">Firebase設定エラー: 環境変数が正しく読み込まれませんでした</div>';
+      throw new Error('Firebase config not loaded');
+    }
+
+    // Initialize Firebase
+    const app = initializeApp(config);
+    const auth = getAuth(app);
+    const database = getDatabase(app, config.databaseURL);
+
+    console.log('Firebase initialized with modular API');
+    console.log('Config values being used:');
+    console.log('- API Key:', config.apiKey);
+    console.log('- Auth Domain:', config.authDomain);
+    console.log('- Database URL:', config.databaseURL);
+    console.log('- Project ID:', config.projectId);
+    console.log('App:', app);
+    console.log('Auth:', auth);
+    console.log('Database:', database);
+
+    // DOM elements
+    const loading = document.getElementById('loading');
+    const postsContainer = document.getElementById('posts-container');
+    const postsList = document.getElementById('posts-list');
+    const emptyState = document.getElementById('empty-state');
+    const errorState = document.getElementById('error-state');
+    const errorMessage = document.getElementById('error-message');
+    const userEmail = document.getElementById('user-email');
+    const logoutButton = document.getElementById('logout-button');
+
+    // Auth check
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = '/admin/';
+        return;
+      }
+      
+      userEmail.textContent = user.email;
+      loadPosts();
+    });
+
+    // Logout handler
+    logoutButton.addEventListener('click', () => {
+      signOut(auth);
+    });
+
+    // Load posts
+    async function loadPosts() {
+      try {
+        loading.classList.remove('hidden');
+        postsContainer.classList.add('hidden');
+        errorState.classList.add('hidden');
+
+        const postsRef = ref(database, 'cms/news');
+        const snapshot = await get(postsRef);
+        
+        loading.classList.add('hidden');
+        postsContainer.classList.remove('hidden');
+
+        if (snapshot.exists()) {
+          const posts = snapshot.val();
+          const postsArray = Object.keys(posts).map(key => ({
+            id: key,
+            ...posts[key]
+          }));
+          
+          // Sort by priority and date (newest first)
+          postsArray.sort((a, b) => {
+            if (a.priority !== b.priority) {
+              return (b.priority || 0) - (a.priority || 0);
+            }
+            return new Date(b.date) - new Date(a.date);
+          });
+          
+          if (postsArray.length === 0) {
+            emptyState.classList.remove('hidden');
+          } else {
+            renderPosts(postsArray);
+          }
+        } else {
+          emptyState.classList.remove('hidden');
+        }
+      } catch (error) {
+        console.error('Error loading posts:', error);
+        loading.classList.add('hidden');
+        postsContainer.classList.add('hidden');
+        errorState.classList.remove('hidden');
+        errorMessage.textContent = error.message;
+      }
+    }
+
+    function renderPosts(posts) {
+      postsList.innerHTML = '';
+      
+      posts.forEach(post => {
+        const postElement = createPostElement(post);
+        postsList.appendChild(postElement);
+      });
+    }
+
+    function createPostElement(post) {
+      const div = document.createElement('div');
+      div.className = 'p-6 hover:bg-gray-50';
+      
+      const statusBadge = post.draft ? 
+        '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">下書き</span>' :
+        '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">公開中</span>';
+      
+      const priorityBadge = post.featured ? 
+        '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">特集</span>' : '';
+      
+      const priorityNumber = post.priority ? 
+        `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">優先度: ${post.priority}</span>` : '';
+      
+      const categories = Array.isArray(post.categories) ? post.categories.join(', ') : '';
+      const tags = Array.isArray(post.tags) ? post.tags.join(', ') : '';
+      
+      div.innerHTML = `
+        <div class="flex items-start justify-between">
+          <div class="flex-1">
+            <div class="flex items-center space-x-2 mb-2">
+              <h3 class="text-lg font-medium text-gray-900">${post.title}</h3>
+              ${statusBadge}
+              ${priorityBadge}
+              ${priorityNumber}
+            </div>
+            
+            <p class="text-sm text-gray-600 mb-2">${post.description}</p>
+            
+            <div class="flex items-center text-xs text-gray-500 space-x-4">
+              <span>📅 ${formatDate(post.date)}</span>
+              ${categories && `<span>📂 ${categories}</span>`}
+              ${tags && `<span>🏷️ ${tags}</span>`}
+              ${post.views ? `<span>👁️ ${post.views}回閲覧</span>` : ''}
+              ${post.updatedAt && `<span>🕒 ${formatDateTime(post.updatedAt)}</span>`}
+              ${post.source && `<span>📰 ${post.source}</span>`}
+            </div>
+          </div>
+          
+          <div class="flex items-center space-x-2 ml-4">
+            <button 
+              onclick="editPost('${post.id}')"
+              class="text-purple-600 hover:text-purple-800 text-sm font-medium px-3 py-1 rounded hover:bg-purple-50 transition duration-200"
+            >
+              編集
+            </button>
+            <button 
+              onclick="deletePost('${post.id}', '${post.title}')"
+              class="text-red-600 hover:text-red-800 text-sm font-medium px-3 py-1 rounded hover:bg-red-50 transition duration-200"
+            >
+              削除
+            </button>
+          </div>
+        </div>
+      `;
+      
+      return div;
+    }
+
+    // Helper functions
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('ja-JP', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    }
+
+    function formatDateTime(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleString('ja-JP', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    // Global functions
+    window.loadPosts = loadPosts;
+    
+    window.editPost = (postId) => {
+      window.location.href = `/admin/news/edit/?id=${postId}`;
+    };
+
+    window.deletePost = async (postId, title) => {
+      if (!confirm(`"${title}"を削除しますか？この操作は取り消せません。`)) {
+        return;
+      }
+      
+      try {
+        await remove(ref(database, `cms/news/${postId}`));
+        loadPosts(); // Reload the list
+        alert('ニュースが削除されました');
+      } catch (error) {
+        console.error('Error deleting post:', error);
+        alert('削除に失敗しました: ' + error.message);
+      }
+    };
+  </script>
+</body>
+</html>
