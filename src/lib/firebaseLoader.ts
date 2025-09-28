@@ -89,11 +89,7 @@ export async function getFirebaseBlogEntries(): Promise<BlogEntry[]> {
     for (const [id, post] of Object.entries(
       data as Record<string, FirebaseBlogEntry>,
     )) {
-      console.log(`📝 Processing entry: ${id}`, {
-        title: post.title,
-        draft: post.draft,
-        slug: post.slug,
-      });
+      // Processing entry
 
       if (!post.draft) {
         // 下書きは除外
@@ -119,7 +115,7 @@ export async function getFirebaseBlogEntries(): Promise<BlogEntry[]> {
     // 日付順でソート（新しい順）
     entries.sort((a, b) => b.date.getTime() - a.date.getTime());
 
-    console.log(`✅ Successfully loaded ${entries.length} published entries`);
+    // Successfully loaded entries
     return entries;
   } catch (error) {
     console.error("❌ Error loading Firebase blog entries:", error);

@@ -1,13 +1,17 @@
 ---
 const firebaseConfig = {
-  apiKey: import.meta.env.PUBLIC_FIREBASE_API_KEY || "AIzaSyCkctZ3zzyHw0JEEf8w-wl_xVE-1lQLo7E",
-  authDomain: import.meta.env.PUBLIC_FIREBASE_AUTH_DOMAIN || "agricultural-llc.firebaseapp.com",
-  databaseURL: import.meta.env.PUBLIC_FIREBASE_DATABASE_URL || "https://agricultural-llc-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: import.meta.env.PUBLIC_FIREBASE_PROJECT_ID || "agricultural-llc",
-  storageBucket: import.meta.env.PUBLIC_FIREBASE_STORAGE_BUCKET || "agricultural-llc.firebasestorage.app",
-  messagingSenderId: import.meta.env.PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "293681935404",
-  appId: import.meta.env.PUBLIC_FIREBASE_APP_ID || "1:293681935404:web:188089a29ff3da05490d89"
+  apiKey: import.meta.env.PUBLIC_FIREBASE_API_KEY,
+  authDomain: import.meta.env.PUBLIC_FIREBASE_AUTH_DOMAIN,
+  databaseURL: import.meta.env.PUBLIC_FIREBASE_DATABASE_URL,
+  projectId: import.meta.env.PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.PUBLIC_FIREBASE_APP_ID
 };
+
+if (!firebaseConfig.apiKey || !firebaseConfig.authDomain) {
+  console.error("Firebase configuration is incomplete. Please set environment variables.");
+}
 ---
 <!DOCTYPE html>
 <html lang="ja" data-theme="light">
@@ -540,10 +544,26 @@ const firebaseConfig = {
     const uploadError = document.getElementById('upload-error');
     const errorText = document.getElementById('error-text');
 
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
       if (!user) {
         window.location.href = '/admin/';
         return;
+      }
+
+      // Verify user has proper permissions
+      try {
+        const idTokenResult = await user.getIdTokenResult();
+        const isAdmin = idTokenResult.claims.admin === true;
+
+        if (!isAdmin && !user.email?.endsWith('@agricultural-llc.com')) {
+          showError('権限エラー', '管理者権限が必要です');
+          setTimeout(() => {
+            window.location.href = '/admin/';
+          }, 2000);
+          return;
+        }
+      } catch (error) {
+        console.error('Error checking admin status:', error);
       }
 
       userEmail.textContent = user.email;
@@ -1085,6 +1105,25 @@ const firebaseConfig = {
       const downloadURL = await getDownloadURL(snapshot.ref);
       return downloadURL;
     }
+
+    // Cleanup on page unload to prevent memory leaks
+    window.addEventListener('beforeunload', () => {
+      if (simpleMDE) {
+        simpleMDE.toTextArea();
+        simpleMDE = null;
+      }
+    });
+
+    // Additional cleanup on navigation
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && simpleMDE) {
+        // Save current content to localStorage as backup
+        const content = simpleMDE.value();
+        if (content && currentPostId) {
+          localStorage.setItem(`news_draft_${currentPostId}`, content);
+        }
+      }
+    });
 
   </script>
 </body>

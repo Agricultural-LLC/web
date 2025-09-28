@@ -11,11 +11,7 @@ const firebaseConfig = {
 };
 
 // Server-side debug: Log environment variables
-console.log('=== SERVER-SIDE DEBUG ===');
-console.log('PUBLIC_FIREBASE_API_KEY:', import.meta.env.PUBLIC_FIREBASE_API_KEY);
-console.log('PUBLIC_FIREBASE_DATABASE_URL:', import.meta.env.PUBLIC_FIREBASE_DATABASE_URL);
-console.log('firebaseConfig object:', firebaseConfig);
-console.log('=========================');
+// Firebase configuration initialized
 
 // Validate that all required config values are present
 const requiredEnvVars = [
@@ -43,10 +39,7 @@ if (missingVars.length > 0) {
   <script define:vars={{ firebaseConfig }}>
     // Make firebaseConfig globally available
     window.firebaseConfig = firebaseConfig;
-    console.log('=== FIREBASE CONFIG DEBUG ===');
-    console.log('firebaseConfig from define:vars:', firebaseConfig);
-    console.log('Database URL:', firebaseConfig.databaseURL);
-    console.log('===============================');
+    // Firebase config loaded from server
   </script>
   
   <!-- Firebase SDK v10 - Modular API -->
@@ -77,15 +70,7 @@ if (missingVars.length > 0) {
     const auth = getAuth(app);
     const database = getDatabase(app, config.databaseURL);
 
-    console.log('Firebase initialized with modular API');
-    console.log('Config values being used:');
-    console.log('- API Key:', config.apiKey);
-    console.log('- Auth Domain:', config.authDomain);
-    console.log('- Database URL:', config.databaseURL);
-    console.log('- Project ID:', config.projectId);
-    console.log('App:', app);
-    console.log('Auth:', auth);
-    console.log('Database:', database);
+    // Firebase initialized with modular API
 
     // DOM elements
     const loading = document.getElementById('loading');
@@ -104,11 +89,11 @@ if (missingVars.length > 0) {
         loginForm.classList.add('hidden');
         dashboard.classList.remove('hidden');
         userEmail.textContent = user.email;
-        console.log('User logged in:', user.email);
+        // User logged in
       } else {
         dashboard.classList.add('hidden');
         loginForm.classList.remove('hidden');
-        console.log('User logged out');
+        // User logged out
       }
     });
 
@@ -121,7 +106,7 @@ if (missingVars.length > 0) {
       
       try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        console.log('Login successful:', userCredential.user.email);
+        // Login successful
         errorMessage.classList.add('hidden');
       } catch (error) {
         console.error('Login error:', error);
@@ -134,7 +119,7 @@ if (missingVars.length > 0) {
     logoutButton.addEventListener('click', async () => {
       try {
         await signOut(auth);
-        console.log('Logout successful');
+        // Logout successful
       } catch (error) {
         console.error('Logout error:', error);
       }

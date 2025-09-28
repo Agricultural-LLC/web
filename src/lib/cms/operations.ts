@@ -218,9 +218,21 @@ export async function deleteNewsPost(id: string): Promise<void> {
 }
 
 export async function incrementNewsViews(id: string): Promise<void> {
-  const postRef = ref(database, `${CMS_PATH}/news/${id}/views`);
-  const snapshot = await get(postRef);
-  
-  const currentViews = snapshot.exists() ? snapshot.val() : 0;
-  await set(postRef, currentViews + 1);
+  try {
+    if (!id || typeof id !== 'string') {
+      throw new Error('Invalid news ID provided');
+    }
+
+    const postRef = ref(database, `${CMS_PATH}/news/${id}/views`);
+    const snapshot = await get(postRef);
+
+    const currentViews = snapshot.exists() ? snapshot.val() : 0;
+    const newViews = typeof currentViews === 'number' ? currentViews + 1 : 1;
+
+    await set(postRef, newViews);
+  } catch (error) {
+    console.error(`Failed to increment views for news ${id}:`, error);
+    // Don't throw - let the page render even if view increment fails
+    return;
+  }
 }

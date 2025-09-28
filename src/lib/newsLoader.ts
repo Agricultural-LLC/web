@@ -6,26 +6,19 @@ import type { NewsEntry } from "@/types";
 function initializeFirebase() {
   if (getApps().length === 0) {
     const firebaseConfig = {
-      apiKey:
-        import.meta.env.PUBLIC_FIREBASE_API_KEY ||
-        "AIzaSyCkctZ3zzyHw0JEEf8w-wl_xVE-1lQLo7E",
-      authDomain:
-        import.meta.env.PUBLIC_FIREBASE_AUTH_DOMAIN ||
-        "agricultural-llc.firebaseapp.com",
-      databaseURL:
-        import.meta.env.PUBLIC_FIREBASE_DATABASE_URL ||
-        "https://agricultural-llc-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId:
-        import.meta.env.PUBLIC_FIREBASE_PROJECT_ID || "agricultural-llc",
-      storageBucket:
-        import.meta.env.PUBLIC_FIREBASE_STORAGE_BUCKET ||
-        "agricultural-llc.firebasestorage.app",
-      messagingSenderId:
-        import.meta.env.PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "293681935404",
-      appId:
-        import.meta.env.PUBLIC_FIREBASE_APP_ID ||
-        "1:293681935404:web:188089a29ff3da05490d89",
+      apiKey: import.meta.env.PUBLIC_FIREBASE_API_KEY,
+      authDomain: import.meta.env.PUBLIC_FIREBASE_AUTH_DOMAIN,
+      databaseURL: import.meta.env.PUBLIC_FIREBASE_DATABASE_URL,
+      projectId: import.meta.env.PUBLIC_FIREBASE_PROJECT_ID,
+      storageBucket: import.meta.env.PUBLIC_FIREBASE_STORAGE_BUCKET,
+      messagingSenderId: import.meta.env.PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+      appId: import.meta.env.PUBLIC_FIREBASE_APP_ID,
     };
+
+    if (!firebaseConfig.apiKey || !firebaseConfig.authDomain) {
+      console.error("Firebase configuration is incomplete. Please set environment variables.");
+      return null;
+    }
 
     initializeApp(firebaseConfig);
   }
@@ -61,6 +54,10 @@ export interface FirebaseNewsEntry {
 export async function getFirebaseNewsEntries(): Promise<NewsEntry[]> {
   try {
     const db = initializeFirebase();
+    if (!db) {
+      console.error("Failed to initialize Firebase");
+      return [];
+    }
     const snapshot = await get(ref(db, "cms/news"));
 
     if (!snapshot.exists()) {
@@ -68,12 +65,15 @@ export async function getFirebaseNewsEntries(): Promise<NewsEntry[]> {
     }
 
     const data = snapshot.val();
+    if (!data || typeof data !== 'object') {
+      return [];
+    }
 
     const entries: NewsEntry[] = [];
 
-    for (const [id, post] of Object.entries(
-      data as Record<string, FirebaseNewsEntry>,
-    )) {
+    for (const [id, value] of Object.entries(data)) {
+      if (!value || typeof value !== 'object') continue;
+      const post = value as FirebaseNewsEntry;
 
       if (!post.draft) {
         // 下書きは除外
@@ -126,6 +126,10 @@ export async function getFirebaseNewsEntry(
 ): Promise<NewsEntry | null> {
   try {
     const db = initializeFirebase();
+    if (!db) {
+      console.error("Failed to initialize Firebase");
+      return null;
+    }
     const snapshot = await get(ref(db, "cms/news"));
 
     if (!snapshot.exists()) {
@@ -133,10 +137,13 @@ export async function getFirebaseNewsEntry(
     }
 
     const data = snapshot.val();
+    if (!data || typeof data !== 'object') {
+      return null;
+    }
 
-    for (const [id, post] of Object.entries(
-      data as Record<string, FirebaseNewsEntry>,
-    )) {
+    for (const [id, value] of Object.entries(data)) {
+      if (!value || typeof value !== 'object') continue;
+      const post = value as FirebaseNewsEntry;
       if (post.slug === slug && !post.draft) {
         return {
           id,

@@ -95,12 +95,13 @@ export async function autoTriggerSync(
     const result = await triggerContentSync();
 
     if (result.success) {
-      console.log(`Auto-sync triggered after ${operation} ${contentType}`);
+      // Auto-sync triggered successfully
 
       // Show subtle notification
       showToast(`${operation}完了 - サイト更新中...`, "info", 3000);
     } else {
-      console.warn("Auto-sync failed:", result.error);
+      // Auto-sync failed - still show notification to user
+      showToast("同期に失敗しました。再度お試しください。", "error", 3000);
     }
   } catch (error) {
     console.error("Auto-sync error:", error);

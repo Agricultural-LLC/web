@@ -31,7 +31,15 @@ try {
 try {
   await incrementNewsViews(id);
 } catch (error) {
+  // Log error but don't interrupt page display
   console.error('Error incrementing views:', error);
+  // Optionally track this error for monitoring
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', 'exception', {
+      'description': `Failed to increment views for news ${id}: ${error.message}`,
+      'fatal': false
+    });
+  }
 }
 
 const formattedDate = new Date(entry.date).toLocaleDateString('ja-JP', {
