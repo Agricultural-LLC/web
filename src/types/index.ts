@@ -101,7 +101,33 @@ export interface BlogEntry {
   hideToc?: boolean;
 }
 
-export type SearchableEntryUnion = AboutEntry | BlogEntry | HomeEntry;
+// Firebase NewsEntry type for news management
+export interface NewsEntry {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  date: Date;
+  image: string;
+  imageAlt?: string;
+  authors: string[];
+  categories: string[];
+  tags: string[];
+  draft: boolean;
+  body?: string;
+  url?: string;
+  // News-specific fields
+  priority?: number; // For featured news
+  featured?: boolean; // Top news flag
+  externalLink?: string; // Link to external news source
+  source?: string; // News source (e.g., "プレスリリース", "業界ニュース")
+  views?: number; // View count for analytics
+  publishedAt?: Date; // Actual publication date
+  updatedAt?: Date; // Last update timestamp
+  createdAt?: Date; // Creation timestamp
+}
+
+export type SearchableEntryUnion = AboutEntry | BlogEntry | NewsEntry | HomeEntry;
 
 export type SocialLinks = {
   discord?: string;

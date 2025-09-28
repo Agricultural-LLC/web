@@ -1,6 +1,7 @@
 import { database } from "../firebase/config";
 import { ref, push, set, get, update, remove, child } from "firebase/database";
 import { generateSlug } from "./utils";
+import type { NewsEntry } from "@/types";
 
 export interface BlogPost {
   id?: string;
@@ -38,6 +39,29 @@ export interface HomeContent {
     link: string;
   };
   body: string;
+}
+
+export interface NewsPost {
+  id?: string;
+  title: string;
+  description: string;
+  date: string;
+  image: string;
+  authors: string[];
+  categories: string[];
+  tags: string[];
+  draft: boolean;
+  body: string;
+  slug?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  // News-specific fields
+  priority?: number;
+  featured?: boolean;
+  externalLink?: string;
+  source?: string;
+  views?: number;
+  publishedAt?: string;
 }
 
 const CMS_PATH = "cms";
@@ -130,4 +154,85 @@ export async function getHomeContent(): Promise<HomeContent | null> {
     return snapshot.val();
   }
   return null;
+}
+
+// News Post Operations
+export async function createNewsPost(post: NewsPost): Promise<string> {
+  const newsRef = ref(database, `${CMS_PATH}/news`);
+  const newPostRef = push(newsRef);
+
+  const postData = {
+    ...post,
+    slug: post.slug || generateSlug(post.title),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    views: 0,
+    priority: post.priority || 0,
+    featured: post.featured || false,
+  };
+
+  await set(newPostRef, postData);
+  return newPostRef.key!;
+}
+
+export async function getNewsPost(id: string): Promise<NewsPost | null> {
+  const postRef = ref(database, `${CMS_PATH}/news/${id}`);
+  const snapshot = await get(postRef);
+
+  if (snapshot.exists()) {
+    return { id, ...snapshot.val() };
+  }
+  return null;
+}
+
+export async function getAllNewsPosts(): Promise<NewsPost[]> {
+  const newsRef = ref(database, `${CMS_PATH}/news`);
+  const snapshot = await get(newsRef);
+
+  if (snapshot.exists()) {
+    const posts = snapshot.val();
+    return Object.keys(posts).map((key) => ({
+      id: key,
+      ...posts[key],
+    }));
+  }
+  return [];
+}
+
+export async function updateNewsPost(
+  id: string,
+  updates: Partial<NewsPost>,
+): Promise<void> {
+  const postRef = ref(database, `${CMS_PATH}/news/${id}`);
+  const updateData = {
+    ...updates,
+    updatedAt: new Date().toISOString(),
+  };
+
+  await update(postRef, updateData);
+}
+
+export async function deleteNewsPost(id: string): Promise<void> {
+  const postRef = ref(database, `${CMS_PATH}/news/${id}`);
+  await remove(postRef);
+}
+
+export async function incrementNewsViews(id: string): Promise<void> {
+  try {
+    if (!id || typeof id !== 'string') {
+      throw new Error('Invalid news ID provided');
+    }
+
+    const postRef = ref(database, `${CMS_PATH}/news/${id}/views`);
+    const snapshot = await get(postRef);
+
+    const currentViews = snapshot.exists() ? snapshot.val() : 0;
+    const newViews = typeof currentViews === 'number' ? currentViews + 1 : 1;
+
+    await set(postRef, newViews);
+  } catch (error) {
+    console.error(`Failed to increment views for news ${id}:`, error);
+    // Don't throw - let the page render even if view increment fails
+    return;
+  }
 }
