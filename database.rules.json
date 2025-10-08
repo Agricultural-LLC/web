@@ -1,0 +1,19 @@
+{
+  "rules": {
+    "cms": {
+      "blog": {
+        ".read": true,
+        ".write": "auth != null"
+      },
+      "news": {
+        ".read": true,
+        ".write": "auth != null",
+        "$newsId": {
+          "views": {
+            ".write": true
+          }
+        }
+      }
+    }
+  }
+}

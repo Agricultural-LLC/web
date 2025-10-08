@@ -1,28 +1,13 @@
 ---
 import BaseLayout from "@components/base/BaseLayout.astro";
-import NewsCard from "@components/news/NewsCard.astro";
-import { getFirebaseNewsEntries, getFirebaseNewsCategories } from "@lib/newsLoader";
 
-const allNews = await getFirebaseNewsEntries();
-const publishedNews = allNews.filter(news => !news.draft);
-
-publishedNews.sort((a, b) => {
-  if (a.priority !== b.priority) {
-    return (b.priority || 0) - (a.priority || 0);
-  }
-  return new Date(b.date).getTime() - new Date(a.date).getTime();
-});
-
-const allCategories = await getFirebaseNewsCategories();
-
-const itemsPerPage = 9;
-const totalPages = Math.ceil(publishedNews.length / itemsPerPage);
+const title = 'ニュース';
+const description = '農業DXに関する最新情報をお届けします';
 ---
 
-<BaseLayout>
+<BaseLayout title={title} description={description}>
   <section class="py-16 min-h-screen">
     <div class="container">
-
       <nav class="mb-8" aria-label="パンくずリスト">
         <ol class="flex items-center space-x-2 text-sm text-gray-600">
           <li><a href="/" class="hover:text-purple-600 transition-colors">ホーム</a></li>
@@ -38,254 +23,282 @@ const totalPages = Math.ceil(publishedNews.length / itemsPerPage);
         </div>
       </div>
 
-      {allCategories.length > 0 && (
-        <div class="row justify-center mb-8">
+      <div id="loading" class="text-center py-12">
+        <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+        <p class="mt-4 text-gray-600">ニュースを読み込み中...</p>
+      </div>
+
+      <div id="news-content" class="hidden">
+        <div id="category-filters-container" class="row justify-center mb-8">
           <div class="lg:col-10">
-            <div class="flex flex-wrap justify-center gap-2" id="category-filters">
-              <button
-                data-category="all"
-                class="category-filter active px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 bg-purple-600 text-white"
-              >
-                すべて ({publishedNews.length})
-              </button>
-              {allCategories.map(category => {
-                const count = publishedNews.filter(news => news.categories?.includes(category)).length;
-                return (
-                  <button
-                    data-category={category}
-                    class="category-filter px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 bg-white text-gray-700 hover:bg-purple-100"
-                  >
-                    {category} ({count})
-                  </button>
-                );
-              })}
+            <div class="flex flex-wrap justify-center gap-2" id="category-filters"></div>
+          </div>
+        </div>
+
+        <div class="row justify-center mb-4">
+          <div class="lg:col-10">
+            <div class="flex justify-between items-center mb-4">
+              <p class="text-gray-600 text-sm">
+                <span id="showing-count">0</span>件 / 全<span id="total-count">0</span>件を表示
+              </p>
+              <select id="sort-select" class="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                <option value="date-desc">新しい順</option>
+                <option value="date-asc">古い順</option>
+                <option value="priority">優先度順</option>
+                <option value="views">閲覧数順</option>
+              </select>
             </div>
           </div>
         </div>
-      )}
 
-      <div class="row justify-center mb-4">
-        <div class="lg:col-10">
-          <div class="flex justify-between items-center mb-4">
-            <p class="text-gray-600 text-sm">
-              <span id="showing-count">{Math.min(itemsPerPage, publishedNews.length)}</span>件 / 全<span id="total-count">{publishedNews.length}</span>件を表示
-            </p>
-            <select id="sort-select" class="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
-              <option value="date-desc">新しい順</option>
-              <option value="date-asc">古い順</option>
-              <option value="priority">優先度順</option>
-              <option value="views">閲覧数順</option>
-            </select>
+        <div class="row justify-center" id="news-grid">
+          <div class="lg:col-10">
+            <div id="news-list" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"></div>
+          </div>
+        </div>
+
+        <div class="row justify-center">
+          <div class="lg:col-10">
+            <nav aria-label="ページネーション" class="flex justify-center">
+              <ul class="flex gap-2" id="pagination"></ul>
+            </nav>
           </div>
         </div>
       </div>
 
-      {publishedNews.length > 0 ? (
-        <>
-          <div class="row justify-center" id="news-grid">
-            <div class="lg:col-10">
-              <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                {publishedNews.slice(0, itemsPerPage).map((news) => (
-                  <div class="news-item flex justify-center"
-                       data-categories={JSON.stringify(news.categories || [])}
-                       data-date={news.date}
-                       data-priority={news.priority || 0}
-                       data-views={news.views || 0}>
-                    <div class="w-full max-w-sm">
-                      <NewsCard news={news} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {totalPages > 1 && (
-            <div class="row justify-center">
-              <div class="lg:col-10">
-                <nav aria-label="ページネーション" class="flex justify-center">
-                  <ul class="flex gap-2" id="pagination">
-                    <li>
-                      <button
-                        class="pagination-btn pagination-prev px-3 py-2 rounded-md bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        disabled
-                      >
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                        </svg>
-                      </button>
-                    </li>
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                      <li>
-                        <button
-                          class={`pagination-btn px-4 py-2 rounded-md ${page === 1 ? 'bg-purple-600 text-white' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'}`}
-                          data-page={page}
-                        >
-                          {page}
-                        </button>
-                      </li>
-                    ))}
-                    <li>
-                      <button
-                        class={`pagination-btn pagination-next px-3 py-2 rounded-md bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 ${totalPages === 1 ? 'disabled:opacity-50 disabled:cursor-not-allowed' : ''}`}
-                        disabled={totalPages === 1}
-                      >
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                        </svg>
-                      </button>
-                    </li>
-                  </ul>
-                </nav>
-              </div>
-            </div>
-          )}
-        </>
-      ) : (
-        <div class="row justify-center">
-          <div class="lg:col-8">
-            <div class="text-center py-16 bg-white/60 backdrop-blur-sm border border-purple-100/50 rounded-xl">
-              <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-              </svg>
-              <p class="text-gray-500 mb-4">まだニュース記事がありません</p>
-              <p class="text-sm text-gray-400">新しいニュースが追加されるまでお待ちください</p>
-            </div>
+      <div id="empty-state" class="hidden row justify-center">
+        <div class="lg:col-8">
+          <div class="text-center py-16 bg-white/60 backdrop-blur-sm border border-purple-100/50 rounded-xl">
+            <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+            </svg>
+            <p class="text-gray-500 mb-4">まだニュース記事がありません</p>
+            <p class="text-sm text-gray-400">新しいニュースが追加されるまでお待ちください</p>
           </div>
         </div>
-      )}
+      </div>
     </div>
   </section>
+</BaseLayout>
 
-  <script define:vars={{ publishedNews, itemsPerPage }}>
-    const allNewsData = publishedNews;
-    const perPage = itemsPerPage;
-    let currentPage = 1;
-    let currentCategory = 'all';
-    let currentSort = 'date-desc';
-    let filteredNews = [...allNewsData];
+<script>
+  import { initializeApp } from 'firebase/app';
+  import { getDatabase, ref, get } from 'firebase/database';
 
-    function updateNewsList() {
-      filteredNews = currentCategory === 'all'
-        ? [...allNewsData]
-        : allNewsData.filter(news => news.categories?.includes(currentCategory));
+  const firebaseConfig = {
+    apiKey: "AIzaSyCkctZ3zzyHw0JEEf8w-wl_xVE-1lQLo7E",
+    authDomain: "agricultural-llc.firebaseapp.com",
+    databaseURL: "https://agricultural-llc-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "agricultural-llc",
+    storageBucket: "agricultural-llc.firebasestorage.app",
+    messagingSenderId: "293681935404",
+    appId: "1:293681935404:web:188089a29ff3da05490d89"
+  };
 
-      switch (currentSort) {
-        case 'date-asc':
-          filteredNews.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-          break;
-        case 'priority':
-          filteredNews.sort((a, b) => (b.priority || 0) - (a.priority || 0));
-          break;
-        case 'views':
-          filteredNews.sort((a, b) => (b.views || 0) - (a.views || 0));
-          break;
-        default:
-          filteredNews.sort((a, b) => {
-            if (a.priority !== b.priority) {
-              return (b.priority || 0) - (a.priority || 0);
-            }
-            return new Date(b.date).getTime() - new Date(a.date).getTime();
-          });
+  const app = initializeApp(firebaseConfig);
+  const database = getDatabase(app);
+
+  let allNewsData: any[] = [];
+  let filteredNews: any[] = [];
+  const itemsPerPage = 9;
+  let currentPage = 1;
+  let currentCategory = 'all';
+  let currentSort = 'date-desc';
+
+  async function loadNews() {
+    try {
+      const newsRef = ref(database, 'cms/news');
+      const snapshot = await get(newsRef);
+
+      if (!snapshot.exists()) {
+        showEmptyState();
+        return;
       }
 
-      const startIndex = (currentPage - 1) * perPage;
-      const endIndex = startIndex + perPage;
-      const visibleNews = filteredNews.slice(startIndex, endIndex);
+      const data = snapshot.val();
+      allNewsData = Object.entries(data)
+        .map(([id, news]: [string, any]) => ({ id, ...news }))
+        .filter(news => !news.draft);
 
-      const newsItems = document.querySelectorAll('.news-item');
-      newsItems.forEach((item, index) => {
-        if (index < visibleNews.length) {
-          const news = visibleNews[index];
-          item.style.display = '';
-          const isVisible = news && allNewsData.includes(news);
-          if (!isVisible) {
-            item.style.display = 'none';
-          }
-        } else {
-          item.style.display = 'none';
-        }
-      });
-
-      document.getElementById('showing-count').textContent = Math.min(endIndex, filteredNews.length);
-      document.getElementById('total-count').textContent = filteredNews.length;
-
-      updatePagination();
-    }
-
-    function updatePagination() {
-      const totalPages = Math.ceil(filteredNews.length / perPage);
-      const pagination = document.getElementById('pagination');
-
-      if (!pagination) return;
-
-      const prevBtn = pagination.querySelector('.pagination-prev');
-      const nextBtn = pagination.querySelector('.pagination-next');
-
-      prevBtn.disabled = currentPage === 1;
-      nextBtn.disabled = currentPage === totalPages || totalPages === 0;
-
-      pagination.querySelectorAll('[data-page]').forEach(btn => {
-        const page = parseInt(btn.dataset.page);
-        if (page <= totalPages) {
-          btn.style.display = '';
-          if (page === currentPage) {
-            btn.classList.add('bg-purple-600', 'text-white');
-            btn.classList.remove('bg-white', 'text-gray-700', 'border', 'border-gray-300', 'hover:bg-gray-50');
-          } else {
-            btn.classList.remove('bg-purple-600', 'text-white');
-            btn.classList.add('bg-white', 'text-gray-700', 'border', 'border-gray-300', 'hover:bg-gray-50');
-          }
-        } else {
-          btn.style.display = 'none';
-        }
-      });
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      const categoryFilters = document.querySelectorAll('.category-filter');
-      categoryFilters.forEach(filter => {
-        filter.addEventListener('click', () => {
-          categoryFilters.forEach(f => {
-            f.classList.remove('active', 'bg-purple-600', 'text-white');
-            f.classList.add('bg-white', 'text-gray-700');
-          });
-          filter.classList.add('active', 'bg-purple-600', 'text-white');
-          filter.classList.remove('bg-white', 'text-gray-700');
-
-          currentCategory = filter.dataset.category;
-          currentPage = 1;
-          updateNewsList();
-        });
-      });
-
-      const sortSelect = document.getElementById('sort-select');
-      if (sortSelect) {
-        sortSelect.addEventListener('change', () => {
-          currentSort = sortSelect.value;
-          updateNewsList();
-        });
+      if (allNewsData.length === 0) {
+        showEmptyState();
+        return;
       }
 
-      const pagination = document.getElementById('pagination');
-      if (pagination) {
-        pagination.addEventListener('click', (e) => {
-          const btn = e.target.closest('.pagination-btn');
-          if (!btn || btn.disabled) return;
+      const categories = [...new Set(allNewsData.flatMap(n => n.categories || []))];
 
-          if (btn.classList.contains('pagination-prev')) {
-            currentPage = Math.max(1, currentPage - 1);
-          } else if (btn.classList.contains('pagination-next')) {
-            const totalPages = Math.ceil(filteredNews.length / perPage);
-            currentPage = Math.min(totalPages, currentPage + 1);
-          } else if (btn.dataset.page) {
-            currentPage = parseInt(btn.dataset.page);
+      renderCategoryFilters(categories);
+      updateNewsList();
+
+      document.getElementById('loading')?.classList.add('hidden');
+      document.getElementById('news-content')?.classList.remove('hidden');
+
+      setupEventListeners();
+    } catch (error) {
+      console.error('Error loading news:', error);
+      showEmptyState();
+    }
+  }
+
+  function renderCategoryFilters(categories: string[]) {
+    const container = document.getElementById('category-filters');
+    if (!container) return;
+
+    container.innerHTML = `
+      <button data-category="all" class="category-filter active px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 bg-purple-600 text-white">
+        すべて (${allNewsData.length})
+      </button>
+      ${categories.map(cat => {
+        const count = allNewsData.filter(n => n.categories?.includes(cat)).length;
+        return `
+          <button data-category="${cat}" class="category-filter px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 bg-white text-gray-700 hover:bg-purple-100">
+            ${cat} (${count})
+          </button>
+        `;
+      }).join('')}
+    `;
+  }
+
+  function updateNewsList() {
+    filteredNews = currentCategory === 'all'
+      ? [...allNewsData]
+      : allNewsData.filter(news => news.categories?.includes(currentCategory));
+
+    switch (currentSort) {
+      case 'date-asc':
+        filteredNews.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        break;
+      case 'priority':
+        filteredNews.sort((a, b) => (b.priority || 0) - (a.priority || 0));
+        break;
+      case 'views':
+        filteredNews.sort((a, b) => (b.views || 0) - (a.views || 0));
+        break;
+      default:
+        filteredNews.sort((a, b) => {
+          if (a.priority !== b.priority) {
+            return (b.priority || 0) - (a.priority || 0);
           }
-
-          updateNewsList();
-          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return new Date(b.date).getTime() - new Date(a.date).getTime();
         });
+    }
+
+    renderNews();
+    renderPagination();
+  }
+
+  function renderNews() {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const visibleNews = filteredNews.slice(startIndex, endIndex);
+
+    const newsList = document.getElementById('news-list');
+    if (!newsList) return;
+
+    newsList.innerHTML = visibleNews.map(news => `
+      <div class="news-item flex justify-center">
+        <div class="w-full max-w-sm">
+          <a href="/news/${news.id}/" class="block glass rounded-lg overflow-hidden hover:shadow-lg transition-all">
+            <article class="p-6">
+              ${news.featured ? '<span class="inline-block px-2 py-1 text-xs font-semibold text-white bg-purple-600 rounded mb-2">注目</span>' : ''}
+              <h2 class="text-xl font-bold mb-2">${news.title}</h2>
+              <p class="text-gray-600 text-sm mb-4 line-clamp-2">${news.description}</p>
+              <div class="flex flex-wrap gap-2 text-xs">
+                <span class="text-gray-500">${new Date(news.date).toLocaleDateString('ja-JP')}</span>
+                ${news.views ? `<span class="text-gray-500">👁 ${news.views}</span>` : ''}
+                ${news.categories?.map((cat: string) => `<span class="px-2 py-1 bg-purple-100 text-purple-800 rounded">${cat}</span>`).join('') || ''}
+              </div>
+            </article>
+          </a>
+        </div>
+      </div>
+    `).join('');
+
+    document.getElementById('showing-count')!.textContent = String(Math.min(endIndex, filteredNews.length));
+    document.getElementById('total-count')!.textContent = String(filteredNews.length);
+  }
+
+  function renderPagination() {
+    const totalPages = Math.ceil(filteredNews.length / itemsPerPage);
+    const pagination = document.getElementById('pagination');
+    if (!pagination || totalPages <= 1) {
+      if (pagination) pagination.innerHTML = '';
+      return;
+    }
+
+    const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+
+    pagination.innerHTML = `
+      <li>
+        <button class="pagination-prev px-3 py-2 rounded-md bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}" ${currentPage === 1 ? 'disabled' : ''}>
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+      </li>
+      ${pages.map(page => `
+        <li>
+          <button data-page="${page}" class="pagination-btn px-4 py-2 rounded-md ${page === currentPage ? 'bg-purple-600 text-white' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'}">
+            ${page}
+          </button>
+        </li>
+      `).join('')}
+      <li>
+        <button class="pagination-next px-3 py-2 rounded-md bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}" ${currentPage === totalPages ? 'disabled' : ''}>
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </li>
+    `;
+  }
+
+  function setupEventListeners() {
+    document.getElementById('category-filters')?.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      if (target.classList.contains('category-filter')) {
+        document.querySelectorAll('.category-filter').forEach(f => {
+          f.classList.remove('active', 'bg-purple-600', 'text-white');
+          f.classList.add('bg-white', 'text-gray-700');
+        });
+        target.classList.add('active', 'bg-purple-600', 'text-white');
+        target.classList.remove('bg-white', 'text-gray-700');
+
+        currentCategory = target.getAttribute('data-category') || 'all';
+        currentPage = 1;
+        updateNewsList();
       }
     });
-  </script>
-</BaseLayout>
+
+    document.getElementById('sort-select')?.addEventListener('change', (e) => {
+      currentSort = (e.target as HTMLSelectElement).value;
+      updateNewsList();
+    });
+
+    document.getElementById('pagination')?.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      const btn = target.closest('button');
+      if (!btn || btn.hasAttribute('disabled')) return;
+
+      if (btn.classList.contains('pagination-prev')) {
+        currentPage = Math.max(1, currentPage - 1);
+      } else if (btn.classList.contains('pagination-next')) {
+        const totalPages = Math.ceil(filteredNews.length / itemsPerPage);
+        currentPage = Math.min(totalPages, currentPage + 1);
+      } else if (btn.hasAttribute('data-page')) {
+        currentPage = parseInt(btn.getAttribute('data-page') || '1');
+      }
+
+      updateNewsList();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+  function showEmptyState() {
+    document.getElementById('loading')?.classList.add('hidden');
+    document.getElementById('news-content')?.classList.add('hidden');
+    document.getElementById('empty-state')?.classList.remove('hidden');
+  }
+
+  loadNews();
+</script>

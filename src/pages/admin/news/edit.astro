@@ -544,26 +544,23 @@ if (!firebaseConfig.apiKey || !firebaseConfig.authDomain) {
     const uploadError = document.getElementById('upload-error');
     const errorText = document.getElementById('error-text');
 
-    onAuthStateChanged(auth, async (user) => {
+    onAuthStateChanged(auth, (user) => {
       if (!user) {
         window.location.href = '/admin/';
         return;
       }
 
-      // Verify user has proper permissions
-      try {
-        const idTokenResult = await user.getIdTokenResult();
-        const isAdmin = idTokenResult.claims.admin === true;
+      // Verify user has proper permissions - whitelist only
+      const allowedEmails = [
+        'shindoy@gmail.com',
+        'yohei.fujii.eg@gmail.com',
+        'company@cor-jp.com'
+      ];
 
-        if (!isAdmin && !user.email?.endsWith('@agricultural-llc.com')) {
-          showError('権限エラー', '管理者権限が必要です');
-          setTimeout(() => {
-            window.location.href = '/admin/';
-          }, 2000);
-          return;
-        }
-      } catch (error) {
-        console.error('Error checking admin status:', error);
+      if (!allowedEmails.includes(user.email)) {
+        alert('権限エラー: 管理者権限が必要です');
+        window.location.href = '/admin/';
+        return;
       }
 
       userEmail.textContent = user.email;
