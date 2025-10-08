@@ -84,8 +84,21 @@ if (missingVars.length > 0) {
     // Auth state observer
     onAuthStateChanged(auth, (user) => {
       loading.classList.add('hidden');
-      
+
       if (user) {
+        // Verify user has proper permissions - whitelist only
+        const allowedEmails = [
+          'shindoy@gmail.com',
+          'yohei.fujii.eg@gmail.com',
+          'company@cor-jp.com'
+        ];
+
+        if (!allowedEmails.includes(user.email)) {
+          alert('権限エラー: 管理者権限が必要です');
+          signOut(auth);
+          return;
+        }
+
         loginForm.classList.add('hidden');
         dashboard.classList.remove('hidden');
         userEmail.textContent = user.email;

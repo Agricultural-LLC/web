@@ -1,57 +1,219 @@
 ---
-import CollectionLayout from "@components/agritech/CollectionLayout.astro";
-import { 
-  getFirebaseBlogEntries, 
-  getFirebaseCategories, 
-  getFirebaseTags,
-  type BlogEntry 
-} from "@lib/firebaseLoader";
+import BaseLayout from "@components/base/BaseLayout.astro";
+import BlogCard from "@components/agritech/Card.astro";
+import BlogSidebar from "@components/agritech/Sidebar.astro";
+import Pagination from "@components/common/Pagination.astro";
+import agritechIcon from "@assets/blog/agritech.png";
+import { Image } from "astro:assets";
 
-const { slug } = Astro.params;
-const currentPageIndex = slug && !isNaN(Number(slug)) ? Number(slug) : 1;
-
-// Firebaseから記事を取得
-const entries = await getFirebaseBlogEntries();
-const categories = await getFirebaseCategories();
-const tags = await getFirebaseTags();
-
-// 仮のentryIndex（ブログトップページ情報）
-const entryIndex: BlogEntry = {
-  id: 'blog-index',
-  slug: 'blog',
-  title: '農てっく!',
-  description: 'スマート農業やデジタル技術を活用した農業の最新情報をお届けします',
-  date: new Date(),
-  image: '',
-  authors: ['農業合同会社'],
-  categories: [],
-  tags: [],
-  draft: false,
-  url: '/agritech/'
-};
-
-// カテゴリの頻度計算（allCategories相当）
-const allCategories: string[] = [];
-entries.forEach(entry => {
-  entry.categories.forEach(category => {
-    allCategories.push(category);
-  });
-});
-
-const entriesPerPage = 4;
-const indexOfLastEntry = currentPageIndex * entriesPerPage;
-const indexOfFirstEntry = indexOfLastEntry - entriesPerPage;
-const currentEntries = entries.slice(indexOfFirstEntry, indexOfLastEntry);
-
-const pageCount: number = Math.ceil(entries.length / entriesPerPage);
+const title = '農てっく!';
+const description = 'スマート農業やデジタル技術を活用した農業の最新情報をお届けします';
 ---
 
-<CollectionLayout
-  entryIndex={entryIndex}
-  entries={currentEntries}
-  categories={categories}
-  tags={tags}
-  allCategories={allCategories}
-  pageIndex={currentPageIndex}
-  pageCount={pageCount}
-/>
+<BaseLayout title={title} description={description}>
+  <section class="section-sm">
+    <div class="container">
+      <div class="row">
+        <div class="col-12 md:col-7 lg:col-8">
+          <div class="glass rounded-lg p-8 text-center intersect:animate-fadeDown opacity-0 intersect-no-queue">
+            <h1 class="dark:text-white">農てっく!</h1>
+          </div>
+        </div>
+        <div class="hidden md:flex md:col-5 lg:col-4 items-center justify-center">
+          <div class="intersect:animate-fadeDown opacity-0 intersect-no-queue">
+            <Image
+              src={agritechIcon}
+              alt="農てっく！アイコン"
+              width={200}
+              height={200}
+              class="w-40 h-40 md:w-40 md:h-40 lg:w-60 lg:h-60 rounded-lg shadow-lg"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="flex container">
+      <div class="row px-0 mx-0 w-full">
+        <div class="col-12 lg:col-8 lg:p-0">
+          <div id="loading" class="text-center py-12">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+            <p class="mt-4 text-gray-600">記事を読み込み中...</p>
+          </div>
+
+          <div id="posts-container" class="hidden">
+            <div id="posts-list"></div>
+            <div id="pagination-container"></div>
+          </div>
+
+          <div id="error-state" class="hidden text-center py-12">
+            <p class="text-red-600">記事の読み込みに失敗しました</p>
+          </div>
+        </div>
+
+        <div class="hidden lg:col-4 lg:flex max-h-static_sidemenu sticky p-0 pl-4 top-[4rem]">
+          <div id="sidebar-container" class="w-full">
+            <div class="text-center py-8">
+              <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  import { initializeApp } from 'firebase/app';
+  import { getDatabase, ref, get } from 'firebase/database';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCkctZ3zzyHw0JEEf8w-wl_xVE-1lQLo7E",
+    authDomain: "agricultural-llc.firebaseapp.com",
+    databaseURL: "https://agricultural-llc-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "agricultural-llc",
+    storageBucket: "agricultural-llc.firebasestorage.app",
+    messagingSenderId: "293681935404",
+    appId: "1:293681935404:web:188089a29ff3da05490d89"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const database = getDatabase(app);
+
+  const entriesPerPage = 4;
+  let currentPage = 1;
+
+  async function loadPosts() {
+    try {
+      const postsRef = ref(database, 'cms/blog');
+      const snapshot = await get(postsRef);
+
+      if (!snapshot.exists()) {
+        showError();
+        return;
+      }
+
+      const data = snapshot.val();
+      const entries = Object.entries(data)
+        .map(([id, post]: [string, any]) => ({
+          id,
+          ...post,
+          date: new Date(post.date)
+        }))
+        .filter(entry => !entry.draft)
+        .sort((a, b) => b.date.getTime() - a.date.getTime());
+
+      const categories = [...new Set(entries.flatMap(e => e.categories))].sort();
+      const tags = [...new Set(entries.flatMap(e => e.tags))].sort();
+      const allCategories = entries.flatMap(e => e.categories);
+
+      renderPosts(entries);
+      renderSidebar(categories, tags, allCategories);
+
+      document.getElementById('loading')?.classList.add('hidden');
+      document.getElementById('posts-container')?.classList.remove('hidden');
+    } catch (error) {
+      console.error('Error loading posts:', error);
+      showError();
+    }
+  }
+
+  function renderPosts(entries: any[]) {
+    const pageCount = Math.ceil(entries.length / entriesPerPage);
+    const startIndex = (currentPage - 1) * entriesPerPage;
+    const endIndex = startIndex + entriesPerPage;
+    const currentEntries = entries.slice(startIndex, endIndex);
+
+    const postsList = document.getElementById('posts-list');
+    if (!postsList) return;
+
+    postsList.innerHTML = currentEntries.map(entry => `
+      <div class="mb-6">
+        <a href="/agritech/${entry.slug}/" class="block glass rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+          <article class="p-6">
+            <h2 class="text-2xl font-bold mb-2 dark:text-white">${entry.title}</h2>
+            <p class="text-gray-600 dark:text-gray-300 mb-4">${entry.description}</p>
+            <div class="flex flex-wrap gap-2 text-sm text-gray-500">
+              <span>${new Date(entry.date).toLocaleDateString('ja-JP')}</span>
+              ${entry.categories.map((cat: string) => `<span class="px-2 py-1 bg-green-100 text-green-800 rounded">${cat}</span>`).join('')}
+            </div>
+          </article>
+        </a>
+      </div>
+    `).join('');
+
+    renderPagination(currentPage, pageCount);
+  }
+
+  function renderPagination(page: number, pageCount: number) {
+    const container = document.getElementById('pagination-container');
+    if (!container || pageCount <= 1) return;
+
+    const pages = [];
+    for (let i = 1; i <= pageCount; i++) {
+      pages.push(i);
+    }
+
+    container.innerHTML = `
+      <nav class="flex justify-center mt-8">
+        <ul class="flex gap-2">
+          ${page > 1 ? `<li><a href="/agritech/page/${page - 1}/" class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300">前へ</a></li>` : ''}
+          ${pages.map(p => `
+            <li>
+              <a href="${p === 1 ? '/agritech/' : `/agritech/page/${p}/`}"
+                 class="px-4 py-2 rounded ${p === page ? 'bg-green-600 text-white' : 'bg-gray-200 hover:bg-gray-300'}">
+                ${p}
+              </a>
+            </li>
+          `).join('')}
+          ${page < pageCount ? `<li><a href="/agritech/page/${page + 1}/" class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300">次へ</a></li>` : ''}
+        </ul>
+      </nav>
+    `;
+  }
+
+  function renderSidebar(categories: string[], tags: string[], allCategories: string[]) {
+    const sidebar = document.getElementById('sidebar-container');
+    if (!sidebar) return;
+
+    const categoryCount = allCategories.reduce((acc, cat) => {
+      acc[cat] = (acc[cat] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    sidebar.innerHTML = `
+      <div class="glass rounded-lg p-6 w-full">
+        <h3 class="text-xl font-bold mb-4 dark:text-white">カテゴリー</h3>
+        <ul class="space-y-2">
+          ${categories.map(cat => `
+            <li>
+              <a href="/agritech/categories/${cat}/" class="flex justify-between hover:text-green-600">
+                <span>${cat}</span>
+                <span class="text-gray-500">${categoryCount[cat] || 0}</span>
+              </a>
+            </li>
+          `).join('')}
+        </ul>
+
+        <h3 class="text-xl font-bold mb-4 mt-8 dark:text-white">タグ</h3>
+        <div class="flex flex-wrap gap-2">
+          ${tags.map(tag => `
+            <a href="/agritech/tags/${tag}/" class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm hover:bg-green-200">
+              ${tag}
+            </a>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  function showError() {
+    document.getElementById('loading')?.classList.add('hidden');
+    document.getElementById('posts-container')?.classList.add('hidden');
+    document.getElementById('error-state')?.classList.remove('hidden');
+  }
+
+  loadPosts();
+</script>
