@@ -267,7 +267,7 @@ const firebaseConfig = {
 
   function getRouteInfo() {
     const basePath = '/news';
-    const path = window.location.pathname.replace(/\/+$, '');
+    const path = window.location.pathname.replace(/\/+$/, '');
     let slug = '';
     if (path.startsWith(basePath)) {
       slug = decodeURIComponent(path.slice(basePath.length)).replace(/^\/+/, '');
