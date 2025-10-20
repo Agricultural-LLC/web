@@ -7,7 +7,8 @@ export interface Props {
 
 const { news } = Astro.props;
 
-const newsUrl = news.externalLink || `/news/${news.id || news.slug}`;
+const slug = news.slug || news.id;
+const newsUrl = news.externalLink || (slug ? `/news/${slug}/` : "#news");
 ---
 
 <article class="bg-white/60 backdrop-blur-sm border border-purple-100/50 rounded-xl shadow-lg overflow-hidden hover:bg-white/80 transition-all duration-300">
