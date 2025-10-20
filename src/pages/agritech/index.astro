@@ -8,27 +8,8 @@ const baseTitle = "農てっく!";
 const baseDescription =
   "スマート農業やデジタル技術を活用した農業の最新情報をお届けします";
 
-const firebaseConfig = {
-  apiKey:
-    import.meta.env.PUBLIC_FIREBASE_API_KEY ||
-    "AIzaSyCkctZ3zzyHw0JEEf8w-wl_xVE-1lQLo7E",
-  authDomain:
-    import.meta.env.PUBLIC_FIREBASE_AUTH_DOMAIN ||
-    "agricultural-llc.firebaseapp.com",
-  databaseURL:
-    import.meta.env.PUBLIC_FIREBASE_DATABASE_URL ||
-    "https://agricultural-llc-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId:
-    import.meta.env.PUBLIC_FIREBASE_PROJECT_ID || "agricultural-llc",
-  storageBucket:
-    import.meta.env.PUBLIC_FIREBASE_STORAGE_BUCKET ||
-    "agricultural-llc.firebasestorage.app",
-  messagingSenderId:
-    import.meta.env.PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "293681935404",
-  appId:
-    import.meta.env.PUBLIC_FIREBASE_APP_ID ||
-    "1:293681935404:web:188089a29ff3da05490d89",
-};
+import { firebasePublicConfig } from "@lib/firebase/publicConfig";
+const firebaseConfig = firebasePublicConfig;
 ---
 
 <BaseLayout title={`${baseTitle} | ${siteName}`} description={baseDescription}>
@@ -161,9 +142,9 @@ const firebaseConfig = {
   type="module"
   define:vars={{ firebaseConfig, baseDescription, baseTitle, siteName }}
 >
-  import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
   import { marked } from "https://cdn.jsdelivr.net/npm/marked@11.1.1/lib/marked.esm.js";
+import { getApp, getApps, initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { get, getDatabase, ref } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
   marked.setOptions({
     gfm: true,

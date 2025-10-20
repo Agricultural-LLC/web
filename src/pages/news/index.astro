@@ -5,27 +5,8 @@ const siteName = "農業合同会社 Webサイト";
 const baseTitle = "ニュース";
 const baseDescription = "農業DXに関する最新情報をお届けします";
 
-const firebaseConfig = {
-  apiKey:
-    import.meta.env.PUBLIC_FIREBASE_API_KEY ||
-    "AIzaSyCkctZ3zzyHw0JEEf8w-wl_xVE-1lQLo7E",
-  authDomain:
-    import.meta.env.PUBLIC_FIREBASE_AUTH_DOMAIN ||
-    "agricultural-llc.firebaseapp.com",
-  databaseURL:
-    import.meta.env.PUBLIC_FIREBASE_DATABASE_URL ||
-    "https://agricultural-llc-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId:
-    import.meta.env.PUBLIC_FIREBASE_PROJECT_ID || "agricultural-llc",
-  storageBucket:
-    import.meta.env.PUBLIC_FIREBASE_STORAGE_BUCKET ||
-    "agricultural-llc.firebasestorage.app",
-  messagingSenderId:
-    import.meta.env.PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "293681935404",
-  appId:
-    import.meta.env.PUBLIC_FIREBASE_APP_ID ||
-    "1:293681935404:web:188089a29ff3da05490d89",
-};
+import { firebasePublicConfig } from "@lib/firebase/publicConfig";
+const firebaseConfig = firebasePublicConfig;
 ---
 
 <BaseLayout title={`${baseTitle} | ${siteName}`} description={baseDescription}>
@@ -760,7 +741,8 @@ update,
       `
       : '';
 
-    // 既に上部の分割代入で取得しているため再定義は不要
+    // 上部で getElements() から分割代入済みの参照を使用する。
+    // ClientRouter の遷移でも同一参照が生きるよう再宣言を避ける。
     if (!detailContentEl) return;
 
     detailContentEl.innerHTML = `
