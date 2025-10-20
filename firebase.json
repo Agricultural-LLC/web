@@ -38,6 +38,16 @@
         ]
       }
     ],
+    "rewrites": [
+      {
+        "source": "/news/**",
+        "destination": "/news/index.html"
+      },
+      {
+        "source": "/agritech/**",
+        "destination": "/agritech/index.html"
+      }
+    ],
     "trailingSlash": false,
     "cleanUrls": false
   },
