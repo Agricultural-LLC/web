@@ -250,6 +250,7 @@ const firebaseConfig = {
   let currentPage = 1;
   let currentCategory = 'all';
   let currentSort = 'date-desc';
+  let eventsBound = false;
 
   function setMetaTag(selector, attribute, value) {
     const el = document.querySelector(selector);
@@ -594,6 +595,8 @@ const firebaseConfig = {
   }
 
   function bindListEvents() {
+    if (eventsBound) return;
+    eventsBound = true;
     categoryFiltersEl?.addEventListener('click', (event) => {
       const target = event.target;
       if (!(target instanceof HTMLElement)) return;
@@ -894,8 +897,18 @@ const firebaseConfig = {
 
     toggleView('detail');
   }
+  const startNewsModule = () => {
+    bindListEvents();
+    loadNews();
+  };
 
-  document.addEventListener('DOMContentLoaded', loadNews);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startNewsModule, { once: true });
+  } else {
+    startNewsModule();
+  }
+
+  document.addEventListener('astro:page-load', startNewsModule);
 </script>
 
 <style>
