@@ -218,12 +218,7 @@ const firebaseConfig = {
   const firebaseApp = initializeApp(firebaseConfig);
   const database = getDatabase(firebaseApp, firebaseConfig.databaseURL);
 
-  const path = window.location.pathname.replace(/\/+$/, '');
-  const basePath = '/news';
-  const pathSuffix = decodeURIComponent(path.replace(basePath, '')).replace(/^\/+/, '');
-  const isDetail = pathSuffix.length > 0;
-
-  const loadingEl = document.getElementById('news-loading');
+const loadingEl = document.getElementById('news-loading');
   const listViewEl = document.getElementById('news-list-view');
   const detailViewEl = document.getElementById('news-detail-view');
   const notFoundEl = document.getElementById('news-not-found');
@@ -248,8 +243,22 @@ const firebaseConfig = {
   let filteredNews = [];
   const itemsPerPage = 9;
   let currentPage = 1;
-  let currentCategory = 'all';
-  let currentSort = 'date-desc';
+let currentCategory = 'all';
+let currentSort = 'date-desc';
+let eventsBound = false;
+
+function getRouteInfo() {
+  const basePath = '/news';
+  const path = window.location.pathname.replace(/\/+$/, '');
+  let suffix = '';
+  if (path.startsWith(basePath)) {
+    suffix = decodeURIComponent(path.slice(basePath.length)).replace(/^\/+/, '');
+  }
+  return {
+    isDetail: suffix.length > 0,
+    slug: suffix,
+  };
+}
   let eventsBound = false;
 
   function setMetaTag(selector, attribute, value) {
@@ -805,7 +814,7 @@ const firebaseConfig = {
     }
   }
 
-  async function loadNews() {
+  async function loadNews(routeInfo = getRouteInfo()) {
     toggleView('loading');
     try {
       const snapshot = await get(ref(database, 'cms/news'));
@@ -824,11 +833,12 @@ const firebaseConfig = {
         return;
       }
 
-      if (isDetail) {
-        await renderDetail(pathSuffix);
-      } else {
-        renderListView();
+      if (routeInfo.isDetail) {
+        await renderDetail(routeInfo.slug);
+        return;
       }
+
+      renderListView();
     } catch (error) {
       console.error('Failed to load news:', error);
       toggleView('notFound');
@@ -840,6 +850,7 @@ const firebaseConfig = {
     const requestedCategory = url.searchParams.get('category');
     currentCategory = requestedCategory || 'all';
     currentSort = sortSelectEl?.value || 'date-desc';
+    currentPage = 1;
 
     const categories = [...new Set(allNews.flatMap((entry) => entry.categories || []))].sort();
     renderCategoryFilters(categories);
@@ -899,7 +910,7 @@ const firebaseConfig = {
   }
   const startNewsModule = () => {
     bindListEvents();
-    loadNews();
+    loadNews(getRouteInfo());
   };
 
   if (document.readyState === 'loading') {

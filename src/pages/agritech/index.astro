@@ -230,13 +230,7 @@ const firebaseConfig = {
   const firebaseApp = initializeApp(firebaseConfig);
   const database = getDatabase(firebaseApp, firebaseConfig.databaseURL);
 
-  const path = window.location.pathname.replace(/\/+$/, '');
-  const basePath = '/agritech';
-  const pathSuffix = decodeURIComponent(path.replace(basePath, '')).replace(/^\/+/, '');
-
-  const isDetailView = pathSuffix.length > 0 && !pathSuffix.startsWith('page/') && !pathSuffix.startsWith('categories/') && !pathSuffix.startsWith('tags/');
-
-  const loadingEl = document.getElementById('agri-loading');
+const loadingEl = document.getElementById('agri-loading');
   const listViewEl = document.getElementById('agri-list-view');
   const detailViewEl = document.getElementById('agri-detail-view');
   const emptyEl = document.getElementById('agri-empty');
@@ -258,11 +252,46 @@ const firebaseConfig = {
 
   const itemsPerPage = 6;
   let allEntries = [];
-  let filteredEntries = [];
-  let currentPage = 1;
-  let currentCategory = 'all';
-  let currentTag = 'all';
-  let currentSort = 'date-desc';
+let filteredEntries = [];
+let currentPage = 1;
+let currentCategory = 'all';
+let currentTag = 'all';
+let currentSort = 'date-desc';
+let staticEventsBound = false;
+
+function getRouteInfo() {
+  const basePath = '/agritech';
+  const path = window.location.pathname.replace(/\/+$/, '');
+  let suffix = '';
+  if (path.startsWith(basePath)) {
+    suffix = decodeURIComponent(path.slice(basePath.length)).replace(/^\/+/, '');
+  }
+
+  if (!suffix) {
+    return { mode: 'list' };
+  }
+
+  if (suffix.startsWith('categories/')) {
+    const category = suffix.slice('categories/'.length).replace(/\/+$/, '');
+    return { mode: 'category', value: category };
+  }
+
+  if (suffix.startsWith('tags/')) {
+    const tag = suffix.slice('tags/'.length).replace(/\/+$/, '');
+    return { mode: 'tag', value: tag };
+  }
+
+  if (suffix.startsWith('page/')) {
+    const pageSegment = suffix.slice('page/'.length).replace(/\/+$/, '');
+    const pageNumber = Number(pageSegment);
+    return {
+      mode: 'page',
+      page: Number.isFinite(pageNumber) && pageNumber > 0 ? pageNumber : 1,
+    };
+  }
+
+  return { mode: 'detail', slug: suffix.replace(/\/+$/, '') };
+}
   let staticEventsBound = false;
 
   function toggleView(state) {
@@ -811,7 +840,7 @@ const firebaseConfig = {
     });
   }
 
-  async function loadEntries() {
+  async function loadEntries(routeInfo = getRouteInfo()) {
     toggleView('loading');
     try {
       const snapshot = await get(ref(database, 'cms/blog'));
@@ -849,8 +878,8 @@ const firebaseConfig = {
         Array.from(tagCounts.entries()).map(([name, count]) => ({ name, count }))
       );
 
-      if (isDetailView) {
-        const slug = pathSuffix.replace(/\/+$/, '');
+      if (routeInfo.mode === 'detail') {
+        const slug = (routeInfo.slug || '').replace(/\/+$/, '');
         const entry =
           allEntries.find((item) => item.slug === slug) ||
           allEntries.find((item) => item.id === slug);
@@ -866,13 +895,16 @@ const firebaseConfig = {
         return;
       }
 
-      if (pathSuffix.startsWith('categories/')) {
-        currentCategory = pathSuffix.replace('categories/', '').replace(/\/+$/, '');
-      } else if (pathSuffix.startsWith('tags/')) {
-        currentTag = pathSuffix.replace('tags/', '').replace(/\/+$/, '');
-      } else if (pathSuffix.startsWith('page/')) {
-        const pageNumber = Number(pathSuffix.replace('page/', '').replace(/\/+$/, ''));
-        currentPage = Number.isFinite(pageNumber) && pageNumber > 0 ? pageNumber : 1;
+      currentCategory = 'all';
+      currentTag = 'all';
+      currentPage = 1;
+
+      if (routeInfo.mode === 'category') {
+        currentCategory = routeInfo.value || 'all';
+      } else if (routeInfo.mode === 'tag') {
+        currentTag = routeInfo.value || 'all';
+      } else if (routeInfo.mode === 'page') {
+        currentPage = routeInfo.page || 1;
       }
 
       filteredEntries = applyFilters();
@@ -897,7 +929,7 @@ const firebaseConfig = {
 
   const startAgritechModule = () => {
     bindStaticEvents();
-    loadEntries();
+    loadEntries(getRouteInfo());
   };
 
   if (document.readyState === 'loading') {
