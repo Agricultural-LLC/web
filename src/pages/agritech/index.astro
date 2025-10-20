@@ -263,6 +263,7 @@ const firebaseConfig = {
   let currentCategory = 'all';
   let currentTag = 'all';
   let currentSort = 'date-desc';
+  let staticEventsBound = false;
 
   function toggleView(state) {
     const views = {
@@ -882,15 +883,30 @@ const firebaseConfig = {
     }
   }
 
-  sortSelectEl?.addEventListener('change', (event) => {
-    const target = event.target;
-    if (!(target instanceof HTMLSelectElement)) return;
-    currentSort = target.value;
-    filteredEntries = applyFilters();
-    renderList();
-  });
+  function bindStaticEvents() {
+    if (staticEventsBound) return;
+    staticEventsBound = true;
+    sortSelectEl?.addEventListener('change', (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLSelectElement)) return;
+      currentSort = target.value;
+      filteredEntries = applyFilters();
+      renderList();
+    });
+  }
 
-  document.addEventListener('DOMContentLoaded', loadEntries);
+  const startAgritechModule = () => {
+    bindStaticEvents();
+    loadEntries();
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startAgritechModule, { once: true });
+  } else {
+    startAgritechModule();
+  }
+
+  document.addEventListener('astro:page-load', startAgritechModule);
 </script>
 
 <style>
