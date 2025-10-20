@@ -161,9 +161,71 @@ const firebaseConfig = {
   type="module"
   define:vars={{ firebaseConfig, baseDescription, baseTitle, siteName }}
 >
-  import { initializeApp } from 'firebase/app';
-  import { getDatabase, ref, get } from 'firebase/database';
-  import { markdownify, plainify, extractHeadings } from '@lib/textConverter';
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+  import { getDatabase, ref, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+  import { marked } from 'https://cdn.jsdelivr.net/npm/marked@11.1.1/lib/marked.esm.js';
+
+  marked.setOptions({
+    gfm: true,
+    breaks: true,
+    mangle: false,
+    headerIds: false,
+  });
+
+  function createSlug(text) {
+    const normalized = text?.toString().trim() ?? '';
+    const base = normalized
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^\p{Letter}\p{Number}\-ー]/gu, '');
+    return base || `section-${Math.random().toString(36).slice(2, 8)}`;
+  }
+
+  function markdownToHtml(markdown) {
+    const html = marked.parse(markdown || '');
+    const template = document.createElement('template');
+    template.innerHTML = html;
+
+    const slugCounts = new Map();
+    template.content.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach((heading) => {
+      const baseSlug = createSlug(heading.textContent || '');
+      const count = slugCounts.get(baseSlug) || 0;
+      const finalSlug = count ? `${baseSlug}-${count}` : baseSlug;
+      slugCounts.set(baseSlug, count + 1);
+      heading.id = finalSlug;
+    });
+
+    return template.innerHTML;
+  }
+
+  function markdownToPlain(markdown) {
+    const html = marked.parse(markdown || '');
+    const template = document.createElement('template');
+    template.innerHTML = html;
+    const text = template.content.textContent || '';
+    return text.replace(/\s+/g, ' ').trim();
+  }
+
+  function extractHeadingsFromMarkdown(markdown) {
+    const headings = [];
+    const regex = /^(#{1,6})\s+(.+)$/gm;
+    const slugCounts = new Map();
+    let match;
+    while ((match = regex.exec(markdown || '')) !== null) {
+      const depth = match[1].length;
+      const text = match[2].trim();
+      const baseSlug = createSlug(text);
+      const count = slugCounts.get(baseSlug) || 0;
+      const finalSlug = count ? `${baseSlug}-${count}` : baseSlug;
+      slugCounts.set(baseSlug, count + 1);
+      headings.push({
+        depth,
+        text,
+        slug: finalSlug,
+      });
+    }
+    return headings;
+  }
 
   const firebaseApp = initializeApp(firebaseConfig);
   const database = getDatabase(firebaseApp, firebaseConfig.databaseURL);
@@ -286,7 +348,7 @@ const firebaseConfig = {
     const title = `${entry.title} | ${siteName}`;
     document.title = title;
     const description =
-      entry.description || plainify(entry.body || '').slice(0, 140);
+      entry.description || markdownToPlain(entry.body || '').slice(0, 140);
     ensureMeta('description', description);
     ensureMeta('og:title', entry.title, true);
     ensureMeta('og:description', description, true);
@@ -643,8 +705,8 @@ const firebaseConfig = {
         })
       : '';
 
-    const bodyHtml = markdownify(entry.body || '', true);
-    const headings = extractHeadings(entry.body || '');
+    const bodyHtml = markdownToHtml(entry.body || '');
+    const headings = extractHeadingsFromMarkdown(entry.body || '');
 
     detailArticleEl.innerHTML = `
       <header class="mb-8">
