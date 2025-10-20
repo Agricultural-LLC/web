@@ -164,15 +164,15 @@ const firebaseConfig = {
 </BaseLayout>
 
 <script type="module" define:vars={{ firebaseConfig, baseDescription, baseTitle, siteName }}>
-  import { initializeApp, getApps, getApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-  import {
-    getDatabase,
-    ref,
-    get,
-    increment,
-    update,
-  } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
   import { marked } from 'https://cdn.jsdelivr.net/npm/marked@11.1.1/lib/marked.esm.js';
+import { getApp, getApps, initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import {
+get,
+getDatabase,
+increment,
+ref,
+update,
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
   marked.setOptions({
     gfm: true,
@@ -760,7 +760,7 @@ const firebaseConfig = {
       `
       : '';
 
-    const detailContentEl = getElements().detailContentEl;
+    // 既に上部の分割代入で取得しているため再定義は不要
     if (!detailContentEl) return;
 
     detailContentEl.innerHTML = `
@@ -786,7 +786,6 @@ const firebaseConfig = {
       </div>
     `;
 
-    const { pageTitleEl, pageDescEl, breadcrumbCurrentEl } = getElements();
     if (pageTitleEl) pageTitleEl.textContent = entry.title || 'ニュース';
     if (pageDescEl) pageDescEl.textContent = entry.description || baseDescription;
     if (breadcrumbCurrentEl) breadcrumbCurrentEl.textContent = entry.title || '詳細';

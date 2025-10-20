@@ -82,14 +82,14 @@ const firebaseConfig = {
 </section>
 
 <script type="module" define:vars={{ firebaseConfig }}>
-  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-  import { getDatabase, ref, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+  import { getApp, getApps, initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { get, getDatabase, ref } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
-  const firebaseApp = initializeApp(firebaseConfig);
-  const database = getDatabase(firebaseApp, firebaseConfig.databaseURL);
+  const firebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
+  const database = getDatabase(firebaseApp, firebaseConfig.databaseURL || undefined);
 
-  const grid = document.getElementById('home-news-grid');
-  const emptyState = document.getElementById('home-news-empty');
+  let grid = null;
+  let emptyState = null;
 
   function sortEntries(entries) {
     return entries.sort((a, b) => {
@@ -207,7 +207,28 @@ const firebaseConfig = {
     }
   }
 
-  loadFeaturedNews();
+  const RUNNER_KEY = '__homeNewsRunner';
+
+  function start() {
+    grid = document.getElementById('home-news-grid');
+    emptyState = document.getElementById('home-news-empty');
+    if (!grid || !emptyState) return;
+    loadFeaturedNews();
+  }
+
+  if (window[RUNNER_KEY]) {
+    document.removeEventListener('astro:page-load', window[RUNNER_KEY]);
+  }
+
+  window[RUNNER_KEY] = () => start();
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', window[RUNNER_KEY], { once: true });
+  } else {
+    window[RUNNER_KEY]();
+  }
+
+  document.addEventListener('astro:page-load', window[RUNNER_KEY]);
 </script>
 
 <style>
