@@ -218,48 +218,70 @@ const firebaseConfig = {
   const firebaseApp = initializeApp(firebaseConfig);
   const database = getDatabase(firebaseApp, firebaseConfig.databaseURL);
 
-const loadingEl = document.getElementById('news-loading');
-  const listViewEl = document.getElementById('news-list-view');
-  const detailViewEl = document.getElementById('news-detail-view');
-  const notFoundEl = document.getElementById('news-not-found');
-  const emptyEl = document.getElementById('news-empty');
+  let loadingEl;
+  let listViewEl;
+  let detailViewEl;
+  let notFoundEl;
+  let emptyEl;
 
-  const categoryFiltersEl = document.getElementById('category-filters');
-  const newsListEl = document.getElementById('news-list');
-  const paginationEl = document.getElementById('pagination');
-  const showingCountEl = document.getElementById('showing-count');
-  const totalCountEl = document.getElementById('total-count');
-  const sortSelectEl = document.getElementById('sort-select');
+  let categoryFiltersEl;
+  let newsListEl;
+  let paginationEl;
+  let showingCountEl;
+  let totalCountEl;
+  let sortSelectEl;
 
-  const detailContentEl = document.getElementById('news-detail-content');
-  const relatedNewsSectionEl = document.getElementById('related-news-section');
-  const relatedNewsListEl = document.getElementById('related-news-list');
+  let detailContentEl;
+  let relatedNewsSectionEl;
+  let relatedNewsListEl;
 
-  const pageTitleEl = document.getElementById('page-title');
-  const pageDescEl = document.getElementById('page-description');
-  const breadcrumbCurrentEl = document.getElementById('breadcrumb-current');
+  let pageTitleEl;
+  let pageDescEl;
+  let breadcrumbCurrentEl;
+
+  function refreshDomReferences() {
+    loadingEl = document.getElementById('news-loading');
+    listViewEl = document.getElementById('news-list-view');
+    detailViewEl = document.getElementById('news-detail-view');
+    notFoundEl = document.getElementById('news-not-found');
+    emptyEl = document.getElementById('news-empty');
+
+    categoryFiltersEl = document.getElementById('category-filters');
+    newsListEl = document.getElementById('news-list');
+    paginationEl = document.getElementById('pagination');
+    showingCountEl = document.getElementById('showing-count');
+    totalCountEl = document.getElementById('total-count');
+    sortSelectEl = document.getElementById('sort-select');
+
+    detailContentEl = document.getElementById('news-detail-content');
+    relatedNewsSectionEl = document.getElementById('related-news-section');
+    relatedNewsListEl = document.getElementById('related-news-list');
+
+    pageTitleEl = document.getElementById('page-title');
+    pageDescEl = document.getElementById('page-description');
+    breadcrumbCurrentEl = document.getElementById('breadcrumb-current');
+  }
 
   let allNews = [];
   let filteredNews = [];
   const itemsPerPage = 9;
   let currentPage = 1;
-let currentCategory = 'all';
-let currentSort = 'date-desc';
-let eventsBound = false;
+  let currentCategory = 'all';
+  let currentSort = 'date-desc';
+  let eventController = new AbortController();
 
-function getRouteInfo() {
-  const basePath = '/news';
-  const path = window.location.pathname.replace(/\/+$/, '');
-  let suffix = '';
-  if (path.startsWith(basePath)) {
-    suffix = decodeURIComponent(path.slice(basePath.length)).replace(/^\/+/, '');
+  function getRouteInfo() {
+    const basePath = '/news';
+    const path = window.location.pathname.replace(/\/+$/, '');
+    let suffix = '';
+    if (path.startsWith(basePath)) {
+      suffix = decodeURIComponent(path.slice(basePath.length)).replace(/^\/+/, '');
+    }
+    return {
+      isDetail: suffix.length > 0,
+      slug: suffix,
+    };
   }
-  return {
-    isDetail: suffix.length > 0,
-    slug: suffix,
-  };
-}
-  let eventsBound = false;
 
   function setMetaTag(selector, attribute, value) {
     const el = document.querySelector(selector);
@@ -475,14 +497,15 @@ function getRouteInfo() {
     const visibleNews = filteredNews.slice(startIndex, endIndex);
 
     newsListEl.innerHTML = visibleNews.map((news) => {
-      const href = news.externalLink || `/news/${news.slug || news.id}/`;
+      const internalSlug = news.slug || news.id;
+      const href = internalSlug ? `/news/${internalSlug}/` : '#news';
       const dateDisplay = news.date
         ? new Date(news.date).toLocaleDateString('ja-JP')
         : '';
       return `
         <div class="news-item flex justify-center">
           <div class="w-full max-w-sm">
-            <a href="${href}" class="block glass rounded-lg overflow-hidden hover:shadow-lg transition-all" data-internal-link="${href.startsWith('/news/') ? 'true' : 'false'}">
+            <a href="${href}" class="block glass rounded-lg overflow-hidden hover:shadow-lg transition-all">
               <article class="p-6">
                 ${news.featured ? '<span class="inline-block px-2 py-1 text-xs font-semibold text-white bg-purple-600 rounded mb-2">注目</span>' : ''}
                 <h2 class="text-xl font-bold mb-2">${news.title || ''}</h2>
@@ -501,8 +524,6 @@ function getRouteInfo() {
 
     showingCountEl.textContent = String(Math.min(endIndex, filteredNews.length));
     totalCountEl.textContent = String(filteredNews.length);
-
-    attachInternalLinkListeners();
   }
 
   function renderPagination() {
@@ -540,18 +561,6 @@ function getRouteInfo() {
     `;
   }
 
-  function attachInternalLinkListeners() {
-    newsListEl?.querySelectorAll('a[data-internal-link="true"]').forEach((anchor) => {
-      anchor.addEventListener('click', (event) => {
-        event.preventDefault();
-        const url = anchor.getAttribute('href');
-        if (url) {
-          window.location.assign(url);
-        }
-      });
-    });
-  }
-
   function renderRelatedNews(currentId) {
     if (!relatedNewsSectionEl || !relatedNewsListEl) return;
     const related = allNews
@@ -567,7 +576,8 @@ function getRouteInfo() {
     relatedNewsSectionEl.classList.remove('hidden');
     relatedNewsListEl.innerHTML = related
       .map((news) => {
-        const href = news.externalLink || `/news/${news.slug || news.id}/`;
+        const internalSlug = news.slug || news.id;
+        const href = internalSlug ? `/news/${internalSlug}/` : '#news';
         return `
           <article class="bg-white/60 backdrop-blur-sm border border-purple-100/50 rounded-xl shadow-lg overflow-hidden hover:bg-white/80 transition-all duration-300">
             ${news.image ? `
@@ -603,72 +613,80 @@ function getRouteInfo() {
       .join('');
   }
 
+  function onCategoryFilterClick(event) {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) return;
+    if (!target.classList.contains('category-filter')) return;
+
+    categoryFiltersEl?.querySelectorAll('.category-filter').forEach((button) => {
+      button.classList.remove('active', 'bg-purple-600', 'text-white');
+      button.classList.add('bg-white', 'text-gray-700');
+    });
+
+    target.classList.add('active', 'bg-purple-600', 'text-white');
+    target.classList.remove('bg-white', 'text-gray-700');
+
+    currentCategory = target.dataset.category || 'all';
+    currentPage = 1;
+    filteredNews = sortEntries(
+      currentCategory === 'all'
+        ? [...allNews]
+        : allNews.filter((entry) => entry.categories?.includes(currentCategory))
+    );
+    renderNewsList();
+    renderPagination();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    const url = new URL(window.location.href);
+    url.searchParams.set('category', currentCategory);
+    history.replaceState({}, '', url.toString());
+
+    updateHeadForList(filteredNews.length);
+  }
+
+  function onSortChange(event) {
+    const target = event.target;
+    if (!(target instanceof HTMLSelectElement)) return;
+    currentSort = target.value;
+    filteredNews = sortEntries(
+      currentCategory === 'all'
+        ? [...allNews]
+        : allNews.filter((entry) => entry.categories?.includes(currentCategory))
+    );
+    renderNewsList();
+    renderPagination();
+  }
+
+  function onPaginationClick(event) {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) return;
+    const button = target.closest('button');
+    if (!(button instanceof HTMLButtonElement) || button.disabled) return;
+
+    if (button.classList.contains('pagination-prev')) {
+      currentPage = Math.max(1, currentPage - 1);
+    } else if (button.classList.contains('pagination-next')) {
+      const totalPages = Math.ceil(filteredNews.length / itemsPerPage);
+      currentPage = Math.min(totalPages, currentPage + 1);
+    } else if (button.dataset.page) {
+      currentPage = Number(button.dataset.page);
+    }
+
+    renderNewsList();
+    renderPagination();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function resetEventBindings() {
+    eventController.abort();
+    eventController = new AbortController();
+  }
+
   function bindListEvents() {
-    if (eventsBound) return;
-    eventsBound = true;
-    categoryFiltersEl?.addEventListener('click', (event) => {
-      const target = event.target;
-      if (!(target instanceof HTMLElement)) return;
-      if (!target.classList.contains('category-filter')) return;
-
-      categoryFiltersEl.querySelectorAll('.category-filter').forEach((button) => {
-        button.classList.remove('active', 'bg-purple-600', 'text-white');
-        button.classList.add('bg-white', 'text-gray-700');
-      });
-
-      target.classList.add('active', 'bg-purple-600', 'text-white');
-      target.classList.remove('bg-white', 'text-gray-700');
-
-      currentCategory = target.dataset.category || 'all';
-      currentPage = 1;
-      filteredNews = sortEntries(
-        currentCategory === 'all'
-          ? [...allNews]
-          : allNews.filter((entry) => entry.categories?.includes(currentCategory))
-      );
-      renderNewsList();
-      renderPagination();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-
-      const url = new URL(window.location.href);
-      url.searchParams.set('category', currentCategory);
-      history.replaceState({}, '', url.toString());
-
-      updateHeadForList(filteredNews.length);
-    });
-
-    sortSelectEl?.addEventListener('change', (event) => {
-      const target = event.target;
-      if (!(target instanceof HTMLSelectElement)) return;
-      currentSort = target.value;
-      filteredNews = sortEntries(
-        currentCategory === 'all'
-          ? [...allNews]
-          : allNews.filter((entry) => entry.categories?.includes(currentCategory))
-      );
-      renderNewsList();
-      renderPagination();
-    });
-
-    paginationEl?.addEventListener('click', (event) => {
-      const target = event.target;
-      if (!(target instanceof HTMLElement)) return;
-      const button = target.closest('button');
-      if (!(button instanceof HTMLButtonElement) || button.disabled) return;
-
-      if (button.classList.contains('pagination-prev')) {
-        currentPage = Math.max(1, currentPage - 1);
-      } else if (button.classList.contains('pagination-next')) {
-        const totalPages = Math.ceil(filteredNews.length / itemsPerPage);
-        currentPage = Math.min(totalPages, currentPage + 1);
-      } else if (button.dataset.page) {
-        currentPage = Number(button.dataset.page);
-      }
-
-      renderNewsList();
-      renderPagination();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
+    const signal = eventController.signal;
+    categoryFiltersEl?.addEventListener('click', onCategoryFilterClick, { signal });
+    sortSelectEl?.addEventListener('change', onSortChange, { signal });
+    paginationEl?.addEventListener('click', onPaginationClick, { signal });
   }
 
   function hydrateDetail(entry) {
@@ -909,6 +927,8 @@ function getRouteInfo() {
     toggleView('detail');
   }
   const startNewsModule = () => {
+    refreshDomReferences();
+    resetEventBindings();
     bindListEvents();
     loadNews(getRouteInfo());
   };

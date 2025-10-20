@@ -230,68 +230,90 @@ const firebaseConfig = {
   const firebaseApp = initializeApp(firebaseConfig);
   const database = getDatabase(firebaseApp, firebaseConfig.databaseURL);
 
-const loadingEl = document.getElementById('agri-loading');
-  const listViewEl = document.getElementById('agri-list-view');
-  const detailViewEl = document.getElementById('agri-detail-view');
-  const emptyEl = document.getElementById('agri-empty');
-  const notFoundEl = document.getElementById('agri-not-found');
+  let loadingEl;
+  let listViewEl;
+  let detailViewEl;
+  let emptyEl;
+  let notFoundEl;
 
-  const listCountEl = document.getElementById('agri-list-count');
-  const postsListEl = document.getElementById('agri-posts-list');
-  const paginationEl = document.getElementById('agri-pagination');
-  const sortSelectEl = document.getElementById('agri-sort-select');
-  const activeFiltersEl = document.getElementById('agri-active-filters');
+  let listCountEl;
+  let postsListEl;
+  let paginationEl;
+  let sortSelectEl;
+  let activeFiltersEl;
 
-  const sidebarCategoriesEl = document.getElementById('agri-categories');
-  const sidebarTagsEl = document.getElementById('agri-tags');
+  let sidebarCategoriesEl;
+  let sidebarTagsEl;
 
-  const detailArticleEl = document.getElementById('agri-detail-article');
-  const detailTocEl = document.getElementById('agri-detail-toc');
-  const relatedEl = document.getElementById('agri-related');
-  const relatedListEl = document.getElementById('agri-related-list');
+  let detailArticleEl;
+  let detailTocEl;
+  let relatedEl;
+  let relatedListEl;
+
+  function refreshDomReferences() {
+    loadingEl = document.getElementById('agri-loading');
+    listViewEl = document.getElementById('agri-list-view');
+    detailViewEl = document.getElementById('agri-detail-view');
+    emptyEl = document.getElementById('agri-empty');
+    notFoundEl = document.getElementById('agri-not-found');
+
+    listCountEl = document.getElementById('agri-list-count');
+    postsListEl = document.getElementById('agri-posts-list');
+    paginationEl = document.getElementById('agri-pagination');
+    sortSelectEl = document.getElementById('agri-sort-select');
+    activeFiltersEl = document.getElementById('agri-active-filters');
+
+    sidebarCategoriesEl = document.getElementById('agri-categories');
+    sidebarTagsEl = document.getElementById('agri-tags');
+
+    detailArticleEl = document.getElementById('agri-detail-article');
+    detailTocEl = document.getElementById('agri-detail-toc');
+    relatedEl = document.getElementById('agri-related');
+    relatedListEl = document.getElementById('agri-related-list');
+  }
 
   const itemsPerPage = 6;
   let allEntries = [];
-let filteredEntries = [];
-let currentPage = 1;
-let currentCategory = 'all';
-let currentTag = 'all';
-let currentSort = 'date-desc';
-let staticEventsBound = false;
+  let filteredEntries = [];
+  let currentPage = 1;
+  let currentCategory = 'all';
+  let currentTag = 'all';
+  let currentSort = 'date-desc';
+  let eventController = new AbortController();
 
-function getRouteInfo() {
-  const basePath = '/agritech';
-  const path = window.location.pathname.replace(/\/+$/, '');
-  let suffix = '';
-  if (path.startsWith(basePath)) {
-    suffix = decodeURIComponent(path.slice(basePath.length)).replace(/^\/+/, '');
+  function getRouteInfo() {
+    const basePath = '/agritech';
+    const path = window.location.pathname.replace(/\/+$/, '');
+    let suffix = '';
+    if (path.startsWith(basePath)) {
+      suffix = decodeURIComponent(path.slice(basePath.length)).replace(/^\/+/, '');
+    }
+
+    if (!suffix) {
+      return { mode: 'list' };
+    }
+
+    if (suffix.startsWith('categories/')) {
+      const category = suffix.slice('categories/'.length).replace(/\/+$/, '');
+      return { mode: 'category', value: category };
+    }
+
+    if (suffix.startsWith('tags/')) {
+      const tag = suffix.slice('tags/'.length).replace(/\/+$/, '');
+      return { mode: 'tag', value: tag };
+    }
+
+    if (suffix.startsWith('page/')) {
+      const pageSegment = suffix.slice('page/'.length).replace(/\/+$/, '');
+      const pageNumber = Number(pageSegment);
+      return {
+        mode: 'page',
+        page: Number.isFinite(pageNumber) && pageNumber > 0 ? pageNumber : 1,
+      };
+    }
+
+    return { mode: 'detail', slug: suffix.replace(/\/+$/, '') };
   }
-
-  if (!suffix) {
-    return { mode: 'list' };
-  }
-
-  if (suffix.startsWith('categories/')) {
-    const category = suffix.slice('categories/'.length).replace(/\/+$/, '');
-    return { mode: 'category', value: category };
-  }
-
-  if (suffix.startsWith('tags/')) {
-    const tag = suffix.slice('tags/'.length).replace(/\/+$/, '');
-    return { mode: 'tag', value: tag };
-  }
-
-  if (suffix.startsWith('page/')) {
-    const pageSegment = suffix.slice('page/'.length).replace(/\/+$/, '');
-    const pageNumber = Number(pageSegment);
-    return {
-      mode: 'page',
-      page: Number.isFinite(pageNumber) && pageNumber > 0 ? pageNumber : 1,
-    };
-  }
-
-  return { mode: 'detail', slug: suffix.replace(/\/+$/, '') };
-}
   
 
   function toggleView(state) {
@@ -915,19 +937,27 @@ function getRouteInfo() {
     }
   }
 
+  function onSortChange(event) {
+    const target = event.target;
+    if (!(target instanceof HTMLSelectElement)) return;
+    currentSort = target.value;
+    filteredEntries = applyFilters();
+    renderList();
+  }
+
+  function resetEventBindings() {
+    eventController.abort();
+    eventController = new AbortController();
+  }
+
   function bindStaticEvents() {
-    if (staticEventsBound) return;
-    staticEventsBound = true;
-    sortSelectEl?.addEventListener('change', (event) => {
-      const target = event.target;
-      if (!(target instanceof HTMLSelectElement)) return;
-      currentSort = target.value;
-      filteredEntries = applyFilters();
-      renderList();
-    });
+    const signal = eventController.signal;
+    sortSelectEl?.addEventListener('change', onSortChange, { signal });
   }
 
   const startAgritechModule = () => {
+    refreshDomReferences();
+    resetEventBindings();
     bindStaticEvents();
     loadEntries(getRouteInfo());
   };

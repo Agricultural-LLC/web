@@ -111,7 +111,8 @@ const firebaseConfig = {
 
     const topEntries = entries.slice(0, 3);
     grid.innerHTML = topEntries.map((news) => {
-      const href = news.externalLink || `/news/${news.slug || news.id}/`;
+      const internalSlug = news.slug || news.id;
+      const href = internalSlug ? `/news/${internalSlug}/` : '#news';
       const publishedDate = news.date
         ? new Date(news.date).toLocaleDateString('ja-JP', {
             year: 'numeric',
