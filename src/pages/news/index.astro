@@ -164,18 +164,15 @@ const firebaseConfig = {
 </BaseLayout>
 
 <script type="module" define:vars={{ firebaseConfig, baseDescription, baseTitle, siteName }}>
-  import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { initializeApp, getApps, getApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
   import {
     getDatabase,
     ref,
     get,
     increment,
     update,
-  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-  import { marked } from "https://cdn.jsdelivr.net/npm/marked@11.1.1/lib/marked.esm.js";
-
-  const RUNNER_KEY = "__newsPageInstance";
-  const ITEMS_PER_PAGE = 9;
+  } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+  import { marked } from 'https://cdn.jsdelivr.net/npm/marked@11.1.1/lib/marked.esm.js';
 
   marked.setOptions({
     gfm: true,
@@ -184,26 +181,17 @@ const firebaseConfig = {
     headerIds: false,
   });
 
-  function getFirebaseApp() {
-    if (!getApps().length) {
-      initializeApp(firebaseConfig);
-    }
-    return getApp();
-  }
-
   function createSlug(text) {
-    if (!text) return "";
-    return String(text)
-      .trim()
+    const normalized = text?.toString().trim() ?? '';
+    const base = normalized
       .toLowerCase()
-      .replace(/[\s_]+/g, '-')
-      .replace(/[^a-z0-9\-\u3040-\u30ff\u3400-\u9fff\uff66-\uff9f\u30fc]+/g, '')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '');
+      .replace(/\s+/g, '-')
+      .replace(/[^\p{Letter}\p{Number}\-ー]/gu, '');
+    return base || `section-${Math.random().toString(36).slice(2, 8)}`;
   }
 
   function markdownToHtml(markdown) {
-    const html = marked.parse(markdown || "");
+    const html = marked.parse(markdown || '');
     const template = document.createElement('template');
     template.innerHTML = html;
 
@@ -211,7 +199,7 @@ const firebaseConfig = {
     template.content.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach((heading) => {
       const baseSlug = createSlug(heading.textContent || '');
       const count = slugCounts.get(baseSlug) || 0;
-      const finalSlug = baseSlug ? (count ? `${baseSlug}-${count}` : baseSlug) : `section-${count + 1}`;
+      const finalSlug = count ? `${baseSlug}-${count}` : baseSlug;
       slugCounts.set(baseSlug, count + 1);
       heading.id = finalSlug;
     });
@@ -220,584 +208,787 @@ const firebaseConfig = {
   }
 
   function markdownToPlain(markdown) {
-    const html = marked.parse(markdown || "");
+    const html = marked.parse(markdown || '');
     const template = document.createElement('template');
     template.innerHTML = html;
-    const text = template.content.textContent || "";
+    const text = template.content.textContent || '';
     return text.replace(/\s+/g, ' ').trim();
   }
 
-  function normalizeNewsEntry(id, raw) {
-    if (!raw || typeof raw !== 'object') return null;
+  const firebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
+  const database = getDatabase(firebaseApp, firebaseConfig.databaseURL || undefined);
 
-    const toStringSafe = (value) =>
-      typeof value === 'string' ? value : value != null ? String(value) : '';
-    const toArraySafe = (value) => {
-      if (Array.isArray(value)) {
-        return value.filter((item) => item != null).map((item) => String(item));
-      }
-      return value != null ? [String(value)] : [];
-    };
-    const toNumberSafe = (value, fallback = 0) => {
-      const num = Number(value);
-      return Number.isFinite(num) ? num : fallback;
-    };
+  const ITEMS_PER_PAGE = 9;
+  const RUNNER_KEY = '__newsPageRunner';
 
-    const slug = toStringSafe(raw.slug) || id;
+  const state = {
+    allNews: [],
+    filteredNews: [],
+    currentPage: 1,
+    currentCategory: 'all',
+    currentSort: 'date-desc',
+  };
 
+  let eventController = new AbortController();
+
+  function resetState() {
+    state.allNews = [];
+    state.filteredNews = [];
+    state.currentPage = 1;
+    state.currentCategory = 'all';
+    state.currentSort = 'date-desc';
+  }
+
+  function getRoot() {
+    return document.querySelector('[data-news-root]');
+  }
+
+  function getElements() {
     return {
-      id,
-      slug,
-      title: toStringSafe(raw.title),
-      description: toStringSafe(raw.description),
-      body: toStringSafe(raw.body),
-      date: toStringSafe(raw.date),
-      image: toStringSafe(raw.image),
-      imageAlt: toStringSafe(raw.imageAlt) || toStringSafe(raw.title),
-      authors: toArraySafe(raw.authors),
-      categories: toArraySafe(raw.categories),
-      tags: toArraySafe(raw.tags),
-      draft: Boolean(raw.draft),
-      priority: toNumberSafe(raw.priority),
-      featured: Boolean(raw.featured),
-      externalLink: toStringSafe(raw.externalLink),
-      source: toStringSafe(raw.source),
-      views: toNumberSafe(raw.views),
-      publishedAt: toStringSafe(raw.publishedAt),
-      updatedAt: toStringSafe(raw.updatedAt),
-      createdAt: toStringSafe(raw.createdAt),
+      loadingEl: document.getElementById('news-loading'),
+      listViewEl: document.getElementById('news-list-view'),
+      detailViewEl: document.getElementById('news-detail-view'),
+      notFoundEl: document.getElementById('news-not-found'),
+      emptyEl: document.getElementById('news-empty'),
+      categoryFiltersEl: document.getElementById('category-filters'),
+      newsListEl: document.getElementById('news-list'),
+      paginationEl: document.getElementById('pagination'),
+      showingCountEl: document.getElementById('showing-count'),
+      totalCountEl: document.getElementById('total-count'),
+      sortSelectEl: document.getElementById('sort-select'),
+      detailContentEl: document.getElementById('news-detail-content'),
+      relatedNewsSectionEl: document.getElementById('related-news-section'),
+      relatedNewsListEl: document.getElementById('related-news-list'),
+      pageTitleEl: document.getElementById('page-title'),
+      pageDescEl: document.getElementById('page-description'),
+      breadcrumbCurrentEl: document.getElementById('breadcrumb-current'),
     };
   }
 
-  class NewsPage {
-    constructor(root) {
-      this.root = root;
-      this.database = getDatabase(getFirebaseApp());
-      this.state = {
-        allNews: [],
-        filteredNews: [],
-        currentPage: 1,
-        currentCategory: 'all',
-        currentSort: 'date-desc',
-      };
-      this.controller = new AbortController();
-      this.elements = this.queryElements();
+  function getRouteInfo() {
+    const basePath = '/news';
+    const path = window.location.pathname.replace(/\/+$/, '');
+    let slug = '';
+    if (path.startsWith(basePath)) {
+      slug = decodeURIComponent(path.slice(basePath.length)).replace(/^\/+/, '');
     }
+    return {
+      isDetail: slug.length > 0,
+      slug,
+    };
+  }
 
-    destroy() {
-      this.controller.abort();
-    }
-
-    queryElements() {
-      return {
-        loading: this.root.querySelector('#news-loading'),
-        listView: this.root.querySelector('#news-list-view'),
-        detailView: this.root.querySelector('#news-detail-view'),
-        emptyView: this.root.querySelector('#news-empty'),
-        notFoundView: this.root.querySelector('#news-not-found'),
-        categoryFilters: this.root.querySelector('#category-filters'),
-        newsList: this.root.querySelector('#news-list'),
-        pagination: this.root.querySelector('#pagination'),
-        showingCount: this.root.querySelector('#showing-count'),
-        totalCount: this.root.querySelector('#total-count'),
-        sortSelect: this.root.querySelector('#sort-select'),
-        detailContent: this.root.querySelector('#news-detail-content'),
-        relatedSection: this.root.querySelector('#related-news-section'),
-        relatedList: this.root.querySelector('#related-news-list'),
-        pageTitle: this.root.querySelector('#page-title'),
-        pageDescription: this.root.querySelector('#page-description'),
-        breadcrumbCurrent: this.root.querySelector('#breadcrumb-current'),
-      };
-    }
-
-    setView(view) {
-      const { loading, listView, detailView, emptyView, notFoundView } = this.elements;
-      if (loading) loading.classList.toggle('hidden', view !== 'loading');
-      if (listView) listView.classList.toggle('hidden', view !== 'list');
-      if (detailView) detailView.classList.toggle('hidden', view !== 'detail');
-      if (emptyView) emptyView.classList.toggle('hidden', view !== 'empty');
-      if (notFoundView) notFoundView.classList.toggle('hidden', view !== 'notFound');
-    }
-
-    getRouteInfo() {
-      const basePath = '/news';
-      const path = window.location.pathname.replace(/\/+$/, '');
-      let slug = '';
-      if (path.startsWith(basePath)) {
-        slug = decodeURIComponent(path.slice(basePath.length)).replace(/^\/+/, '');
+  function ensureMeta(name, content, property = false) {
+    const selector = property ? `meta[property="${name}"]` : `meta[name="${name}"]`;
+    let el = document.querySelector(selector);
+    if (!el) {
+      el = document.createElement('meta');
+      if (property) {
+        el.setAttribute('property', name);
+      } else {
+        el.setAttribute('name', name);
       }
-      return { isDetail: slug.length > 0, slug };
+      document.head.appendChild(el);
     }
+    el.setAttribute('content', content);
+  }
 
-    bindEvents() {
-      this.controller.abort();
-      this.controller = new AbortController();
-      const signal = this.controller.signal;
-      const { categoryFilters, sortSelect, pagination } = this.elements;
+  function removeStructuredData() {
+    document.querySelectorAll('script[data-dynamic-ld]').forEach((script) => script.remove());
+  }
 
-      categoryFilters?.addEventListener('click', (event) => {
-        const target = event.target;
-        if (!(target instanceof HTMLElement)) return;
-        if (!target.classList.contains('category-filter')) return;
-        this.state.currentCategory = target.dataset.category || 'all';
-        this.state.currentPage = 1;
-        this.renderListView();
-        const url = new URL(window.location.href);
-        if (this.state.currentCategory === 'all') {
-          url.searchParams.delete('category');
-        } else {
-          url.searchParams.set('category', this.state.currentCategory);
-        }
-        history.replaceState({}, '', url.toString());
-      }, { signal });
+  function injectArticleStructuredData(entry, description) {
+    const primaryDate = entry.publishedAt || entry.date;
+    const secondaryDate = entry.updatedAt || entry.date;
+    const jsonLd = {
+      '@context': 'https://schema.org',
+      '@type': 'NewsArticle',
+      headline: entry.title,
+      description,
+      image: entry.image ? [entry.image] : undefined,
+      datePublished: primaryDate ? new Date(primaryDate).toISOString() : undefined,
+      dateModified: secondaryDate ? new Date(secondaryDate).toISOString() : undefined,
+      author: (entry.authors || []).map((name) => ({ '@type': 'Person', name })),
+      publisher: {
+        '@type': 'Organization',
+        name: siteName,
+        logo: {
+          '@type': 'ImageObject',
+          url: `${window.location.origin}/logo.png`,
+        },
+      },
+      mainEntityOfPage: {
+        '@type': 'WebPage',
+        '@id': `${window.location.origin}/news/${entry.slug || entry.id}/`,
+      },
+    };
 
-      sortSelect?.addEventListener('change', (event) => {
-        const target = event.target;
-        if (!(target instanceof HTMLSelectElement)) return;
-        this.state.currentSort = target.value;
-        this.state.currentPage = 1;
-        this.renderListView();
-      }, { signal });
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.dataset.dynamicLd = 'article';
+    script.textContent = JSON.stringify(jsonLd, null, 2);
+    document.head.appendChild(script);
+  }
 
-      pagination?.addEventListener('click', (event) => {
-        const target = event.target;
-        if (!(target instanceof HTMLElement)) return;
-        const button = target.closest('button');
-        if (!(button instanceof HTMLButtonElement) || button.disabled) return;
+  function injectItemListStructuredData(entries) {
+    if (!entries.length) return;
+    const jsonLd = {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      itemListElement: entries.map((entry, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        url: `${window.location.origin}/news/${entry.slug || entry.id}/`,
+        name: entry.title,
+      })),
+    };
 
-        if (button.classList.contains('pagination-prev')) {
-          this.state.currentPage = Math.max(1, this.state.currentPage - 1);
-        } else if (button.classList.contains('pagination-next')) {
-          const totalPages = Math.ceil(this.state.filteredNews.length / ITEMS_PER_PAGE);
-          this.state.currentPage = Math.min(totalPages, this.state.currentPage + 1);
-        } else if (button.dataset.page) {
-          this.state.currentPage = Number(button.dataset.page);
-        }
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.dataset.dynamicLd = 'itemlist';
+    script.textContent = JSON.stringify(jsonLd, null, 2);
+    document.head.appendChild(script);
+  }
 
-        this.renderListView();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }, { signal });
+  function updateHeadForList(totalCount) {
+    const title = `${baseTitle} | ${siteName}`;
+    document.title = title;
+    ensureMeta('description', baseDescription);
+    ensureMeta('og:title', title, true);
+    ensureMeta('og:description', `${baseDescription}（全${totalCount}件）`, true);
+    ensureMeta('og:type', 'website', true);
+    ensureMeta('twitter:card', 'summary_large_image');
+
+    let canonical = document.querySelector('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonical);
     }
+    canonical.setAttribute('href', `${window.location.origin}/news/`);
 
-    renderCategoryFilters() {
-      const { categoryFilters } = this.elements;
-      if (!categoryFilters) return;
+    removeStructuredData();
+    injectItemListStructuredData(state.filteredNews.slice(0, Math.min(10, state.filteredNews.length)));
+  }
 
-      const categories = [...new Set(this.state.allNews.flatMap((entry) => entry.categories || []))]
-        .filter(Boolean)
-        .sort((a, b) => a.localeCompare(b, 'ja'));
+  function updateHeadForArticle(entry, description) {
+    const title = `${entry.title} | ${siteName}`;
+    document.title = title;
 
-      const buildButton = (value, label, count, active) => {
-        const base = 'category-filter px-4 py-2 rounded-full text-sm font-medium transition-all duration-200';
-        const activeClass = 'bg-purple-600 text-white';
-        const inactiveClass = 'bg-white text-gray-700 hover:bg-purple-100';
-        return `<button data-category="${value}" class="${base} ${active ? activeClass : inactiveClass}">
-          ${label} (${count})
-        </button>`;
-      };
-
-      const allBtn = buildButton('all', 'すべて', this.state.allNews.length, this.state.currentCategory === 'all');
-      const categoryButtons = categories.map((category) => {
-        const count = this.state.allNews.filter((entry) => entry.categories?.includes(category)).length;
-        return buildButton(category, category, count, this.state.currentCategory === category);
-      }).join('');
-
-      categoryFilters.innerHTML = `${allBtn}${categoryButtons}`;
+    ensureMeta('description', description);
+    ensureMeta('og:title', entry.title, true);
+    ensureMeta('og:description', description, true);
+    ensureMeta('og:type', 'article', true);
+    if (entry.image) {
+      ensureMeta('og:image', entry.image, true);
+      ensureMeta('twitter:image', entry.image);
     }
+    ensureMeta('twitter:card', 'summary_large_image');
 
-    applyFilters() {
-      const base = this.state.currentCategory === 'all'
-        ? [...this.state.allNews]
-        : this.state.allNews.filter((entry) => entry.categories?.includes(this.state.currentCategory));
-
-      return [...base].sort((a, b) => {
-        switch (this.state.currentSort) {
-          case 'date-asc':
-            return new Date(a.date).getTime() - new Date(b.date).getTime();
-          case 'priority':
-            return (b.priority || 0) - (a.priority || 0);
-          case 'views':
-            return (b.views || 0) - (a.views || 0);
-          default:
-            if ((b.priority || 0) !== (a.priority || 0)) {
-              return (b.priority || 0) - (a.priority || 0);
-            }
-            return new Date(b.date).getTime() - new Date(a.date).getTime();
-        }
-      });
+    let canonical = document.querySelector('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonical);
     }
+    canonical.setAttribute('href', `${window.location.origin}/news/${entry.slug || entry.id}/`);
 
-    renderNewsList() {
-      const { newsList, showingCount, totalCount } = this.elements;
-      if (!newsList) return;
+    removeStructuredData();
+    injectArticleStructuredData(entry, description);
+  }
 
-      const totalPages = Math.max(1, Math.ceil(this.state.filteredNews.length / ITEMS_PER_PAGE));
-      if (this.state.currentPage > totalPages) {
-        this.state.currentPage = totalPages;
+  function toggleView(view) {
+    const {
+      loadingEl,
+      listViewEl,
+      detailViewEl,
+      notFoundEl,
+      emptyEl,
+    } = getElements();
+
+    if (loadingEl) loadingEl.classList.toggle('hidden', view !== 'loading');
+    if (listViewEl) listViewEl.classList.toggle('hidden', view !== 'list');
+    if (detailViewEl) detailViewEl.classList.toggle('hidden', view !== 'detail');
+    if (notFoundEl) notFoundEl.classList.toggle('hidden', view !== 'notFound');
+    if (emptyEl) emptyEl.classList.toggle('hidden', view !== 'empty');
+  }
+
+  function sortEntries(entries) {
+    const sortKey = state.currentSort;
+    return [...entries].sort((a, b) => {
+      if (sortKey === 'date-asc') {
+        return new Date(a.date).getTime() - new Date(b.date).getTime();
       }
-
-      const startIndex = (this.state.currentPage - 1) * ITEMS_PER_PAGE;
-      const endIndex = startIndex + ITEMS_PER_PAGE;
-      const visibleNews = this.state.filteredNews.slice(startIndex, endIndex);
-
-      newsList.innerHTML = visibleNews.map((news) => {
-        const slug = news.slug || news.id;
-        const href = slug ? `/news/${slug}/` : '#news';
-        const dateDisplay = news.date ? new Date(news.date).toLocaleDateString('ja-JP') : '';
-        const datetimeAttr = news.date ? new Date(news.date).toISOString() : '';
-        return `
-          <div class="news-item flex justify-center">
-            <div class="w-full max-w-sm">
-              <a href="${href}" class="block glass rounded-lg overflow-hidden hover:shadow-lg transition-all">
-                <article class="p-6">
-                  ${news.featured ? '<span class="inline-block px-2 py-1 text-xs font-semibold text-white bg-purple-600 rounded mb-2">注目</span>' : ''}
-                  <h2 class="text-xl font-bold mb-2">${news.title || ''}</h2>
-                  <p class="text-gray-600 text-sm mb-4 line-clamp-2">${news.description || ''}</p>
-                  <div class="flex flex-wrap gap-2 text-xs">
-                    ${dateDisplay ? `<span class="text-gray-500"><time datetime="${datetimeAttr}">${dateDisplay}</time></span>` : ''}
-                    ${news.views ? `<span class="text-gray-500">👁 ${news.views}</span>` : ''}
-                    ${(news.categories || []).map((cat) => `<span class="px-2 py-1 bg-purple-100 text-purple-800 rounded">${cat}</span>`).join('')}
-                  </div>
-                </article>
-              </a>
-            </div>
-          </div>
-        `;
-      }).join('');
-
-      if (showingCount) showingCount.textContent = String(Math.min(endIndex, this.state.filteredNews.length));
-      if (totalCount) totalCount.textContent = String(this.state.filteredNews.length);
-    }
-
-    renderPagination() {
-      const { pagination } = this.elements;
-      if (!pagination) return;
-
-      const totalPages = Math.ceil(this.state.filteredNews.length / ITEMS_PER_PAGE);
-      if (totalPages <= 1) {
-        pagination.innerHTML = '';
-        return;
+      if (sortKey === 'priority') {
+        return (b.priority || 0) - (a.priority || 0);
       }
-
-      const pages = Array.from({ length: totalPages }, (_, index) => index + 1);
-      pagination.innerHTML = `
-        <li>
-          <button class="pagination-prev px-3 py-2 rounded-md bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 ${this.state.currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}" ${this.state.currentPage === 1 ? 'disabled' : ''}>
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-        </li>
-        ${pages.map((page) => `
-          <li>
-            <button data-page="${page}" class="pagination-btn px-4 py-2 rounded-md ${page === this.state.currentPage ? 'bg-purple-600 text-white' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'}">
-              ${page}
-            </button>
-          </li>
-        `).join('')}
-        <li>
-          <button class="pagination-next px-3 py-2 rounded-md bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 ${this.state.currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}" ${this.state.currentPage === totalPages ? 'disabled' : ''}>
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        </li>
-      `;
-    }
-
-    renderListView() {
-      this.renderCategoryFilters();
-      this.state.filteredNews = this.applyFilters();
-
-      if (!this.state.filteredNews.length) {
-        const { showingCount, totalCount } = this.elements;
-        if (showingCount) showingCount.textContent = '0';
-        if (totalCount) totalCount.textContent = '0';
-        this.setView('empty');
-        return;
+      if (sortKey === 'views') {
+        return (b.views || 0) - (a.views || 0);
       }
-
-      const { sortSelect, pageTitle, pageDescription, breadcrumbCurrent } = this.elements;
-      if (sortSelect) sortSelect.value = this.state.currentSort;
-
-      this.renderNewsList();
-      this.renderPagination();
-      updateHeadForList(this.state.filteredNews.length);
-
-      if (pageTitle) pageTitle.textContent = 'ニュース';
-      if (pageDescription) pageDescription.textContent = baseDescription;
-      if (breadcrumbCurrent) breadcrumbCurrent.textContent = 'ニュース';
-
-      this.setView('list');
-    }
-
-    renderRelatedNews(currentId) {
-      const { relatedSection, relatedList } = this.elements;
-      if (!relatedSection || !relatedList) return;
-
-      const related = this.state.allNews
-        .filter((entry) => entry.id !== currentId)
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-        .slice(0, 3);
-
-      if (!related.length) {
-        relatedSection.classList.add('hidden');
-        relatedList.innerHTML = '';
-        return;
+      if ((b.priority || 0) !== (a.priority || 0)) {
+        return (b.priority || 0) - (a.priority || 0);
       }
+      return new Date(b.date).getTime() - new Date(a.date).getTime();
+    });
+  }
 
-      relatedSection.classList.remove('hidden');
-      relatedList.innerHTML = related.map((news) => {
-        const slug = news.slug || news.id;
-        const href = slug ? `/news/${slug}/` : '#news';
-        const dateDisplay = news.date ? new Date(news.date).toLocaleDateString('ja-JP') : '';
-        const datetimeAttr = news.date ? new Date(news.date).toISOString() : '';
-        return `
-          <article class="bg-white/60 backdrop-blur-sm border border-purple-100/50 rounded-xl shadow-lg overflow-hidden hover:bg-white/80 transition-all duration-300">
-            ${news.image ? `
-              <a href="${href}" class="block aspect-video overflow-hidden bg-gray-100">
-                <img
-                  src="${news.image}"
-                  alt="${news.title || ''}"
-                  class="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
-                  loading="lazy"
-                />
-              </a>` : ''}
-            <div class="p-5">
-              <h3 class="text-base font-bold text-gray-900 mb-2 line-clamp-2">
-                <a href="${href}" class="hover:text-purple-600 transition-colors">
-                  ${news.title || ''}
-                </a>
-              </h3>
-              <p class="text-gray-600 text-sm mb-4 line-clamp-2 leading-relaxed">
-                ${news.description || ''}
-              </p>
-              <div class="flex items-center justify-between text-xs text-gray-500 mb-4">
-                ${dateDisplay ? `<time datetime="${datetimeAttr}">${dateDisplay}</time>` : '<span></span>'}
-                ${(news.categories || []).slice(0, 1).map((cat) => `<span class="px-2 py-0.5 bg-purple-100 text-purple-800 rounded-full">${cat}</span>`).join('')}
-              </div>
-              <div class="flex items-center justify-end">
-                <a href="${href}" class="text-purple-600 hover:text-purple-800 text-sm font-medium inline-flex items-center gap-1 group">
-                  続きを読む
-                  <svg class="w-3 h-3 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </a>
-              </div>
-            </div>
-          </article>
-        `;
-      }).join('');
+  function renderCategoryFilters() {
+    const { categoryFiltersEl } = getElements();
+    if (!categoryFiltersEl) return;
+
+    const categories = [...new Set(state.allNews.flatMap((entry) => entry.categories || []))]
+      .filter(Boolean)
+      .sort((a, b) => a.localeCompare(b, 'ja'));
+
+    const buildButton = (category, label, count, active) => {
+      const baseClass = 'category-filter px-4 py-2 rounded-full text-sm font-medium transition-all duration-200';
+      const activeClass = 'bg-purple-600 text-white';
+      const inactiveClass = 'bg-white text-gray-700 hover:bg-purple-100';
+      return `<button data-category="${category}" class="${baseClass} ${active ? activeClass : inactiveClass}">
+        ${label} (${count})
+      </button>`;
+    };
+
+    const allButton = buildButton('all', 'すべて', state.allNews.length, state.currentCategory === 'all');
+
+    const categoryButtons = categories
+      .map((category) => {
+        const count = state.allNews.filter((entry) => entry.categories?.includes(category)).length;
+        return buildButton(category, category, count, state.currentCategory === category);
+      })
+      .join('');
+
+    categoryFiltersEl.innerHTML = `${allButton}${categoryButtons}`;
+  }
+
+  function applyFilters() {
+    const baseEntries = state.currentCategory === 'all'
+      ? [...state.allNews]
+      : state.allNews.filter((entry) => entry.categories?.includes(state.currentCategory));
+    return sortEntries(baseEntries);
+  }
+
+  function renderNewsList() {
+    const { newsListEl, showingCountEl, totalCountEl } = getElements();
+    if (!newsListEl || !showingCountEl || !totalCountEl) return;
+
+    const totalPages = Math.max(1, Math.ceil(state.filteredNews.length / ITEMS_PER_PAGE));
+    if (state.currentPage > totalPages) {
+      state.currentPage = totalPages;
     }
 
-    renderDetail(entry) {
-      const { detailContent, pageTitle, pageDescription, breadcrumbCurrent } = this.elements;
-      if (!detailContent) return;
+    const startIndex = (state.currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    const visibleNews = state.filteredNews.slice(startIndex, endIndex);
 
-      const formattedDate = entry.date
-        ? new Date(entry.date).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' })
+    newsListEl.innerHTML = visibleNews.map((news) => {
+      const internalSlug = news.slug || news.id;
+      const href = internalSlug ? `/news/${internalSlug}/` : '#news';
+      const publishedDate = news.date
+        ? new Date(news.date).toLocaleDateString('ja-JP')
         : '';
-      const dateIso = entry.date ? new Date(entry.date).toISOString() : '';
-      const authors = entry.authors.join(', ');
-
-      detailContent.innerHTML = `
-        <header class="mb-10">
-          <div class="flex items-center gap-3 mb-6 flex-wrap">
-            ${entry.featured ? '<span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">特集記事</span>' : ''}
-            ${(entry.categories || []).map((category) => `
-              <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">${category}</span>
-            `).join('')}
-          </div>
-          <h1 class="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
-            ${entry.title || ''}
-          </h1>
-          <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-            ${formattedDate ? `
-              <time datetime="${dateIso}" class="flex items-center gap-1">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                ${formattedDate}
-              </time>` : ''}
-            ${entry.source ? `
-              <span class="flex items-center gap-1">
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm3.293 1.293a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 01-1.414-1.414L7.586 10 5.293 7.707a1 1 0 010-1.414zM11 12a1 1 0 100 2h3a1 1 0 100-2h-3z" />
-                </svg>
-                ${entry.source}
-              </span>` : ''}
-            ${Number.isFinite(entry.views) ? `
-              <span class="flex items-center gap-1">
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                  <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
-                </svg>
-                ${entry.views}
-              </span>` : ''}
-            ${authors ? `
-              <span class="flex items-center gap-1">
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
-                </svg>
-                ${authors}
-              </span>` : ''}
-          </div>
-        </header>
-        ${entry.image ? `
-          <figure class="mb-10">
-            <img
-              src="${entry.image}"
-              alt="${entry.imageAlt || entry.title || ''}"
-              class="w-full rounded-lg shadow-lg"
-              loading="eager"
-            />
-          </figure>
-        ` : ''}
-        ${entry.description ? `
-          <div class="mb-8 p-6 bg-gray-50 rounded-lg border-l-4 border-purple-500">
-            <p class="text-lg text-gray-700 leading-relaxed">
-              ${entry.description}
-            </p>
-          </div>
-        ` : ''}
-        <div class="prose prose-lg max-w-none mb-10">
-          <div>${markdownToHtml(entry.body || '')}</div>
-        </div>
-        ${entry.externalLink ? `
-          <div class="mb-10 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <p class="text-sm text-blue-800 mb-2">外部リンク：</p>
-            <a href="${entry.externalLink}" target="_blank" rel="noopener noreferrer"
-               class="text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1">
-              ${entry.externalLink}
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
+      const datetimeAttr = news.date ? new Date(news.date).toISOString() : '';
+      return `
+        <div class="news-item flex justify-center">
+          <div class="w-full max-w-sm">
+            <a href="${href}" class="block glass rounded-lg overflow-hidden hover:shadow-lg transition-all">
+              <article class="p-6">
+                ${news.featured ? '<span class="inline-block px-2 py-1 text-xs font-semibold text-white bg-purple-600 rounded mb-2">注目</span>' : ''}
+                <h2 class="text-xl font-bold mb-2">${news.title || ''}</h2>
+                <p class="text-gray-600 text-sm mb-4 line-clamp-2">${news.description || ''}</p>
+                <div class="flex flex-wrap gap-2 text-xs">
+                  ${publishedDate ? `<span class="text-gray-500"><time datetime="${datetimeAttr}">${publishedDate}</time></span>` : ''}
+                  ${news.views ? `<span class="text-gray-500">👁 ${news.views}</span>` : ''}
+                  ${(news.categories || []).map((cat) => `<span class="px-2 py-1 bg-purple-100 text-purple-800 rounded">${cat}</span>`).join('')}
+                </div>
+              </article>
             </a>
           </div>
-        ` : ''}
-        ${(entry.tags || []).length ? `
-          <div class="flex flex-wrap gap-2 mb-10">
-            ${(entry.tags || []).map((tag) => `<span class="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">#${tag}</span>`).join('')}
-          </div>
-        ` : ''}
-        <div class="border-t border-gray-200 pt-8">
-          <a href="/news/" class="inline-flex items-center gap-2 text-purple-600 hover:text-purple-800 transition-colors">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18" />
-            </svg>
-            ニュース一覧に戻る
-          </a>
         </div>
       `;
+    }).join('');
 
-      if (pageTitle) pageTitle.textContent = entry.title || 'ニュース';
-      if (pageDescription) pageDescription.textContent = entry.description || baseDescription;
-      if (breadcrumbCurrent) breadcrumbCurrent.textContent = entry.title || '詳細';
-
-      const description = entry.description || markdownToPlain(entry.body || '').slice(0, 120);
-      updateHeadForArticle(entry, description);
-      this.renderRelatedNews(entry.id);
-      this.setView('detail');
-    }
-
-    async incrementViews(id) {
-      if (!id) return;
-      try {
-        await update(ref(this.database, `cms/news/${id}`), { views: increment(1) });
-      } catch (error) {
-        console.warn('Failed to increment news views', error);
-      }
-    }
-
-    async loadRoute() {
-      this.setView('loading');
-      try {
-        const snapshot = await get(ref(this.database, 'cms/news'));
-        if (!snapshot.exists()) {
-          resetState();
-          this.setView('empty');
-          return;
-        }
-
-        const raw = snapshot.val();
-        this.state.allNews = Object.entries(raw)
-          .map(([id, value]) => normalizeNewsEntry(id, value))
-          .filter((entry) => entry && !entry.draft);
-
-        if (!this.state.allNews.length) {
-          resetState();
-          this.setView('empty');
-          return;
-        }
-
-        const route = this.getRouteInfo();
-        if (route.isDetail) {
-          const entry = this.state.allNews.find((item) => item.slug === route.slug || item.id === route.slug);
-          if (!entry) {
-            this.setView('notFound');
-            return;
-          }
-          this.renderDetail(entry);
-          await this.incrementViews(entry.id);
-          return;
-        }
-
-        const url = new URL(window.location.href);
-        const requestedCategory = url.searchParams.get('category');
-        const requestedSort = url.searchParams.get('sort');
-
-        this.state.currentCategory = requestedCategory || 'all';
-        if (requestedSort && ['date-desc', 'date-asc', 'priority', 'views'].includes(requestedSort)) {
-          this.state.currentSort = requestedSort;
-        } else {
-          this.state.currentSort = 'date-desc';
-        }
-        this.state.currentPage = 1;
-
-        this.renderListView();
-      } catch (error) {
-        console.error('Failed to load news:', error);
-        this.setView('notFound');
-      }
-    }
-
-    init() {
-      if (!this.elements.newsList || !this.elements.detailContent) {
-        return;
-      }
-      this.bindEvents();
-      this.loadRoute();
-    }
+    showingCountEl.textContent = String(Math.min(endIndex, state.filteredNews.length));
+    totalCountEl.textContent = String(state.filteredNews.length);
   }
 
-  function startNewsPage() {
-    const root = document.querySelector('[data-news-root]');
-    if (!root) {
-      if (window[RUNNER_KEY]) {
-        window[RUNNER_KEY].destroy();
-        window[RUNNER_KEY] = null;
-      }
+  function renderPagination() {
+    const { paginationEl } = getElements();
+    if (!paginationEl) return;
+
+    const totalPages = Math.ceil(state.filteredNews.length / ITEMS_PER_PAGE);
+    if (totalPages <= 1) {
+      paginationEl.innerHTML = '';
       return;
     }
 
-    if (window[RUNNER_KEY]) {
-      window[RUNNER_KEY].destroy();
+    const pages = Array.from({ length: totalPages }, (_, index) => index + 1);
+    paginationEl.innerHTML = `
+      <li>
+        <button class="pagination-prev px-3 py-2 rounded-md bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 ${state.currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}" ${state.currentPage === 1 ? 'disabled' : ''}>
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+      </li>
+      ${pages.map((page) => `
+        <li>
+          <button data-page="${page}" class="pagination-btn px-4 py-2 rounded-md ${page === state.currentPage ? 'bg-purple-600 text-white' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'}">
+            ${page}
+          </button>
+        </li>
+      `).join('')}
+      <li>
+        <button class="pagination-next px-3 py-2 rounded-md bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 ${state.currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}" ${state.currentPage === totalPages ? 'disabled' : ''}>
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </li>
+    `;
+  }
+
+  function renderListView() {
+    renderCategoryFilters();
+    state.filteredNews = applyFilters();
+
+    if (!state.filteredNews.length) {
+      const { showingCountEl, totalCountEl } = getElements();
+      if (showingCountEl) showingCountEl.textContent = '0';
+      if (totalCountEl) totalCountEl.textContent = '0';
+      toggleView('empty');
+      return;
     }
 
-    const page = new NewsPage(root);
-    window[RUNNER_KEY] = page;
-    page.init();
+    renderNewsList();
+    renderPagination();
+    updateHeadForList(state.filteredNews.length);
+
+    const { pageTitleEl, pageDescEl, breadcrumbCurrentEl } = getElements();
+    if (pageTitleEl) pageTitleEl.textContent = 'ニュース';
+    if (pageDescEl) pageDescEl.textContent = baseDescription;
+    if (breadcrumbCurrentEl) breadcrumbCurrentEl.textContent = 'ニュース';
+
+    toggleView('list');
   }
+
+  function renderRelatedNews(currentId) {
+    const { relatedNewsSectionEl, relatedNewsListEl } = getElements();
+    if (!relatedNewsSectionEl || !relatedNewsListEl) return;
+
+    const related = state.allNews
+      .filter((entry) => entry.id !== currentId)
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, 3);
+
+    if (!related.length) {
+      relatedNewsSectionEl.classList.add('hidden');
+      relatedNewsListEl.innerHTML = '';
+      return;
+    }
+
+    relatedNewsSectionEl.classList.remove('hidden');
+    relatedNewsListEl.innerHTML = related.map((news) => {
+      const internalSlug = news.slug || news.id;
+      const href = internalSlug ? `/news/${internalSlug}/` : '#news';
+      const publishedDate = news.date
+        ? new Date(news.date).toLocaleDateString('ja-JP')
+        : '';
+      const datetimeAttr = news.date ? new Date(news.date).toISOString() : '';
+      return `
+        <article class="bg-white/60 backdrop-blur-sm border border-purple-100/50 rounded-xl shadow-lg overflow-hidden hover:bg-white/80 transition-all duration-300">
+          ${news.image ? `
+            <a href="${href}" class="block aspect-video overflow-hidden bg-gray-100">
+              <img
+                src="${news.image}"
+                alt="${news.title || ''}"
+                class="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+                loading="lazy"
+              />
+            </a>` : ''}
+          <div class="p-5">
+            <h3 class="text-base font-bold text-gray-900 mb-2 line-clamp-2">
+              <a href="${href}" class="hover:text-purple-600 transition-colors">
+                ${news.title || ''}
+              </a>
+            </h3>
+            <p class="text-gray-600 text-sm mb-4 line-clamp-2 leading-relaxed">
+              ${news.description || ''}
+            </p>
+            <div class="flex items-center justify-between text-xs text-gray-500 mb-4">
+              ${publishedDate ? `<time datetime="${datetimeAttr}">${publishedDate}</time>` : '<span></span>'}
+              ${(news.categories || []).slice(0, 1).map((cat) => `<span class="px-2 py-0.5 bg-purple-100 text-purple-800 rounded-full">${cat}</span>`).join('')}
+            </div>
+            <div class="flex items-center justify-end">
+              <a href="${href}" class="text-purple-600 hover:text-purple-800 text-sm font-medium inline-flex items-center gap-1 group">
+                続きを読む
+                <svg class="w-3 h-3 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </a>
+            </div>
+          </div>
+        </article>
+      `;
+    }).join('');
+  }
+
+  function renderDetail(entry) {
+    const {
+      detailContentEl,
+      pageTitleEl,
+      pageDescEl,
+      breadcrumbCurrentEl,
+    } = getElements();
+
+    if (!detailContentEl) return;
+
+    const formattedDate = entry.date
+      ? new Date(entry.date).toLocaleDateString('ja-JP', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        })
+      : '';
+    const dateIso = entry.date ? new Date(entry.date).toISOString() : '';
+
+    const authors = Array.isArray(entry.authors)
+      ? entry.authors.join(', ')
+      : entry.authors || '';
+
+    const badgeHtml = `
+      <div class="flex items-center gap-3 mb-6 flex-wrap">
+        ${entry.featured ? `
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+            特集記事
+          </span>` : ''}
+        ${(entry.categories || []).map((category) => `
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+            ${category}
+          </span>
+        `).join('')}
+      </div>
+    `;
+
+    const metaHtml = `
+      <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+        ${formattedDate ? `
+          <time datetime="${dateIso}" class="flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            ${formattedDate}
+          </time>` : ''}
+        ${entry.source ? `
+          <span class="flex items-center gap-1">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm3.293 1.293a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 01-1.414-1.414L7.586 10 5.293 7.707a1 1 0 010-1.414zM11 12a1 1 0 100 2h3a1 1 0 100-2h-3z" />
+            </svg>
+            ${entry.source}
+          </span>` : ''}
+        ${typeof entry.views === 'number' ? `
+          <span class="flex items-center gap-1">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+              <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+            </svg>
+            ${entry.views} views
+          </span>` : ''}
+        ${authors ? `
+          <span class="flex items-center gap-1">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+            </svg>
+            ${authors}
+          </span>` : ''}
+      </div>
+    `;
+
+    const descriptionHtml = entry.description
+      ? `
+        <div class="mb-8 p-6 bg-gray-50 rounded-lg border-l-4 border-purple-500">
+          <p class="text-lg text-gray-700 leading-relaxed">
+            ${entry.description}
+          </p>
+        </div>
+      `
+      : '';
+
+    const imageHtml = entry.image
+      ? `
+        <figure class="mb-10">
+          <img
+            src="${entry.image}"
+            alt="${entry.imageAlt || entry.title || ''}"
+            class="w-full rounded-lg shadow-lg"
+            loading="eager"
+          />
+        </figure>
+      `
+      : '';
+
+    const bodyHtml = `
+      <div class="prose prose-lg max-w-none mb-10">
+        <div>${markdownToHtml(entry.body || '')}</div>
+      </div>
+    `;
+
+    const externalLinkHtml = entry.externalLink
+      ? `
+        <div class="mb-10 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <p class="text-sm text-blue-800 mb-2">外部リンク：</p>
+          <a href="${entry.externalLink}" target="_blank" rel="noopener noreferrer"
+             class="text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1">
+            ${entry.externalLink}
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </a>
+        </div>
+      `
+      : '';
+
+    const tagsHtml = (entry.tags || []).length
+      ? `
+        <div class="flex flex-wrap gap-2 mb-10">
+          ${(entry.tags || []).map((tag) => `
+            <span class="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">
+              #${tag}
+            </span>
+          `).join('')}
+        </div>
+      `
+      : '';
+
+    const detailContentEl = getElements().detailContentEl;
+    if (!detailContentEl) return;
+
+    detailContentEl.innerHTML = `
+      <header class="mb-10">
+        ${badgeHtml}
+        <h1 class="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
+          ${entry.title || ''}
+        </h1>
+        ${metaHtml}
+      </header>
+      ${imageHtml}
+      ${descriptionHtml}
+      ${bodyHtml}
+      ${externalLinkHtml}
+      ${tagsHtml}
+      <div class="border-t border-gray-200 pt-8">
+        <a href="/news/" class="inline-flex items-center gap-2 text-purple-600 hover:text-purple-800 transition-colors">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18" />
+          </svg>
+          ニュース一覧に戻る
+        </a>
+      </div>
+    `;
+
+    const { pageTitleEl, pageDescEl, breadcrumbCurrentEl } = getElements();
+    if (pageTitleEl) pageTitleEl.textContent = entry.title || 'ニュース';
+    if (pageDescEl) pageDescEl.textContent = entry.description || baseDescription;
+    if (breadcrumbCurrentEl) breadcrumbCurrentEl.textContent = entry.title || '詳細';
+
+    const description = entry.description || markdownToPlain(entry.body || '').slice(0, 120);
+    updateHeadForArticle(entry, description);
+    renderRelatedNews(entry.id);
+    toggleView('detail');
+  }
+
+  async function incrementViews(id) {
+    if (!id) return;
+    try {
+      const targetRef = ref(database, `cms/news/${id}`);
+      await update(targetRef, { views: increment(1) });
+    } catch (error) {
+      console.warn('Failed to increment news views:', error);
+    }
+  }
+
+  function normalizeEntry(id, value) {
+    if (!value || typeof value !== 'object') return null;
+    const ensureString = (input) => (typeof input === 'string' ? input : input ? String(input) : '');
+    const ensureArray = (input) => Array.isArray(input)
+      ? input.filter((item) => item != null).map((item) => String(item))
+      : input
+        ? [String(input)]
+        : [];
+    const ensureNumber = (input, fallback = 0) => {
+      if (typeof input === 'number' && Number.isFinite(input)) return input;
+      const parsed = Number(input);
+      return Number.isFinite(parsed) ? parsed : fallback;
+    };
+
+    return {
+      id,
+      slug: ensureString(value.slug) || id,
+      title: ensureString(value.title),
+      description: ensureString(value.description),
+      date: ensureString(value.date),
+      image: ensureString(value.image),
+      imageAlt: ensureString(value.imageAlt) || ensureString(value.title),
+      authors: ensureArray(value.authors),
+      categories: ensureArray(value.categories),
+      tags: ensureArray(value.tags),
+      draft: Boolean(value.draft),
+      body: ensureString(value.body),
+      priority: ensureNumber(value.priority, 0),
+      featured: Boolean(value.featured),
+      externalLink: ensureString(value.externalLink),
+      source: ensureString(value.source),
+      views: ensureNumber(value.views, 0),
+      publishedAt: ensureString(value.publishedAt),
+      updatedAt: ensureString(value.updatedAt),
+      createdAt: ensureString(value.createdAt),
+    };
+  }
+
+  async function loadNews(routeInfo) {
+    toggleView('loading');
+    try {
+      const snapshot = await get(ref(database, 'cms/news'));
+      if (!snapshot.exists()) {
+        resetState();
+        toggleView('empty');
+        return;
+      }
+
+      const raw = snapshot.val();
+      state.allNews = Object.entries(raw)
+        .map(([id, value]) => normalizeEntry(id, value))
+        .filter((entry) => entry && !entry.draft);
+
+      if (!state.allNews.length) {
+        resetState();
+        toggleView('empty');
+        return;
+      }
+
+      if (routeInfo.isDetail) {
+        const entry = state.allNews.find(
+          (item) => item.slug === routeInfo.slug || item.id === routeInfo.slug,
+        );
+        if (!entry) {
+          toggleView('notFound');
+          return;
+        }
+        renderDetail(entry);
+        await incrementViews(entry.id);
+        return;
+      }
+
+      const url = new URL(window.location.href);
+      const requestedCategory = url.searchParams.get('category');
+      const requestedSort = url.searchParams.get('sort');
+
+      state.currentCategory = requestedCategory || 'all';
+      if (requestedSort && ['date-desc', 'date-asc', 'priority', 'views'].includes(requestedSort)) {
+        state.currentSort = requestedSort;
+      } else {
+        state.currentSort = 'date-desc';
+      }
+      state.currentPage = 1;
+
+      renderListView();
+    } catch (error) {
+      console.error('Failed to load news:', error);
+      toggleView('notFound');
+    }
+  }
+
+  function onCategoryFilterClick(event) {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) return;
+    if (!target.classList.contains('category-filter')) return;
+
+    state.currentCategory = target.dataset.category || 'all';
+    state.currentPage = 1;
+    renderListView();
+
+    const url = new URL(window.location.href);
+    if (state.currentCategory === 'all') {
+      url.searchParams.delete('category');
+    } else {
+      url.searchParams.set('category', state.currentCategory);
+    }
+    history.replaceState({}, '', url.toString());
+  }
+
+  function onSortChange(event) {
+    const target = event.target;
+    if (!(target instanceof HTMLSelectElement)) return;
+    state.currentSort = target.value;
+    state.currentPage = 1;
+    renderListView();
+  }
+
+  function onPaginationClick(event) {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) return;
+    const button = target.closest('button');
+    if (!(button instanceof HTMLButtonElement) || button.disabled) return;
+
+    if (button.classList.contains('pagination-prev')) {
+      state.currentPage = Math.max(1, state.currentPage - 1);
+    } else if (button.classList.contains('pagination-next')) {
+      const totalPages = Math.ceil(state.filteredNews.length / ITEMS_PER_PAGE);
+      state.currentPage = Math.min(totalPages, state.currentPage + 1);
+    } else if (button.dataset.page) {
+      state.currentPage = Number(button.dataset.page);
+    }
+
+    renderListView();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function resetEventBindings() {
+    eventController.abort();
+    eventController = new AbortController();
+  }
+
+  function bindEvents() {
+    resetEventBindings();
+    const signal = eventController.signal;
+    const { categoryFiltersEl, sortSelectEl, paginationEl } = getElements();
+
+    categoryFiltersEl?.addEventListener('click', onCategoryFilterClick, { signal });
+    sortSelectEl?.addEventListener('change', onSortChange, { signal });
+    paginationEl?.addEventListener('click', onPaginationClick, { signal });
+  }
+
+  const start = () => {
+    const root = getRoot();
+    if (!root) {
+      resetEventBindings();
+      return;
+    }
+
+    const { loadingEl, listViewEl, detailViewEl } = getElements();
+    if (!loadingEl || !listViewEl || !detailViewEl) {
+      return;
+    }
+
+    resetState();
+    bindEvents();
+    loadNews(getRouteInfo());
+  };
+
+  if (window[RUNNER_KEY]) {
+    document.removeEventListener('astro:page-load', window[RUNNER_KEY]);
+  }
+
+  window[RUNNER_KEY] = () => start();
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', startNewsPage, { once: true });
+    document.addEventListener('DOMContentLoaded', window[RUNNER_KEY], { once: true });
   } else {
-    startNewsPage();
+    window[RUNNER_KEY]();
   }
 
-  document.addEventListener('astro:page-load', startNewsPage);
+  document.addEventListener('astro:page-load', window[RUNNER_KEY]);
 </script>
-
 
 <style>
   .line-clamp-2 {
