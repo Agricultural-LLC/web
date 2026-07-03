@@ -16,7 +16,9 @@ function initializeFirebase() {
     };
 
     if (!firebaseConfig.apiKey || !firebaseConfig.authDomain) {
-      console.error("Firebase configuration is incomplete. Please set environment variables.");
+      console.error(
+        "Firebase configuration is incomplete. Please set environment variables.",
+      );
       return null;
     }
 
@@ -65,14 +67,14 @@ export async function getFirebaseNewsEntries(): Promise<NewsEntry[]> {
     }
 
     const data = snapshot.val();
-    if (!data || typeof data !== 'object') {
+    if (!data || typeof data !== "object") {
       return [];
     }
 
     const entries: NewsEntry[] = [];
 
     for (const [id, value] of Object.entries(data)) {
-      if (!value || typeof value !== 'object') continue;
+      if (!value || typeof value !== "object") continue;
       const post = value as FirebaseNewsEntry;
 
       if (!post.draft) {
@@ -96,9 +98,15 @@ export async function getFirebaseNewsEntries(): Promise<NewsEntry[]> {
           externalLink: post.externalLink,
           source: post.source,
           views: post.views || 0,
-          publishedAt: post.publishedAt ? new Date(post.publishedAt) : new Date(post.date),
-          updatedAt: post.updatedAt ? new Date(post.updatedAt) : new Date(post.createdAt || post.date),
-          createdAt: post.createdAt ? new Date(post.createdAt) : new Date(post.date),
+          publishedAt: post.publishedAt
+            ? new Date(post.publishedAt)
+            : new Date(post.date),
+          updatedAt: post.updatedAt
+            ? new Date(post.updatedAt)
+            : new Date(post.createdAt || post.date),
+          createdAt: post.createdAt
+            ? new Date(post.createdAt)
+            : new Date(post.date),
         });
       }
     }
@@ -137,12 +145,12 @@ export async function getFirebaseNewsEntry(
     }
 
     const data = snapshot.val();
-    if (!data || typeof data !== 'object') {
+    if (!data || typeof data !== "object") {
       return null;
     }
 
     for (const [id, value] of Object.entries(data)) {
-      if (!value || typeof value !== 'object') continue;
+      if (!value || typeof value !== "object") continue;
       const post = value as FirebaseNewsEntry;
       if (post.slug === slug && !post.draft) {
         return {
@@ -164,9 +172,15 @@ export async function getFirebaseNewsEntry(
           externalLink: post.externalLink,
           source: post.source,
           views: post.views || 0,
-          publishedAt: post.publishedAt ? new Date(post.publishedAt) : new Date(post.date),
-          updatedAt: post.updatedAt ? new Date(post.updatedAt) : new Date(post.createdAt || post.date),
-          createdAt: post.createdAt ? new Date(post.createdAt) : new Date(post.date),
+          publishedAt: post.publishedAt
+            ? new Date(post.publishedAt)
+            : new Date(post.date),
+          updatedAt: post.updatedAt
+            ? new Date(post.updatedAt)
+            : new Date(post.createdAt || post.date),
+          createdAt: post.createdAt
+            ? new Date(post.createdAt)
+            : new Date(post.date),
         };
       }
     }
@@ -179,25 +193,27 @@ export async function getFirebaseNewsEntry(
 }
 
 // トップニュース（特集記事）を取得
-export async function getFeaturedNewsEntries(limit: number = 3): Promise<NewsEntry[]> {
+export async function getFeaturedNewsEntries(
+  limit: number = 3,
+): Promise<NewsEntry[]> {
   try {
     const allEntries = await getFirebaseNewsEntries();
-    
+
     // 特集記事を優先度順で取得
     const featuredEntries = allEntries
-      .filter(entry => entry.featured)
+      .filter((entry) => entry.featured)
       .slice(0, limit);
-    
+
     // 特集記事が足りない場合は、優先度の高い記事で補完
     if (featuredEntries.length < limit) {
       const remainingLimit = limit - featuredEntries.length;
       const otherEntries = allEntries
-        .filter(entry => !entry.featured)
+        .filter((entry) => !entry.featured)
         .slice(0, remainingLimit);
-      
+
       return [...featuredEntries, ...otherEntries];
     }
-    
+
     return featuredEntries;
   } catch (error) {
     console.error("Error loading featured news entries:", error);
@@ -206,7 +222,9 @@ export async function getFeaturedNewsEntries(limit: number = 3): Promise<NewsEnt
 }
 
 // 最新ニュースを取得
-export async function getLatestNewsEntries(limit: number = 5): Promise<NewsEntry[]> {
+export async function getLatestNewsEntries(
+  limit: number = 5,
+): Promise<NewsEntry[]> {
   try {
     const allEntries = await getFirebaseNewsEntries();
     return allEntries.slice(0, limit);
@@ -266,32 +284,29 @@ export async function searchFirebaseNewsEntries(
 ): Promise<NewsEntry[]> {
   try {
     let entries = await getFirebaseNewsEntries();
-    
+
     // カテゴリフィルタ
     if (category) {
-      entries = entries.filter(entry => 
-        entry.categories.includes(category)
-      );
+      entries = entries.filter((entry) => entry.categories.includes(category));
     }
-    
+
     // タグフィルタ
     if (tag) {
-      entries = entries.filter(entry => 
-        entry.tags.includes(tag)
-      );
+      entries = entries.filter((entry) => entry.tags.includes(tag));
     }
-    
+
     // テキスト検索
     if (query) {
       const searchQuery = query.toLowerCase();
-      entries = entries.filter(entry => 
-        entry.title.toLowerCase().includes(searchQuery) ||
-        entry.description.toLowerCase().includes(searchQuery) ||
-        entry.body?.toLowerCase().includes(searchQuery) ||
-        entry.tags.some(tag => tag.toLowerCase().includes(searchQuery))
+      entries = entries.filter(
+        (entry) =>
+          entry.title.toLowerCase().includes(searchQuery) ||
+          entry.description.toLowerCase().includes(searchQuery) ||
+          entry.body?.toLowerCase().includes(searchQuery) ||
+          entry.tags.some((tag) => tag.toLowerCase().includes(searchQuery)),
       );
     }
-    
+
     return entries;
   } catch (error) {
     console.error("Error searching news entries:", error);

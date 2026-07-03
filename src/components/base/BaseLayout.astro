@@ -19,11 +19,11 @@ export interface Props {
 const { title, description, image, noindex, canonical } = Astro.props;
 const baseURL = import.meta.env.BASE_URL;
 
-const siteTitle = "農業合同会社";
-const siteDescription = "北海道の農業DXコンサルティング。農業合同会社がドローン・IoT技術で農業効率化を実現。藤井代表（農業DXスペシャリスト）が地域農家をサポート。人・技術・農業をつなぐプラットフォーム。";
-const siteImage = "/logo.png";
-const siteAuthor = "農業合同会社";
-const baseUrl = "https://agricultural-llc.web.app";
+const siteTitle = "remono合同会社";
+const siteDescription = "北海道の農業DXコンサルティング。remono合同会社がドローン・IoT技術で農業効率化を実現。藤井代表（農業DXスペシャリスト）が地域農家をサポート。人・技術・農業をつなぐプラットフォーム。";
+const siteImage = "/og/default.png";
+const siteAuthor = "remono合同会社";
+const baseUrl = "https://remono.co.jp";
 ---
 
 <!DOCTYPE html>
@@ -49,11 +49,12 @@ const baseUrl = "https://agricultural-llc.web.app";
     />
     <link
       rel="icon"
-      type="image/png"
-      href={`${baseURL}logo.png`}
+      type="image/svg+xml"
+      href={`${baseURL}logo.svg`}
     />
     
     <link rel="sitemap" href={`${baseURL}sitemap-index.xml`} />
+    <link rel="manifest" href={`${baseURL}site.webmanifest`} />
     
     <!-- Google Fonts for Japanese -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -100,7 +101,7 @@ const baseUrl = "https://agricultural-llc.web.app";
     <meta property="og:type" content="website" />
     <meta
       property="og:url"
-      content={`${baseUrl}/${Astro.url.pathname.replace("/", "")}`}
+      content={new URL(Astro.url.pathname, baseUrl).toString()}
     />
     <meta
       property="og:image"
@@ -123,11 +124,11 @@ const baseUrl = "https://agricultural-llc.web.app";
     {
       "@context": "https://schema.org",
       "@type": "LocalBusiness",
-      "name": "農業合同会社",
-      "alternateName": "美唄市農業DXコンサルティング",
+      "name": "remono合同会社",
+      "alternateName": "北海道農業DXコンサルティング",
       "description": "美唄市専門の農業DXコンサルティング。スマート農業加速化プロジェクト連携。",
-      "url": "https://agricultural-llc.web.app",
-      "image": "https://agricultural-llc.web.app/logo.png",
+      "url": "https://remono.co.jp",
+      "image": "https://remono.co.jp/og/default.png",
       "address": {
         "@type": "PostalAddress",
         "streetAddress": "北7条西4丁目1番地1",

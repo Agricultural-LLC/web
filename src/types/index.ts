@@ -18,6 +18,7 @@ export interface SearchableEntry {
 
 // Heading hierarchy for table of contents
 export interface HeadingHierarchy extends MarkdownHeading {
+  subheadings: HeadingHierarchy[];
   children?: HeadingHierarchy[];
 }
 
@@ -127,7 +128,11 @@ export interface NewsEntry {
   createdAt?: Date; // Creation timestamp
 }
 
-export type SearchableEntryUnion = AboutEntry | BlogEntry | NewsEntry | HomeEntry;
+export type SearchableEntryUnion =
+  | AboutEntry
+  | BlogEntry
+  | NewsEntry
+  | HomeEntry;
 
 export type SocialLinks = {
   discord?: string;

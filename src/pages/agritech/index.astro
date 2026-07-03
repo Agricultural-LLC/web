@@ -3,7 +3,8 @@ import BaseLayout from "@components/base/BaseLayout.astro";
 import agritechIcon from "@assets/blog/agritech.png";
 import { Image } from "astro:assets";
 
-const siteName = "農業合同会社 Webサイト";
+const siteName = "remono合同会社 Webサイト";
+const siteOrigin = "https://remono.co.jp";
 const baseTitle = "農てっく!";
 const baseDescription =
   "スマート農業やデジタル技術を活用した農業の最新情報をお届けします";
@@ -140,7 +141,7 @@ const firebaseConfig = firebasePublicConfig;
 
 <script
   type="module"
-  define:vars={{ firebaseConfig, baseDescription, baseTitle, siteName }}
+  define:vars={{ firebaseConfig, baseDescription, baseTitle, siteName, siteOrigin }}
 >
   import { marked } from "https://cdn.jsdelivr.net/npm/marked@11.1.1/lib/marked.esm.js";
 import { getApp, getApps, initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -290,7 +291,7 @@ import { get, getDatabase, ref } from "https://www.gstatic.com/firebasejs/10.7.1
       canonical.setAttribute("rel", "canonical");
       document.head.appendChild(canonical);
     }
-    canonical.setAttribute("href", `${window.location.origin}/agritech/`);
+    canonical.setAttribute("href", `${siteOrigin}/agritech/`);
 
     removeStructuredData();
   }
@@ -314,7 +315,7 @@ import { get, getDatabase, ref } from "https://www.gstatic.com/firebasejs/10.7.1
       canonical.setAttribute("rel", "canonical");
       document.head.appendChild(canonical);
     }
-    canonical.setAttribute("href", `${window.location.origin}/agritech/${entry.slug || entry.id}/`);
+    canonical.setAttribute("href", `${siteOrigin}/agritech/${entry.slug || entry.id}/`);
 
     removeStructuredData();
     const primaryDate = entry.date ? new Date(entry.date).toISOString() : undefined;
@@ -332,12 +333,12 @@ import { get, getDatabase, ref } from "https://www.gstatic.com/firebasejs/10.7.1
         name: siteName,
         logo: {
           '@type': 'ImageObject',
-          url: `${window.location.origin}/logo.png`,
+          url: `${siteOrigin}/logo.png`,
         },
       },
       mainEntityOfPage: {
         '@type': 'WebPage',
-        '@id': `${window.location.origin}/agritech/${entry.slug || entry.id}/`,
+        '@id': `${siteOrigin}/agritech/${entry.slug || entry.id}/`,
       },
     };
 

@@ -8,8 +8,7 @@ export const firebasePublicConfig = {
   databaseURL:
     import.meta.env.PUBLIC_FIREBASE_DATABASE_URL ||
     "https://agricultural-llc-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId:
-    import.meta.env.PUBLIC_FIREBASE_PROJECT_ID || "agricultural-llc",
+  projectId: import.meta.env.PUBLIC_FIREBASE_PROJECT_ID || "agricultural-llc",
   storageBucket:
     import.meta.env.PUBLIC_FIREBASE_STORAGE_BUCKET ||
     "agricultural-llc.firebasestorage.app",
@@ -19,5 +18,3 @@ export const firebasePublicConfig = {
     import.meta.env.PUBLIC_FIREBASE_APP_ID ||
     "1:293681935404:web:188089a29ff3da05490d89",
 };
-
-

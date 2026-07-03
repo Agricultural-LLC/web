@@ -2,11 +2,13 @@ import type { MarkdownHeading } from "astro";
 import type { HeadingHierarchy } from "@/types/index";
 
 // Create headings for table of contents
-export function createHeadingHierarchy(headings: MarkdownHeading[]) {
+export function createHeadingHierarchy(
+  headings: MarkdownHeading[],
+): HeadingHierarchy[] {
   const topLevelHeadings: HeadingHierarchy[] = [];
 
   headings.forEach((heading) => {
-    const h = {
+    const h: HeadingHierarchy = {
       ...heading,
       subheadings: [],
     };

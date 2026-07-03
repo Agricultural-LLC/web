@@ -11,34 +11,48 @@ import remarkToc from "remark-toc";
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://agricultural-llc.web.app",
+  site: "https://remono.co.jp",
   output: "static",
   prefetch: {
-    prefetchAll: true
+    prefetchAll: true,
   },
   vite: {
     optimizeDeps: {
-      include: ['fuse.js']
-    }
+      include: ["fuse.js"],
+    },
   },
-  integrations: [react(), sitemap(), tailwind({
-    config: {
-      applyBaseStyles: false
-    }
-  }), AutoImport({
-    imports: ["@components/common/Button.astro"]
-  }), mdx()],
+  integrations: [
+    react(),
+    sitemap(),
+    tailwind({
+      config: {
+        applyBaseStyles: false,
+      },
+    }),
+    AutoImport({
+      imports: ["@components/common/Button.astro"],
+    }),
+    mdx(),
+  ],
   markdown: {
-    remarkPlugins: [remarkToc, [remarkCollapse, {
-      test: "Table of contents"
-    }], remarkMath],
+    remarkPlugins: [
+      remarkToc,
+      [
+        remarkCollapse,
+        {
+          test: "Table of contents",
+        },
+      ],
+      remarkMath,
+    ],
     rehypePlugins: [[rehypeKatex, {}]],
     shikiConfig: {
-      themes: { // https://shiki.style/themes
+      themes: {
+        // https://shiki.style/themes
         light: "light-plus",
         dark: "dark-plus",
-      } 
+      },
     },
-    extendDefaultPlugins: true
+    extendDefaultPlugins: true,
   },
 });

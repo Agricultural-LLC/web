@@ -2,69 +2,69 @@ name: Deploy to Firebase Hosting
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: npm ci
-    
-    - name: Install Functions dependencies
-      run: cd functions && npm ci
-    
-    - name: Create environment file
-      run: |
-        echo "FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}" >> .env
-        echo "FIREBASE_PRIVATE_KEY='${{ secrets.FIREBASE_PRIVATE_KEY }}'" >> .env
-        echo "FIREBASE_CLIENT_EMAIL=${{ secrets.FIREBASE_CLIENT_EMAIL }}" >> .env
-        echo "PUBLIC_FIREBASE_API_KEY=${{ secrets.PUBLIC_FIREBASE_API_KEY }}" >> .env
-        echo "PUBLIC_FIREBASE_AUTH_DOMAIN=agricultural-llc.firebaseapp.com" >> .env
-        echo "PUBLIC_FIREBASE_DATABASE_URL=https://agricultural-llc-default-rtdb.asia-southeast1.firebasedatabase.app" >> .env
-        echo "PUBLIC_FIREBASE_PROJECT_ID=agricultural-llc" >> .env
-        echo "PUBLIC_FIREBASE_STORAGE_BUCKET=agricultural-llc.firebasestorage.app" >> .env
-        echo "PUBLIC_FIREBASE_MESSAGING_SENDER_ID=${{ secrets.PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}" >> .env
-        echo "PUBLIC_FIREBASE_APP_ID=${{ secrets.PUBLIC_FIREBASE_APP_ID }}" >> .env
-        echo "GH_PAT=${{ secrets.GH_PAT }}" >> .env
-        echo "GH_OWNER=${{ secrets.GH_OWNER }}" >> .env
-        echo "GH_REPO=${{ secrets.GH_REPO }}" >> .env
-        echo "GH_BRANCH=main" >> .env
-        echo "API_KEY=${{ secrets.API_KEY }}" >> .env
-        echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
-        echo "PUBLIC_SITE_URL=https://agricultural-llc.web.app" >> .env
-        echo "PUBLIC_API_URL=https://agricultural-llc.web.app/api" >> .env
 
-    - name: Build Astro site
-      run: npm run build
-      env:
-        NODE_ENV: production
-    
-    - name: Install Firebase CLI
-      run: npm install -g firebase-tools
-      
-    - name: Deploy Functions and Hosting to Firebase
-      env:
-        FIREBASE_SERVICE_ACCOUNT_AGRICULTURAL_LLC: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_AGRICULTURAL_LLC }}
-      run: |
-        echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_AGRICULTURAL_LLC }}' > $HOME/firebase-service-account.json
-        export GOOGLE_APPLICATION_CREDENTIALS="$HOME/firebase-service-account.json"
-        firebase deploy --only hosting --project agricultural-llc
-        
-    - name: Notify deployment success
-      if: success()
-      run: |
-        echo "🚀 Deployment successful!"
-        echo "Site URL: https://agricultural-llc.web.app"
-        echo "Admin URL: https://agricultural-llc.web.app/admin"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Functions dependencies
+        run: cd functions && npm ci
+
+      - name: Create environment file
+        run: |
+          echo "FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}" >> .env
+          echo "FIREBASE_PRIVATE_KEY='${{ secrets.FIREBASE_PRIVATE_KEY }}'" >> .env
+          echo "FIREBASE_CLIENT_EMAIL=${{ secrets.FIREBASE_CLIENT_EMAIL }}" >> .env
+          echo "PUBLIC_FIREBASE_API_KEY=${{ secrets.PUBLIC_FIREBASE_API_KEY }}" >> .env
+          echo "PUBLIC_FIREBASE_AUTH_DOMAIN=agricultural-llc.firebaseapp.com" >> .env
+          echo "PUBLIC_FIREBASE_DATABASE_URL=https://agricultural-llc-default-rtdb.asia-southeast1.firebasedatabase.app" >> .env
+          echo "PUBLIC_FIREBASE_PROJECT_ID=agricultural-llc" >> .env
+          echo "PUBLIC_FIREBASE_STORAGE_BUCKET=agricultural-llc.firebasestorage.app" >> .env
+          echo "PUBLIC_FIREBASE_MESSAGING_SENDER_ID=${{ secrets.PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}" >> .env
+          echo "PUBLIC_FIREBASE_APP_ID=${{ secrets.PUBLIC_FIREBASE_APP_ID }}" >> .env
+          echo "GH_PAT=${{ secrets.GH_PAT }}" >> .env
+          echo "GH_OWNER=${{ secrets.GH_OWNER }}" >> .env
+          echo "GH_REPO=${{ secrets.GH_REPO }}" >> .env
+          echo "GH_BRANCH=main" >> .env
+          echo "API_KEY=${{ secrets.API_KEY }}" >> .env
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+          echo "PUBLIC_SITE_URL=https://remono.co.jp" >> .env
+          echo "PUBLIC_API_URL=https://remono.co.jp/api" >> .env
+
+      - name: Build Astro site
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Deploy Functions and Hosting to Firebase
+        env:
+          FIREBASE_SERVICE_ACCOUNT_AGRICULTURAL_LLC: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_AGRICULTURAL_LLC }}
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_AGRICULTURAL_LLC }}' > $HOME/firebase-service-account.json
+          export GOOGLE_APPLICATION_CREDENTIALS="$HOME/firebase-service-account.json"
+          firebase deploy --only functions,hosting --project agricultural-llc
+
+      - name: Notify deployment success
+        if: success()
+        run: |
+          echo "🚀 Deployment successful!"
+          echo "Site URL: https://remono.co.jp"
+          echo "Admin URL: https://remono.co.jp/admin"

@@ -1,4 +1,4 @@
-import type { BlogEntry } from '@/types';
+import type { BlogEntry } from "@/types";
 
 interface SimilarItem {
   id: string;
@@ -18,19 +18,19 @@ interface SimilarItem {
 const findSimilarItems = (
   currentItem: SimilarItem,
   allItems: SimilarItem[],
-  id: string
+  id: string,
 ): SimilarItem[] => {
   const categories = currentItem.data?.categories || [];
   const tags = currentItem.data?.tags || [];
 
   // Filter by categories
   const filterByCategories = allItems.filter((item) =>
-    categories.some((category) => item.data.categories?.includes(category))
+    categories.some((category) => item.data.categories?.includes(category)),
   );
 
   // Filter by tags
   const filterByTags = allItems.filter((item) =>
-    tags.some((tag) => item.data.tags?.includes(tag))
+    tags.some((tag) => item.data.tags?.includes(tag)),
   );
 
   // Merge filtered items
@@ -40,27 +40,28 @@ const findSimilarItems = (
   const filteredByID = mergedItems.filter((item) => item.id !== id);
 
   // Count instances of each item
-  const itemCount = filteredByID.reduce((accumulator, item) => {
-    accumulator[item.id] = (accumulator[item.id] || 0) + 1;
-    return accumulator;
-  }, {} as Record<string, number>);
+  const itemCount = filteredByID.reduce(
+    (accumulator, item) => {
+      accumulator[item.id] = (accumulator[item.id] || 0) + 1;
+      return accumulator;
+    },
+    {} as Record<string, number>,
+  );
 
   // Sort items by number of instances
   const sortedItems = filteredByID.sort(
-    (a, b) => itemCount[b.id] - itemCount[a.id]
+    (a, b) => itemCount[b.id] - itemCount[a.id],
   );
 
   // Remove items with fewer than 2 instances
-  const filteredItems = sortedItems.filter(
-    (item) => itemCount[item.id] > 1
-  );
+  const filteredItems = sortedItems.filter((item) => itemCount[item.id] > 1);
 
   // Remove duplicates
-  const uniqueItems = [
-    ...new Set(filteredItems.map((item) => item.id)),
-  ].map((itemId) => {
-    return filteredItems.find((item) => item.id === itemId);
-  }).filter(Boolean) as SimilarItem[];
+  const uniqueItems = [...new Set(filteredItems.map((item) => item.id))]
+    .map((itemId) => {
+      return filteredItems.find((item) => item.id === itemId);
+    })
+    .filter(Boolean) as SimilarItem[];
 
   return uniqueItems;
 };
