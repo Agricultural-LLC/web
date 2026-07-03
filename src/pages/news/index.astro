@@ -1,7 +1,8 @@
 ---
 import BaseLayout from "@components/base/BaseLayout.astro";
 
-const siteName = "農業合同会社 Webサイト";
+const siteName = "remono合同会社 Webサイト";
+const siteOrigin = "https://remono.co.jp";
 const baseTitle = "ニュース";
 const baseDescription = "農業DXに関する最新情報をお届けします";
 
@@ -144,7 +145,7 @@ const firebaseConfig = firebasePublicConfig;
   </section>
 </BaseLayout>
 
-<script type="module" define:vars={{ firebaseConfig, baseDescription, baseTitle, siteName }}>
+<script type="module" define:vars={{ firebaseConfig, baseDescription, baseTitle, siteName, siteOrigin }}>
   import { marked } from 'https://cdn.jsdelivr.net/npm/marked@11.1.1/lib/marked.esm.js';
 import { getApp, getApps, initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import {
@@ -295,12 +296,12 @@ update,
         name: siteName,
         logo: {
           '@type': 'ImageObject',
-          url: `${window.location.origin}/logo.png`,
+          url: `${siteOrigin}/logo.png`,
         },
       },
       mainEntityOfPage: {
         '@type': 'WebPage',
-        '@id': `${window.location.origin}/news/${entry.slug || entry.id}/`,
+        '@id': `${siteOrigin}/news/${entry.slug || entry.id}/`,
       },
     };
 
@@ -319,7 +320,7 @@ update,
       itemListElement: entries.map((entry, index) => ({
         '@type': 'ListItem',
         position: index + 1,
-        url: `${window.location.origin}/news/${entry.slug || entry.id}/`,
+        url: `${siteOrigin}/news/${entry.slug || entry.id}/`,
         name: entry.title,
       })),
     };
@@ -346,7 +347,7 @@ update,
       canonical.setAttribute('rel', 'canonical');
       document.head.appendChild(canonical);
     }
-    canonical.setAttribute('href', `${window.location.origin}/news/`);
+    canonical.setAttribute('href', `${siteOrigin}/news/`);
 
     removeStructuredData();
     injectItemListStructuredData(state.filteredNews.slice(0, Math.min(10, state.filteredNews.length)));
@@ -372,7 +373,7 @@ update,
       canonical.setAttribute('rel', 'canonical');
       document.head.appendChild(canonical);
     }
-    canonical.setAttribute('href', `${window.location.origin}/news/${entry.slug || entry.id}/`);
+    canonical.setAttribute('href', `${siteOrigin}/news/${entry.slug || entry.id}/`);
 
     removeStructuredData();
     injectArticleStructuredData(entry, description);

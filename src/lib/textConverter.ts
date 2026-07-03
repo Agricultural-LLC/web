@@ -1,3 +1,4 @@
+import type { MarkdownHeading } from "astro";
 import { slug } from "github-slugger";
 import { marked } from "marked";
 

@@ -1,8 +1,8 @@
 {
   "name": "agricultural-dx-website",
   "version": "1.0.0",
-  "description": "農業合同会社 Webサイト - 人と技術と農業をつなぐプラットフォーム",
-  "author": "農業合同会社",
+  "description": "remono合同会社 Webサイト - 人と技術と農業をつなぐプラットフォーム",
+  "author": "remono合同会社",
   "license": "MIT",
   "packageManager": "npm@10.8.2",
   "scripts": {
