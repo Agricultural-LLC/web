@@ -1,11 +1,4 @@
-import {
-  get,
-  push,
-  ref,
-  set,
-  update,
-  type Database,
-} from "firebase/database";
+import { get, push, ref, set, update, type Database } from "firebase/database";
 import { showImagePreview } from "./imageUpload";
 import {
   hideLoading,
@@ -193,9 +186,7 @@ function buildPostData(
   };
   if (!config.enableNewsFields) return withTimestamp;
 
-  const withViews = isCreate
-    ? { ...withTimestamp, views: 0 }
-    : withTimestamp;
+  const withViews = isCreate ? { ...withTimestamp, views: 0 } : withTimestamp;
   if (formData.draft) return withViews;
   return { ...withViews, publishedAt: new Date().toISOString() };
 }
@@ -207,13 +198,15 @@ async function persistPost(
   postData: Record<string, unknown>,
   formData: PostFormData,
   isDraft: boolean,
-): Promise<{ type: "create" | "update"; isDraft: boolean; title: string; slug?: string }> {
+): Promise<{
+  type: "create" | "update";
+  isDraft: boolean;
+  title: string;
+  slug?: string;
+}> {
   if (state.postId) {
     showInfo("更新中", `${config.itemLabel}データを更新しています...`);
-    await update(
-      ref(database, `${config.dbPath}/${state.postId}`),
-      postData,
-    );
+    await update(ref(database, `${config.dbPath}/${state.postId}`), postData);
     return { type: "update", isDraft, title: formData.title };
   }
 
@@ -271,7 +264,9 @@ export async function savePost(
   isDraft: boolean,
 ): Promise<void> {
   showLoading(
-    isDraft ? "下書きを保存しています..." : `${config.itemLabel}を公開しています...`,
+    isDraft
+      ? "下書きを保存しています..."
+      : `${config.itemLabel}を公開しています...`,
   );
 
   try {

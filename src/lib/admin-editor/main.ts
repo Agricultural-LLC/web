@@ -101,9 +101,7 @@ function initializeEditorFlow(
   database: Parameters<typeof loadPost>[2],
   showEditor: () => void,
 ): void {
-  byId<HTMLInputElement>("date").value = new Date()
-    .toISOString()
-    .split("T")[0];
+  byId<HTMLInputElement>("date").value = new Date().toISOString().split("T")[0];
 
   const urlParams = new URLSearchParams(window.location.search);
   state.postId = urlParams.get("id");

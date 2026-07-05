@@ -69,7 +69,10 @@ function convertBasicMarkdown(markdown: string): string {
     .replace(/^# (.*$)/gm, "<h1>$1</h1>")
     .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.*?)\*/g, "<em>$1</em>")
-    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+    .replace(
+      /\[([^\]]+)\]\(([^)\s]+)\)/g,
+      '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>',
+    )
     .replace(
       /!\[([^\]]*)\]\((https?:\/\/[^)\s]+)\)/g,
       '<img src="$2" alt="$1" style="max-width: 100%; height: auto; border-radius: 4px; margin: 8px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">',
@@ -128,7 +131,11 @@ export function createLinkCardRenderer(
         linkCardCache.set(url, { error: true, url, message: data.error });
       }
     } catch {
-      linkCardCache.set(url, { error: true, url, message: "ネットワークエラー" });
+      linkCardCache.set(url, {
+        error: true,
+        url,
+        message: "ネットワークエラー",
+      });
     }
     updatePreview();
   }

@@ -61,7 +61,7 @@ const editorConfig = {
 };
 ---
 
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja" data-theme="light">
   <head>
     <meta charset="utf-8" />
@@ -80,7 +80,9 @@ const editorConfig = {
     />
   </head>
   <body>
-    {/* editorConfig にユーザー入力を含めないこと（"<" は < にエスケープし script 早期終了を防止） */}
+    {
+      /* editorConfig にユーザー入力を含めないこと（"<" は < にエスケープし script 早期終了を防止） */
+    }
     <script
       type="application/json"
       id="editor-config"
@@ -261,7 +263,7 @@ const editorConfig = {
                           >
                             クリックしてファイルを選択
                           </span>
-                          またはドラッグ&ドロップ
+                           またはドラッグ&ドロップ
                         </p>
                         <p class="text-xs text-gray-500">
                           PNG, JPG, GIF, WebP (最大5MB)
