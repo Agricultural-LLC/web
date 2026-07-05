@@ -1,0 +1,553 @@
+---
+import "../../styles/admin-editor.css";
+
+interface Props {
+  contentType: "blog" | "news";
+  htmlTitle: string;
+  metaDescription: string;
+  backHref: string;
+  backLabel: string;
+  categories: string[];
+  tagsPlaceholder: string;
+}
+
+const {
+  contentType,
+  htmlTitle,
+  metaDescription,
+  backHref,
+  backLabel,
+  categories,
+  tagsPlaceholder,
+} = Astro.props;
+
+const isNews = contentType === "news";
+const theme = isNews ? "purple" : "blue";
+const publishColor = isNews ? "purple" : "green";
+const itemLabel = isNews ? "ニュース" : "記事";
+
+const focusRing = `focus:ring-${theme}-500`;
+const inputClass = `w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 ${focusRing} focus:border-transparent`;
+const checkboxClass = `h-4 w-4 text-${theme}-600 ${focusRing} border-gray-300 rounded`;
+
+const firebaseConfig = {
+  apiKey: import.meta.env.PUBLIC_FIREBASE_API_KEY,
+  authDomain: import.meta.env.PUBLIC_FIREBASE_AUTH_DOMAIN,
+  databaseURL: import.meta.env.PUBLIC_FIREBASE_DATABASE_URL,
+  projectId: import.meta.env.PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.PUBLIC_FIREBASE_APP_ID,
+};
+
+if (!firebaseConfig.apiKey || !firebaseConfig.authDomain) {
+  console.error(
+    "Firebase configuration is incomplete. Please set environment variables.",
+  );
+}
+
+const editorConfig = {
+  contentType,
+  dbPath: isNews ? "cms/news" : "cms/blog",
+  storagePrefix: isNews ? "news" : "blog",
+  itemLabel,
+  editTitle: `${itemLabel}編集`,
+  createTitle: `新規${itemLabel}作成`,
+  enableLinkCard: !isNews,
+  enableNewsFields: isNews,
+  linkPreviewEndpoint:
+    "https://us-central1-agricultural-llc.cloudfunctions.net/api/link-preview",
+  firebase: firebaseConfig,
+};
+---
+
+<!doctype html>
+<html lang="ja" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{htmlTitle}</title>
+    <meta name="description" content={metaDescription} />
+    <meta name="robots" content="noindex, nofollow" />
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css"
+    />
+  </head>
+  <body>
+    {/* editorConfig にユーザー入力を含めないこと（"<" は < にエスケープし script 早期終了を防止） */}
+    <script
+      type="application/json"
+      id="editor-config"
+      set:html={JSON.stringify(editorConfig).replace(/</g, "\\u003c")}
+    />
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <div id="loading-overlay" class="loading-overlay">
+      <div class="loading-spinner">
+        <div class="spinner"></div>
+        <span id="loading-text">処理中...</span>
+      </div>
+    </div>
+
+    {
+      !isNews && (
+        <div id="url-dialog-overlay" class="url-dialog-overlay">
+          <div class="url-dialog">
+            <h3>リンクカード挿入</h3>
+            <p>
+              WebサイトのURLを入力してください。自動的にタイトルや説明を取得してカード形式で表示します。
+            </p>
+            <input
+              type="url"
+              id="url-input"
+              placeholder="https://example.com"
+              autocomplete="url"
+            />
+            <div class="buttons">
+              <button type="button" class="btn btn-secondary" id="url-cancel">
+                キャンセル
+              </button>
+              <button type="button" class="btn btn-primary" id="url-insert">
+                挿入
+              </button>
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    <div id="app">
+      <header class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="flex justify-between items-center h-16">
+            <div class="flex items-center">
+              <a
+                href={backHref}
+                class={`text-${theme}-600 hover:text-${theme}-800 mr-4`}
+              >
+                ← {backLabel}
+              </a>
+              <h1 class="text-xl font-semibold text-gray-800" id="page-title">
+                {itemLabel}編集
+              </h1>
+            </div>
+
+            <div class="flex items-center space-x-4">
+              <button
+                id="save-draft-button"
+                class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition duration-200"
+              >
+                下書き保存
+              </button>
+              <button
+                id="publish-button"
+                class={`bg-${publishColor}-600 text-white px-4 py-2 rounded-md hover:bg-${publishColor}-700 transition duration-200`}
+              >
+                公開
+              </button>
+              <span id="user-email" class="text-gray-600 text-sm"></span>
+              <button
+                id="logout-button"
+                class="text-gray-600 hover:text-gray-800 text-sm px-3 py-2 rounded-md hover:bg-gray-100 transition duration-200"
+              >
+                ログアウト
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div id="loading" class="max-w-4xl mx-auto py-12 text-center">
+        <div
+          class={`inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-${theme}-600`}
+        >
+        </div>
+        <p class="mt-2 text-gray-600">読み込み中...</p>
+      </div>
+
+      <main id="editor-content" class="hidden max-w-4xl mx-auto py-6 px-4">
+        <form id="post-form">
+          <div class="form-section">
+            <div class="px-6 py-4 border-b border-gray-200">
+              <h2 class="text-lg font-semibold text-gray-800">基本情報</h2>
+            </div>
+            <div class="p-6 space-y-6">
+              <div>
+                <label
+                  for="title"
+                  class="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  タイトル *
+                </label>
+                <input
+                  type="text"
+                  id="title"
+                  name="title"
+                  required
+                  class={inputClass}
+                  placeholder={`${itemLabel}のタイトルを入力`}
+                />
+              </div>
+
+              <div>
+                <label
+                  for="description"
+                  class="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  説明 *
+                </label>
+                <textarea
+                  id="description"
+                  name="description"
+                  rows="3"
+                  required
+                  class={inputClass}
+                  placeholder={`${itemLabel}の説明を入力（SEO用）`}></textarea>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label
+                    for="date"
+                    class="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    公開日 *
+                  </label>
+                  <input
+                    type="date"
+                    id="date"
+                    name="date"
+                    required
+                    class={inputClass}
+                  />
+                </div>
+
+                <div>
+                  <label
+                    for="image"
+                    class="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    {itemLabel}画像
+                  </label>
+
+                  <div id="image-upload-area" class="space-y-4">
+                    <div
+                      id="upload-dropzone"
+                      class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-gray-400 transition-colors"
+                    >
+                      <div id="upload-content">
+                        <svg
+                          class="mx-auto h-12 w-12 text-gray-400 mb-4"
+                          stroke="currentColor"
+                          fill="none"
+                          viewBox="0 0 48 48"
+                        >
+                          <path
+                            d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"></path>
+                        </svg>
+                        <p class="text-gray-600 mb-2">
+                          <span
+                            class={`font-medium text-${theme}-600 hover:text-${theme}-500`}
+                          >
+                            クリックしてファイルを選択
+                          </span>
+                          またはドラッグ&ドロップ
+                        </p>
+                        <p class="text-xs text-gray-500">
+                          PNG, JPG, GIF, WebP (最大5MB)
+                        </p>
+                      </div>
+
+                      <div id="upload-progress" class="hidden space-y-2">
+                        <div
+                          class={`animate-spin rounded-full h-8 w-8 border-b-2 border-${theme}-600 mx-auto`}
+                        >
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                          <div
+                            id="progress-bar"
+                            class={`bg-${theme}-600 h-2 rounded-full transition-all duration-300`}
+                            style="width: 0%"
+                          >
+                          </div>
+                        </div>
+                        <p class="text-sm text-gray-600">アップロード中...</p>
+                      </div>
+                    </div>
+
+                    <div id="image-preview" class="hidden space-y-3">
+                      <div class="relative inline-block">
+                        <img
+                          id="preview-image"
+                          src=""
+                          alt="プレビュー"
+                          class="max-w-full h-auto max-h-64 rounded-lg shadow-sm"
+                        />
+                        <button
+                          type="button"
+                          id="remove-image"
+                          class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                          title="画像を削除"
+                        >
+                          <svg
+                            class="w-4 h-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M6 18L18 6M6 6l12 12"></path>
+                          </svg>
+                        </button>
+                      </div>
+                      <div class="text-sm text-gray-600">
+                        <p>✅ アップロード完了</p>
+                      </div>
+                    </div>
+
+                    <div
+                      id="upload-error"
+                      class="hidden bg-red-50 border border-red-200 rounded-md p-3"
+                    >
+                      <div class="flex">
+                        <div class="flex-shrink-0">
+                          <svg
+                            class="h-5 w-5 text-red-400"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                          >
+                            <path
+                              fill-rule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                              clip-rule="evenodd"></path>
+                          </svg>
+                        </div>
+                        <div class="ml-3">
+                          <p id="error-text" class="text-sm text-red-700"></p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <input type="hidden" id="image" name="image" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {
+            isNews && (
+              <div class="form-section">
+                <div class="px-6 py-4 border-b border-gray-200">
+                  <h2 class="text-lg font-semibold text-gray-800">
+                    ニュース設定
+                  </h2>
+                </div>
+                <div class="p-6 space-y-6">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label
+                        for="priority"
+                        class="block text-sm font-medium text-gray-700 mb-2"
+                      >
+                        優先度
+                      </label>
+                      <input
+                        type="number"
+                        id="priority"
+                        name="priority"
+                        min="0"
+                        max="10"
+                        value="0"
+                        class={inputClass}
+                      />
+                      <p class="mt-1 text-xs text-gray-500">
+                        数値が大きいほど上位に表示されます（0-10）
+                      </p>
+                    </div>
+
+                    <div>
+                      <label
+                        for="source"
+                        class="block text-sm font-medium text-gray-700 mb-2"
+                      >
+                        ニュースソース
+                      </label>
+                      <select id="source" name="source" class={inputClass}>
+                        <option value="">ソースを選択</option>
+                        <option value="remono合同会社">remono合同会社</option>
+                        <option value="業界メディア">業界メディア</option>
+                        <option value="政府発表">政府発表</option>
+                        <option value="JA発表">JA発表</option>
+                        <option value="その他">その他</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label
+                      for="externalLink"
+                      class="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      外部リンク
+                    </label>
+                    <input
+                      type="url"
+                      id="externalLink"
+                      name="externalLink"
+                      class={inputClass}
+                      placeholder="https://example.com"
+                    />
+                    <p class="mt-1 text-xs text-gray-500">
+                      外部のニュースソースへのリンク（オプション）
+                    </p>
+                  </div>
+
+                  <div class="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="featured"
+                      name="featured"
+                      class={checkboxClass}
+                    />
+                    <label
+                      for="featured"
+                      class="ml-2 block text-sm text-gray-700"
+                    >
+                      特集記事として表示
+                    </label>
+                  </div>
+                </div>
+              </div>
+            )
+          }
+
+          <div class="form-section">
+            <div class="px-6 py-4 border-b border-gray-200">
+              <h2 class="text-lg font-semibold text-gray-800">メタデータ</h2>
+            </div>
+            <div class="p-6 space-y-6">
+              <div>
+                <label
+                  for="authors"
+                  class="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  著者 *
+                </label>
+                <input
+                  type="text"
+                  id="authors"
+                  name="authors"
+                  value="admin"
+                  required
+                  class={inputClass}
+                  placeholder="admin"
+                />
+                <p class="mt-1 text-xs text-gray-500">
+                  複数の場合はカンマ区切り
+                </p>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label
+                    for="categories"
+                    class="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    カテゴリー *
+                  </label>
+                  <select
+                    id="categories"
+                    name="categories"
+                    multiple
+                    required
+                    class={inputClass}
+                  >
+                    {
+                      categories.map((category) => (
+                        <option value={category}>{category}</option>
+                      ))
+                    }
+                  </select>
+                  <p class="mt-1 text-xs text-gray-500">
+                    Ctrlキーを押しながら複数選択可
+                  </p>
+                </div>
+
+                <div>
+                  <label
+                    for="tags"
+                    class="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    タグ
+                  </label>
+                  <input
+                    type="text"
+                    id="tags"
+                    name="tags"
+                    class={inputClass}
+                    placeholder={tagsPlaceholder}
+                  />
+                  <p class="mt-1 text-xs text-gray-500">カンマ区切りで入力</p>
+                </div>
+              </div>
+
+              <div class="mt-6">
+                <div class="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="draft"
+                    name="draft"
+                    class={checkboxClass}
+                  />
+                  <label for="draft" class="ml-2 block text-sm text-gray-700">
+                    下書きとして保存（公開しない）
+                  </label>
+                </div>
+                <p class="mt-1 text-xs text-gray-500">
+                  チェックを外すと{itemLabel}が公開されます
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="px-6 py-4 border-b border-gray-200">
+              <h2 class="text-lg font-semibold text-gray-800">本文</h2>
+            </div>
+            <div
+              class={isNews
+                ? "p-6 editor-container"
+                : "p-6 editor-container with-linkcard"}
+            >
+              <textarea id="markdown-editor" style="min-height: 500px;"
+              ></textarea>
+            </div>
+          </div>
+        </form>
+      </main>
+    </div>
+
+    <script
+      is:inline
+      src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+
+    <script>
+      import { initAdminEditor } from "../../lib/admin-editor/main";
+      initAdminEditor();
+    </script>
+  </body>
+</html>
