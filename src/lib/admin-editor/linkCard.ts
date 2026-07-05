@@ -3,7 +3,7 @@ import { byId, type LinkCardData, type SimpleMDEInstance } from "./types";
 
 const linkCardCache = new Map<string, LinkCardData>();
 
-function escapeHtml(value: string): string {
+export function escapeHtml(value: string): string {
   return value
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -62,7 +62,7 @@ function generateLoadingLinkCard(url: string): string {
   </div>`;
 }
 
-function convertBasicMarkdown(markdown: string): string {
+export function convertBasicMarkdown(markdown: string): string {
   let html = markdown
     .replace(/^### (.*$)/gm, "<h3>$1</h3>")
     .replace(/^## (.*$)/gm, "<h2>$1</h2>")
