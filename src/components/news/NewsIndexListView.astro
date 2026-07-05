@@ -1,0 +1,41 @@
+<div id="news-list-view" class="hidden">
+  <div class="row justify-center mb-8">
+    <div class="lg:col-10">
+      <div class="flex flex-wrap justify-center gap-2" id="category-filters"></div>
+    </div>
+  </div>
+
+  <div class="row justify-center mb-4">
+    <div class="lg:col-10 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      <p class="text-gray-600 text-sm md:text-base">
+        <span id="showing-count">0</span>件 / 全<span id="total-count">0</span>件を表示
+      </p>
+      <label class="inline-flex items-center gap-2 text-sm text-gray-600">
+        並び替え:
+        <select
+          id="sort-select"
+          class="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+        >
+          <option value="date-desc">新しい順</option>
+          <option value="date-asc">古い順</option>
+          <option value="priority">優先度順</option>
+          <option value="views">閲覧数順</option>
+        </select>
+      </label>
+    </div>
+  </div>
+
+  <div class="row justify-center" id="news-grid">
+    <div class="lg:col-10">
+      <div id="news-list" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"></div>
+    </div>
+  </div>
+
+  <div class="row justify-center">
+    <div class="lg:col-10">
+      <nav aria-label="ページネーション" class="flex justify-center">
+        <ul class="flex gap-2" id="pagination"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
