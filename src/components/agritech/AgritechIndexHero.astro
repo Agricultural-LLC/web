@@ -1,0 +1,41 @@
+---
+import agritechIcon from "@assets/blog/agritech.png";
+import { Image } from "astro:assets";
+
+interface Props {
+  baseTitle: string;
+  baseDescription: string;
+}
+
+const { baseTitle, baseDescription } = Astro.props;
+---
+
+<section class="section-sm">
+  <div class="container">
+    <div class="row">
+      <div class="col-12 md:col-7 lg:col-8">
+        <div class="glass rounded-lg p-8 text-center">
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{baseTitle}</h1>
+          <p class="mt-4 text-gray-600 dark:text-gray-300">{baseDescription}</p>
+        </div>
+      </div>
+      <div class="hidden md:flex md:col-5 lg:col-4 items-center justify-center">
+        <Image
+          src={agritechIcon}
+          alt="農てっく！アイコン"
+          width={200}
+          height={200}
+          class="w-40 h-40 md:w-40 md:h-40 lg:w-60 lg:h-60 rounded-lg shadow-lg"
+        />
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .glass {
+    backdrop-filter: blur(12px);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.85), rgba(245, 255, 245, 0.85));
+    border: 1px solid rgba(56, 142, 60, 0.15);
+  }
+</style>

@@ -1,0 +1,74 @@
+<div id="agri-loading" class="text-center py-12">
+  <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+  <p class="mt-4 text-gray-600">記事を読み込み中...</p>
+</div>
+
+<div id="agri-list-view" class="hidden">
+  <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
+    <p class="text-gray-600">
+      <span id="agri-list-count">0</span>件の記事を掲載しています
+    </p>
+    <label class="inline-flex items-center gap-2 text-sm text-gray-600">
+      並び替え:
+      <select
+        id="agri-sort-select"
+        class="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+      >
+        <option value="date-desc">新しい順</option>
+        <option value="date-asc">古い順</option>
+        <option value="title">タイトル順</option>
+      </select>
+    </label>
+  </div>
+
+  <div id="agri-active-filters" class="hidden mb-4 flex flex-wrap gap-2 text-sm"></div>
+  <div id="agri-posts-list" class="space-y-6"></div>
+  <nav aria-label="ページネーション" class="flex justify-center mt-10">
+    <ul class="flex gap-2" id="agri-pagination"></ul>
+  </nav>
+</div>
+
+<div id="agri-detail-view" class="hidden">
+  <article id="agri-detail-article" class="glass rounded-lg p-6 md:p-10"></article>
+  <aside id="agri-detail-toc" class="mt-10 hidden"></aside>
+  <section id="agri-related" class="mt-16 hidden">
+    <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">関連記事</h2>
+    <div id="agri-related-list" class="grid md:grid-cols-2 gap-6"></div>
+  </section>
+  <div class="mt-12 flex justify-center">
+    <a href="/agritech/" class="inline-flex items-center gap-2 text-green-600 hover:text-green-800 transition-colors">
+      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18" />
+      </svg>
+      一覧に戻る
+    </a>
+  </div>
+</div>
+
+<div id="agri-empty" class="hidden text-center py-16 bg-white/60 backdrop-blur-sm border border-green-100/50 rounded-xl">
+  <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+  </svg>
+  <p class="text-gray-500 mb-4">まだ記事がありません</p>
+  <p class="text-sm text-gray-400">新しい記事が追加されるまでお待ちください</p>
+</div>
+
+<div id="agri-not-found" class="hidden text-center py-16 bg-white/60 backdrop-blur-sm border border-green-100/50 rounded-xl">
+  <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+  <p class="text-gray-500 mb-4">お探しの記事が見つかりませんでした</p>
+  <p class="text-sm text-gray-400">URLをご確認いただくか、一覧に戻って再度お探しください</p>
+  <div class="mt-6 flex justify-center gap-4">
+    <a href="/agritech/" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">一覧へ戻る</a>
+    <a href="/" class="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors">ホームへ戻る</a>
+  </div>
+</div>
+
+<style>
+  .glass {
+    backdrop-filter: blur(12px);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.85), rgba(245, 255, 245, 0.85));
+    border: 1px solid rgba(56, 142, 60, 0.15);
+  }
+</style>
