@@ -55,8 +55,7 @@ const editorConfig = {
   createTitle: `新規${itemLabel}作成`,
   enableLinkCard: !isNews,
   enableNewsFields: isNews,
-  linkPreviewEndpoint:
-    "https://us-central1-agricultural-llc.cloudfunctions.net/api/link-preview",
+  linkPreviewEndpoint: `https://us-central1-${firebaseConfig.projectId}.cloudfunctions.net/api/link-preview`,
   firebase: firebaseConfig,
 };
 ---
