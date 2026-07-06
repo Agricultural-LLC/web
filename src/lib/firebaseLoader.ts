@@ -1,6 +1,9 @@
 import { initializeApp, getApp, getApps } from "firebase/app";
 import { getDatabase, ref, get } from "firebase/database";
 import type { BlogEntry } from "@/types";
+import { createLogger } from "@/lib/logger";
+
+const log = createLogger("firebaseLoader");
 
 // Firebase Client SDK初期化関数（PUBLIC_変数を使用）
 function initializeFirebase() {
@@ -27,19 +30,19 @@ function initializeFirebase() {
         "1:293681935404:web:188089a29ff3da05490d89",
     };
 
-    console.log("🔧 Firebase Client initialization...");
-    console.log(
-      "Project ID:",
-      import.meta.env.PUBLIC_FIREBASE_PROJECT_ID || "agricultural-llc",
-    );
-    console.log(
-      "Database URL:",
-      import.meta.env.PUBLIC_FIREBASE_DATABASE_URL ||
+    log.debug("Firebase Client initialization started");
+    log.debug("Firebase project configured", {
+      projectId:
+        import.meta.env.PUBLIC_FIREBASE_PROJECT_ID || "agricultural-llc",
+    });
+    log.debug("Firebase database configured", {
+      databaseURL:
+        import.meta.env.PUBLIC_FIREBASE_DATABASE_URL ||
         "https://agricultural-llc-default-rtdb.asia-southeast1.firebasedatabase.app",
-    );
+    });
 
     initializeApp(firebaseConfig);
-    console.log("✅ Firebase Client initialized");
+    log.info("Firebase Client initialized");
   }
 
   const app = getApp();
@@ -68,21 +71,19 @@ export interface FirebaseBlogEntry {
 // Firebaseから記事を取得
 export async function getFirebaseBlogEntries(): Promise<BlogEntry[]> {
   try {
-    console.log("🔍 Fetching blog entries from Firebase...");
+    log.info("Fetching blog entries from Firebase");
     const db = initializeFirebase();
     const snapshot = await get(ref(db, "cms/blog"));
 
     if (!snapshot.exists()) {
-      console.log("❌ No blog data found in Firebase");
+      log.info("No blog data found in Firebase");
       return [];
     }
 
     const data = snapshot.val();
-    console.log(
-      "📊 Raw Firebase data:",
-      Object.keys(data).length,
-      "entries found",
-    );
+    log.info("Raw Firebase data loaded", {
+      entriesFound: Object.keys(data).length,
+    });
 
     const entries: BlogEntry[] = [];
 

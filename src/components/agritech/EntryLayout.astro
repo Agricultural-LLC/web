@@ -80,6 +80,10 @@ const entryDescription =
   </style>
 
   <script>
+    import { createLogger } from "@lib/logger";
+
+    const log = createLogger("agritech.EntryLayout");
+
     // Process link card placeholders on the client side - Enhanced version with API fallback
     document.addEventListener('DOMContentLoaded', async () => {
       const placeholders = document.querySelectorAll('.link-card-placeholder');
@@ -133,7 +137,9 @@ const entryDescription =
             return createLinkCardHTML(data.url, data.title || hostname, data.description || '', data.image || '', data.siteName || hostname);
           }
         } catch (error) {
-          console.log('Firebase Function not available, using offline fallback:', (error as Error).message);
+          log.warn('Firebase Function not available, using offline fallback', {
+            error: (error as Error).message,
+          });
         }
 
         // Offline fallback with enhanced site recognition
