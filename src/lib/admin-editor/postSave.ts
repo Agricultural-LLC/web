@@ -175,7 +175,7 @@ export async function loadPost(
   }
 }
 
-function buildPostData(
+export function buildPostData(
   config: EditorConfig,
   formData: PostFormData,
   isCreate: boolean,

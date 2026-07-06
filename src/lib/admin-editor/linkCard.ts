@@ -3,7 +3,18 @@ import { byId, type LinkCardData, type SimpleMDEInstance } from "./types";
 
 const linkCardCache = new Map<string, LinkCardData>();
 
-function escapeHtml(value: string): string {
+export function clearLinkCardCache(): void {
+  linkCardCache.clear();
+}
+
+const SAFE_LINK_PROTOCOL = /^(https?:|mailto:|\/(?!\/)|#|\.)/i;
+
+function sanitizeHref(href: string): string | null {
+  const trimmed = href.trim();
+  return SAFE_LINK_PROTOCOL.test(trimmed) ? trimmed : null;
+}
+
+export function escapeHtml(value: string): string {
   return value
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -62,17 +73,19 @@ function generateLoadingLinkCard(url: string): string {
   </div>`;
 }
 
-function convertBasicMarkdown(markdown: string): string {
+export function convertBasicMarkdown(markdown: string): string {
   let html = markdown
     .replace(/^### (.*$)/gm, "<h3>$1</h3>")
     .replace(/^## (.*$)/gm, "<h2>$1</h2>")
     .replace(/^# (.*$)/gm, "<h1>$1</h1>")
     .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.*?)\*/g, "<em>$1</em>")
-    .replace(
-      /\[([^\]]+)\]\(([^)\s]+)\)/g,
-      '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>',
-    )
+    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_m, text: string, href: string) => {
+      const safe = sanitizeHref(href);
+      return safe
+        ? `<a href="${safe}" target="_blank" rel="noopener noreferrer">${text}</a>`
+        : text;
+    })
     .replace(
       /!\[([^\]]*)\]\((https?:\/\/[^)\s]+)\)/g,
       '<img src="$2" alt="$1" style="max-width: 100%; height: auto; border-radius: 4px; margin: 8px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">',
