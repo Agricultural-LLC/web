@@ -52,6 +52,9 @@ describe("convertBasicMarkdown", () => {
     expect(js).toContain("x");
     const data = convertBasicMarkdown("[y](data:text/html,<script>)");
     expect(data).not.toContain('href="data:');
+    const rel = convertBasicMarkdown("[z](//evil.example)");
+    expect(rel).not.toContain('href="//');
+    expect(rel).toContain("z");
     expect(convertBasicMarkdown("[ok](https://safe.example)")).toContain(
       'href="https://safe.example"',
     );

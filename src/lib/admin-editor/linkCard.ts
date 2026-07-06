@@ -7,7 +7,7 @@ export function clearLinkCardCache(): void {
   linkCardCache.clear();
 }
 
-const SAFE_LINK_PROTOCOL = /^(https?:|mailto:|\/|#|\.)/i;
+const SAFE_LINK_PROTOCOL = /^(https?:|mailto:|\/(?!\/)|#|\.)/i;
 
 function sanitizeHref(href: string): string | null {
   const trimmed = href.trim();
