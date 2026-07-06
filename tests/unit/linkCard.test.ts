@@ -8,10 +8,15 @@ vi.mock("@lib/admin-editor/toast", () => ({
 }));
 
 import {
+  clearLinkCardCache,
   convertBasicMarkdown,
   createLinkCardRenderer,
   escapeHtml,
 } from "@lib/admin-editor/linkCard";
+
+beforeEach(() => {
+  clearLinkCardCache();
+});
 
 describe("escapeHtml", () => {
   it("XSS ペイロードの特殊文字を全てエスケープする", () => {
@@ -37,6 +42,18 @@ describe("convertBasicMarkdown", () => {
     const html = convertBasicMarkdown("[site](https://example.com)");
     expect(html).toContain(
       '<a href="https://example.com" target="_blank" rel="noopener noreferrer">site</a>',
+    );
+  });
+
+  it("javascript: 等の危険な URL はリンク化せずテキストのみ出力する", () => {
+    const js = convertBasicMarkdown("[x](javascript:alert(1))");
+    expect(js).not.toContain("<a ");
+    expect(js).not.toContain("javascript:");
+    expect(js).toContain("x");
+    const data = convertBasicMarkdown("[y](data:text/html,<script>)");
+    expect(data).not.toContain('href="data:');
+    expect(convertBasicMarkdown("[ok](https://safe.example)")).toContain(
+      'href="https://safe.example"',
     );
   });
 
@@ -69,10 +86,11 @@ describe("createLinkCardRenderer / [linkcard:url]", () => {
     const html = markdownToHtml("[linkcard:https://example.com/page]");
     expect(html).toContain("link-card-preview loading");
     expect(html).not.toContain("[linkcard:");
-    expect(fetch).toHaveBeenCalledWith(
-      "/api/link",
-      expect.objectContaining({ method: "POST" }),
-    );
+    expect(fetch).toHaveBeenCalledWith("/api/link", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url: "https://example.com/page" }),
+    });
   });
 
   it("キャッシュ済み URL はカード HTML として描画され XSS がエスケープされる", async () => {
