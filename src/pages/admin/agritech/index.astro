@@ -23,10 +23,6 @@ const firebaseConfig = {
   <script define:vars={{ firebaseConfig }}>
     // Make firebaseConfig globally available
     window.firebaseConfig = firebaseConfig;
-    console.log('=== FIREBASE CONFIG DEBUG ===');
-    console.log('firebaseConfig from define:vars:', firebaseConfig);
-    console.log('Database URL:', firebaseConfig.databaseURL);
-    console.log('===============================');
   </script>
   
   <!-- Tailwind CSS -->
@@ -156,16 +152,6 @@ const firebaseConfig = {
     const app = initializeApp(config);
     const auth = getAuth(app);
     const database = getDatabase(app, config.databaseURL);
-
-    console.log('Firebase initialized with modular API');
-    console.log('Config values being used:');
-    console.log('- API Key:', config.apiKey);
-    console.log('- Auth Domain:', config.authDomain);
-    console.log('- Database URL:', config.databaseURL);
-    console.log('- Project ID:', config.projectId);
-    console.log('App:', app);
-    console.log('Auth:', auth);
-    console.log('Database:', database);
 
     // DOM elements
     const loading = document.getElementById('loading');

@@ -157,16 +157,6 @@ if (!firebaseConfig.apiKey || !firebaseConfig.authDomain) {
     const auth = getAuth(app);
     const database = getDatabase(app, config.databaseURL);
 
-    console.log('Firebase initialized with modular API');
-    console.log('Config values being used:');
-    console.log('- API Key:', config.apiKey);
-    console.log('- Auth Domain:', config.authDomain);
-    console.log('- Database URL:', config.databaseURL);
-    console.log('- Project ID:', config.projectId);
-    console.log('App:', app);
-    console.log('Auth:', auth);
-    console.log('Database:', database);
-
     // DOM elements
     const loading = document.getElementById('loading');
     const postsContainer = document.getElementById('posts-container');
