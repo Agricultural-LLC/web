@@ -67,3 +67,8 @@ coverage/
 # MCP configuration (keep local)
 .mcp.json
 .serena/
+# ローカル作業ファイル(コミット禁止)
+.claude/state/
+.claude/sessions/
+.worktrees/
+.harness-worktrees/

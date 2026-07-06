@@ -1,0 +1,531 @@
+body {
+  font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+  background-color: #f8fafc;
+}
+
+.form-section {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
+}
+
+.CodeMirror,
+.editor-preview {
+  font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, monospace;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.editor-toolbar {
+  border-top: none;
+  border-left: none;
+  border-right: none;
+}
+
+.editor-container {
+  min-height: 600px;
+}
+
+.editor-preview h1,
+.editor-preview h2,
+.editor-preview h3 {
+  color: #333;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
+}
+
+.editor-preview p {
+  margin-bottom: 1em;
+  line-height: 1.6;
+}
+
+.editor-preview code {
+  background: #f0f0f0;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.editor-preview pre {
+  background: #f8f8f8;
+  padding: 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+}
+
+/* Toast notification system */
+.toast-container {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  z-index: 99999;
+  max-width: 400px;
+  width: 100%;
+  pointer-events: none;
+}
+
+.toast {
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(10px);
+  border-radius: 8px;
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(0, 0, 0, 0.08);
+  margin-bottom: 16px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  transform: translateX(100%);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-left: 4px solid #ddd;
+  pointer-events: auto;
+  min-width: 320px;
+}
+
+.toast.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.toast.success {
+  border-left-color: #10b981;
+}
+.toast.error {
+  border-left-color: #f56565;
+}
+.toast.info {
+  border-left-color: #3b82f6;
+}
+.toast.warning {
+  border-left-color: #f59e0b;
+}
+
+.toast-icon {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  margin-right: 12px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+  color: white;
+}
+
+.toast.success .toast-icon {
+  background-color: #10b981;
+}
+.toast.error .toast-icon {
+  background-color: #f56565;
+}
+.toast.info .toast-icon {
+  background-color: #3b82f6;
+}
+.toast.warning .toast-icon {
+  background-color: #f59e0b;
+}
+
+.toast-content {
+  flex: 1;
+}
+
+.toast-title {
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 4px;
+}
+
+.toast-message {
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 4px;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+.toast-close:hover {
+  color: #6b7280;
+}
+
+/* Loading overlay */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.loading-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.loading-spinner {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid #e5e7eb;
+  border-top: 3px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* エディタ内ドラッグ&ドロップ */
+.CodeMirror.drag-over {
+  border: 2px dashed #3b82f6 !important;
+  background-color: rgba(59, 130, 246, 0.05) !important;
+  transition: all 0.2s ease;
+}
+
+.CodeMirror.drag-over::before {
+  content: "画像をここにドロップしてください";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(59, 130, 246, 0.9);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.editor-container::after {
+  content: "💡 ヒント：画像をエディタに直接ドラッグ&ドロップできます。";
+  display: block;
+  margin-top: 12px;
+  font-size: 12px;
+  color: #6b7280;
+  text-align: center;
+}
+
+.editor-container.with-linkcard::after {
+  content: "💡 ヒント：画像をエディタに直接ドラッグ&ドロップできます。リンクカードボタンでWebサイトのカードも挿入できます。";
+}
+
+/* URL入力ダイアログ */
+.url-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.url-dialog-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.url-dialog {
+  background: white;
+  border-radius: 12px;
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  padding: 24px;
+  max-width: 500px;
+  width: 90%;
+  transform: scale(0.95) translateY(20px);
+  transition: all 0.3s ease;
+}
+
+.url-dialog-overlay.show .url-dialog {
+  transform: scale(1) translateY(0);
+}
+
+.url-dialog h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 8px;
+}
+
+.url-dialog p {
+  color: #6b7280;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.url-dialog input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+  margin-bottom: 20px;
+}
+
+.url-dialog input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.url-dialog .buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.url-dialog .btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+  cursor: pointer;
+  border: none;
+}
+
+.url-dialog .btn-secondary {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.url-dialog .btn-secondary:hover {
+  background: #e5e7eb;
+}
+
+.url-dialog .btn-primary {
+  background: #3b82f6;
+  color: white;
+}
+
+.url-dialog .btn-primary:hover {
+  background: #2563eb;
+}
+
+.url-dialog .btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* リンクカードプレビュー */
+.link-card-preview {
+  margin: 16px 0;
+  max-width: 600px;
+}
+
+.link-card-link {
+  display: block;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  background: white;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s;
+}
+
+.link-card-link:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.link-card-image {
+  aspect-ratio: 2/1;
+  overflow: hidden;
+  background: #f9fafb;
+}
+
+.link-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.link-card-content {
+  padding: 12px;
+}
+
+.link-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.link-card-favicon {
+  width: 16px;
+  height: 16px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.link-card-favicon-placeholder {
+  width: 16px;
+  height: 16px;
+  background: #f3f4f6;
+  border-radius: 2px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+}
+
+.link-card-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.link-card-title {
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #1f2937;
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.link-card-description {
+  font-size: 12px;
+  line-height: 1.4;
+  color: #6b7280;
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.link-card-site {
+  font-size: 11px;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.link-card-preview.loading .link-card-loading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f9fafb;
+}
+
+.loading-spinner-small {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e5e7eb;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loading-content {
+  flex: 1;
+}
+
+.loading-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  margin-bottom: 2px;
+}
+
+.loading-url {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.link-card.error {
+  margin: 16px 0;
+  max-width: 600px;
+}
+
+.link-card-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: #fef2f2;
+}
+
+.error-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.error-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #dc2626;
+  margin-bottom: 4px;
+}
+
+.error-message {
+  font-size: 13px;
+  color: #991b1b;
+  margin-bottom: 4px;
+}
+
+.error-url {
+  font-size: 11px;
+  color: #7f1d1d;
+  font-family: monospace;
+  word-break: break-all;
+}
