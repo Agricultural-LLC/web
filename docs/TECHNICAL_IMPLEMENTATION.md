@@ -120,7 +120,7 @@ f24b843 - fix: firebaseLoader.tsにフォールバック値を追加してブロ
 1. **フォールバック値の実装:**
 ```typescript
 const firebaseConfig = {
-  apiKey: import.meta.env.PUBLIC_FIREBASE_API_KEY || "AIzaSyCkctZ3zzyHw0JEEf8w-wl_xVE-1lQLo7E",
+  apiKey: import.meta.env.PUBLIC_FIREBASE_API_KEY,
   authDomain: import.meta.env.PUBLIC_FIREBASE_AUTH_DOMAIN || "agricultural-llc.firebaseapp.com",
   databaseURL: import.meta.env.PUBLIC_FIREBASE_DATABASE_URL || "https://agricultural-llc-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: import.meta.env.PUBLIC_FIREBASE_PROJECT_ID || "agricultural-llc",
